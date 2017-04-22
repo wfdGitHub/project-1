@@ -1,7 +1,11 @@
 //常量定义
 var GAME_PLAYER = 1                 //游戏人数
-var GS_FREE     = 1001              //空闲状态        
-var GS_PLAYING  = 1002              //游戏状态
+//游戏状态
+var GS_FREE         = 1001              //空闲阶段
+var GS_BETTING      = 1002              //下注阶段
+var GS_DEAL         = 1003              //发牌阶段
+var GS_SETTLEMENT   = 1004              //结算阶段
+
 
 //创建房间
   module.exports.createRoom = function(roomId,channelService) {
@@ -16,7 +20,7 @@ var GS_PLAYING  = 1002              //游戏状态
     var readyCount = 0                   //游戏准备人数
     var gameState = GS_FREE              //游戏状态
     var chairMap = {}                    //玩家UID与椅子号映射表
-
+    var banker = -1;                     //庄家椅子号
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -25,14 +29,20 @@ var GS_PLAYING  = 1002              //游戏状态
         cards[cardCount++] = {num : i,type : j}
       }
     }
+    //下注信息
+    var betList = new Array(GAME_PLAYER)
+
     //玩家属性
     var  player = {}
     for(var i = 0;i < GAME_PLAYER;i++){
       player[i] = {}
       player[i].chair = i;                //椅子号
       player[i].uid = 0;                  //uid
-      player[i].isActive = false;         //当前椅子上是否有人
-      player[i].isReady = false;          //准备状态
+      player[i].isActive = false          //当前椅子上是否有人
+      player[i].isReady = false           //准备状态
+      player[i].isBanker = false          //是否为庄家
+      player[i].handCard = new Array(5)   //手牌
+      player[i].score = 10000;            //当前金币
     }
 
     var local = {}                        //私有方法
@@ -60,13 +70,19 @@ var GS_PLAYING  = 1002              //游戏状态
       //玩家数量增加
       playerCount++
 
-      room.channel.add(uid,sid)
       var notify = {
         cmd: "userJoin",
         uid: uid,
         chair : chair
       }
       local.sendAll(notify)
+
+      room.channel.add(uid,sid)
+      notify = {
+        cmd : "roomPlayer",
+        player:player
+      }
+      local.sendUid(uid,notify)
       cb(true)
     }
     //玩家离开
@@ -120,6 +136,7 @@ var GS_PLAYING  = 1002              //游戏状态
       }
       cb(true)
     }
+    //发送聊天
     room.send = function(uid,sid,param,cb) {
       //判断是否在椅子上
       var chair = chairMap[uid]
@@ -136,11 +153,50 @@ var GS_PLAYING  = 1002              //游戏状态
       local.sendAll(notify)
       cb(true)
     }
+    //玩家下注
+    room.bet = function(uid,sid,param,cb){
+      //游戏状态为BETTING
+      if(gameState !== GS_BETTING){
+        cb(false)
+        return
+      }
+      //判断是否在椅子上
+      var chair = chairMap[uid]
+      if(chair === undefined){
+        cb(false)
+        return
+      }
+      //判断金钱
+      if(param.betting && typeof(param.betting) == "number" && param.betting > 0 &&
+        player[chair].score >= (param.betting + betList[chair])){
+        betList[chair] += param.betting
+        cb(true)
+      }else{
+        cb(false)
+      }
 
-    //游戏开始
+    }
+    //游戏开始 进入下注阶段
     local.gameBegin = function() {
+        log("gameBegin")
         //状态改变
-        gameState = GS_PLAYING
+        gameState = GS_BETTING
+        //重置参数
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+        }
+        //通知客户端
+        var notify = {
+          "cmd": "beginBetting"
+        }
+        local.sendAll(notify)
+        //定时器启动下一阶段
+        setTimeout(local.deal,10000)
+    }
+    //发牌阶段  等待摊牌后进入结算
+    local.deal = function(){
+        log("deal")
+        gameState = GS_BETTING
         //洗牌
         for(var i = 0;i < cardCount;i++){
           var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
@@ -148,15 +204,34 @@ var GS_PLAYING  = 1002              //游戏状态
           cards[i] = cards[tmpIndex]
           cards[tmpIndex] = tmpCard
         }
-      var notify = {
-        "cmd": "gameBegin"
-      }
-      local.sendAll(notify)
-      notify.cmd = "sendUid"
-      local.sendUid(player[0].uid,notify)
+        var notify = {
+          "cmd" : "deal"
+        }
+        //发牌
+        var index = 0;
+        for(var i = 0;i < GAME_PLAYER;i++){
+            for(var j = 0;j < 5;j++){
+                player[i].handCard[j] = cards[index++];
+            }
+            notify.handCard = player[i].handCard
+            local.sendUid(player[i].uid,notify)
+        }
+        setTimeout(local.settlement,10000)
     }
 
-
+    //结算阶段
+    local.settlement = function(){
+        log("settlement")
+        gameState = GS_FREE
+        for(var i = 0;i < GAME_PLAYER; i++){
+            player[i].isReady = false;
+        }
+        readyCount = 0
+        var notify = {
+          "cmd" : "settlement"
+        }
+        local.sendAll(notify)
+    }
     //广播消息
     local.sendAll = function(notify) {
       room.channel.pushMessage('onMessage',notify)    

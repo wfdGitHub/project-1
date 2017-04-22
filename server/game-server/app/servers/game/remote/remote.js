@@ -45,7 +45,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		console.log("user id : " + GameRemote.userMap[uid])
 		if(!!GameRemote.userMap[uid]){
 			var roomId = GameRemote.userMap[uid];
-			GameRemote.roomList[roomId][code](uid,sid,params,cb)
+			if(roomId != undefined && GameRemote.roomList[roomId][code] != undefined){
+			    GameRemote.roomList[roomId][code](uid,sid,params,cb)
+			}else{
+			    cb(false)
+			}
 		}
 		else{
 			cb(false)
