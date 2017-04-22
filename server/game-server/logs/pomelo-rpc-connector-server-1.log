@@ -1,0 +1,71 @@
+[2017-04-18 11:20:44.185] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc client connector-server-1 process remote server login-server message with error: ReferenceError: self is not defined
+    at D:\test\game-server\app\servers\connector\handler\entryHandler.js:22:28
+    at Object.Utils.applyCallback (D:\test\game-server\node_modules\pomelo-rpc\lib\util\utils.js:11:6)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:268:15
+    at doFilter (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:356:5)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:264:7
+    at processMsg (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:245:3)
+    at Connection.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:79:9)
+    at emitOne (events.js:96:13)
+    at Connection.emit (events.js:191:7)
+    at Connection.emitPacket (D:\test\game-server\node_modules\mqtt-connection\connection.js:14:8)
+[2017-04-18 11:21:56.357] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc client connector-server-1 process remote server login-server message with error: TypeError: Cannot read property 'get' of undefined
+    at D:\test\game-server\app\servers\connector\handler\entryHandler.js:22:39
+    at Object.Utils.applyCallback (D:\test\game-server\node_modules\pomelo-rpc\lib\util\utils.js:11:6)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:268:15
+    at doFilter (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:356:5)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:264:7
+    at processMsg (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:245:3)
+    at Connection.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:79:9)
+    at emitOne (events.js:96:13)
+    at Connection.emit (events.js:191:7)
+    at Connection.emitPacket (D:\test\game-server\node_modules\mqtt-connection\connection.js:14:8)
+[2017-04-18 16:04:42.352] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc client connector-server-1 process remote server login-server message with error: TypeError: Cannot set property '1' of undefined
+    at D:\test\game-server\app\servers\connector\handler\entryHandler.js:35:38
+    at Object.Utils.applyCallback (D:\test\game-server\node_modules\pomelo-rpc\lib\util\utils.js:11:6)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:268:15
+    at doFilter (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:356:5)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:264:7
+    at processMsg (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:245:3)
+    at Connection.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:79:9)
+    at emitOne (events.js:96:13)
+    at Connection.emit (events.js:191:7)
+    at Connection.emitPacket (D:\test\game-server\node_modules\mqtt-connection\connection.js:14:8)
+[2017-04-18 20:47:22.590] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc client connector-server-1 process remote server login-server message with error: ReferenceError: rid is not defined
+    at D:\test\game-server\app\servers\connector\handler\entryHandler.js:38:76
+    at Object.Utils.applyCallback (D:\test\game-server\node_modules\pomelo-rpc\lib\util\utils.js:11:6)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:268:15
+    at doFilter (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:356:5)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:264:7
+    at processMsg (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:245:3)
+    at Connection.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:79:9)
+    at emitOne (events.js:96:13)
+    at Connection.emit (events.js:191:7)
+    at Connection.emitPacket (D:\test\game-server\node_modules\mqtt-connection\connection.js:14:8)
+[2017-04-18 20:51:17.326] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc client connector-server-1 process remote server login-server message with error: TypeError: Cannot read property 'remote' of undefined
+    at D:\test\game-server\app\servers\connector\handler\entryHandler.js:38:24
+    at Object.Utils.applyCallback (D:\test\game-server\node_modules\pomelo-rpc\lib\util\utils.js:11:6)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:268:15
+    at doFilter (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:356:5)
+    at D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailstation.js:264:7
+    at processMsg (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:245:3)
+    at Connection.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:79:9)
+    at emitOne (events.js:96:13)
+    at Connection.emit (events.js:191:7)
+    at Connection.emitPacket (D:\test\game-server\node_modules\mqtt-connection\connection.js:14:8)
+[2017-04-18 21:24:58.771] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc socket connector-server-1 is error, remote server game-server host: 127.0.0.1, port: 3210
+[2017-04-19 15:32:55.507] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc connector-server-1 callback timeout 30000, remote server 1 host: 127.0.0.1, port: 3210
+[2017-04-19 15:32:55.507] [ERROR] pomelo-rpc - [31m[MailStation] [39m[pomelo-rpc] fail to send message Error: rpc connector-server-1 callback timeout 30000, remote server 1 host: 127.0.0.1, port: 3210
+    at Timeout.<anonymous> (D:\test\game-server\node_modules\pomelo-rpc\lib\rpc-client\mailboxes\mqtt-mailbox.js:257:16)
+    at ontimeout (timers.js:386:14)
+    at tryOnTimeout (timers.js:250:5)
+    at Timer.listOnTimeout (timers.js:214:5)
+[2017-04-19 15:32:55.507] [ERROR] pomelo-rpc - [31m[failprocess] [39mrpc failed with error, remote server: game-server, msg: {"namespace":"user","serverType":"game","service":"remote","method":"receive","args":[1001,"connector-server-1",null,{}]}, error code: 5
+[2017-04-20 16:25:32.852] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 1, host: 127.0.0.1, port: 3210
+[2017-04-20 16:36:48.921] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 2, host: 127.0.0.1, port: 3210
+[2017-04-20 16:37:06.461] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 3, host: 127.0.0.1, port: 3210
+[2017-04-20 16:37:37.304] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 4, host: 127.0.0.1, port: 3210
+[2017-04-20 16:38:16.058] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 6, host: 127.0.0.1, port: 3210
+[2017-04-20 16:38:26.094] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 7, host: 127.0.0.1, port: 3210
+[2017-04-20 19:45:18.005] [ERROR] pomelo-rpc - [31m[mqtt-mailbox] [39mrpc socket connector-server-1 is error, remote server game-server host: 127.0.0.1, port: 3210
+[2017-04-21 11:32:46.457] [WARN] pomelo-rpc - [33m[mqtt-mailbox] [39mtimer is not exsits, serverId: connector-server-1 remote: 1, host: 127.0.0.1, port: 3210
