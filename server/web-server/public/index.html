@@ -19,6 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "119.23.206.114";
+      host = "127.0.0.1";
       var port = "3010";
       function show() {
         pomelo.init({
@@ -32,7 +33,8 @@
         });
       }
       pomelo.on("onMessage",function(data) {
-        console.log("cmd : "+data.cmd+"   ")
+        console.log("onMessage")
+        console.log(data)
       })
       var send = function(code,msg) {
           pomelo.request("connector.entryHandler.sendData", {"code" : code,"params" : {"msg" : msg}}, function(data) {

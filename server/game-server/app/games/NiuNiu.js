@@ -1,3 +1,5 @@
+var logic = require("./NiuNiuLogic.js")
+
 //常量定义
 var GAME_PLAYER = 1                 //游戏人数
 //游戏状态
@@ -191,7 +193,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         }
         local.sendAll(notify)
         //定时器启动下一阶段
-        setTimeout(local.deal,10000)
+        setTimeout(local.deal,1000)
     }
     //发牌阶段  等待摊牌后进入结算
     local.deal = function(){
@@ -216,7 +218,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
             notify.handCard = player[i].handCard
             local.sendUid(player[i].uid,notify)
         }
-        setTimeout(local.settlement,10000)
+        setTimeout(local.settlement,1000)
     }
 
     //结算阶段
@@ -227,8 +229,16 @@ var GS_SETTLEMENT   = 1004              //结算阶段
             player[i].isReady = false;
         }
         readyCount = 0
+        var result = {}
+        for(var i = 0;i < GAME_PLAYER;i++){
+            result[i] = logic.getType(player[i].handCard);
+            console.log(result[i])
+        }
+
         var notify = {
-          "cmd" : "settlement"
+          "cmd" : "settlement",
+          "player" : player,
+          "result" : result
         }
         local.sendAll(notify)
     }
