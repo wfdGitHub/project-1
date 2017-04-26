@@ -18,7 +18,7 @@ module.exports.getType = function(handCard) {
       var result = {
         "type" : 0,                       
         "card" : {},
-        "award": 0,
+        "award": 1,
         "Comb" : {}
       }
       //先找出最大的单张牌
@@ -62,7 +62,7 @@ module.exports.getType = function(handCard) {
           result.award = 6
           return result 
       }
-      var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10];
+      var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10]
       var allComb = [
         [0,1,2,3,4],
         [0,1,3,2,4],
@@ -78,9 +78,9 @@ module.exports.getType = function(handCard) {
 
       for(var i=0; i<10; ++i){
           if(((__card_val[handCard[allComb[i][0]].num] + __card_val[handCard[allComb[i][1]].num] + __card_val[handCard[allComb[i][2]].num]) % 10) == 0){
-              result.type = COMB_TYPE_NONE + (__card_val[handCard[allComb[i][3]].num] + __card_val[handCard[allComb[i][4]].num]) % 10;
+              result.type = COMB_TYPE_NONE + (__card_val[handCard[allComb[i][3]].num] + __card_val[handCard[allComb[i][4]].num]) % 10
               if(result.type === 0){
-                result.type = COMB_TYPE_OX10;
+                result.type = COMB_TYPE_OX10
                 result.award = 5
               }else if(result.type === 9){
                 result.award = 4
@@ -90,10 +90,20 @@ module.exports.getType = function(handCard) {
                 result.award = 2
               }
               result.Comb = allComb[i]
-              break;
+              break
           }
       }
       return result
  }
 
+//对比手牌   返回true为第一个玩家赢，false为第二个玩家赢
+module.exports.compare = function(result1,result2) {
+    if(result1.type > result2.type){
+        return true
+    }
+    if(result1.type == result2.type && result1.card.num > result2.card.num){
+        return true
+    }
+    return false
+}
  return module

@@ -37,7 +37,7 @@
         console.log(data)
       })
       var send = function(code,msg) {
-          pomelo.request("connector.entryHandler.sendData", {"code" : code,"params" : {"msg" : msg}}, function(data) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : code,"params" : msg}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );

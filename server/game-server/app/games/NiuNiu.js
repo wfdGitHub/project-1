@@ -1,7 +1,9 @@
 var logic = require("./NiuNiuLogic.js")
 
 //常量定义
-var GAME_PLAYER = 1                 //游戏人数
+var GAME_PLAYER = 2                 //游戏人数
+var TID_BETTING = 10000             //下注时间
+var TID_SETTLEMENT = 1000           //结算时间
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
 var GS_BETTING      = 1002              //下注阶段
@@ -174,10 +176,16 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         return
       }
       //判断金钱
-      if(param.betting && typeof(param.betting) == "number" 
-        && param.betting > 0 && param.betting < player[chair].score
-        && player[chair].score / 8 >= (param.betting + betList[chair])){
-        betList[chair] += param.betting
+      if(param.bet && typeof(param.bet) == "number" 
+        && param.bet > 0 && param.bet < player[chair].score
+        && player[chair].score / 8 >= (param.bet + betList[chair])){
+        betList[chair] += param.bet
+        var notify = {
+          "cmd" : "bet",
+          "chair" : chair,
+          "bet" : param.bet
+        }
+        local.sendAll(notify)
         cb(true)
       }else{
         cb(false)
@@ -201,7 +209,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         }
         local.sendAll(notify)
         //定时器启动下一阶段
-        setTimeout(local.deal,1000)
+        setTimeout(local.deal,TID_BETTING)
     }
     //发牌阶段  等待摊牌后进入结算
     local.deal = function(){
@@ -226,7 +234,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
             notify.handCard = player[i].handCard
             local.sendUid(player[i].uid,notify)
         }
-        setTimeout(local.settlement,1000)
+        setTimeout(local.settlement,TID_SETTLEMENT)
     }
 
     //结算阶段
@@ -243,10 +251,22 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         var result = {}
         for(var i = 0;i < GAME_PLAYER;i++){
             result[i] = logic.getType(player[i].handCard); 
-            console.log(result[i])
+            //console.log(result[i])
         }
         //结算闲家积分
-
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(i === banker) continue
+            //比较大小
+            if(logic.compare(result[i],result[banker])){
+                //闲家赢
+                local.changeScore(i,betList[i] * result[i].award)
+                local.changeScore(banker,- (betList[i] * result[i].award))
+            }else{
+                //庄家赢
+                local.changeScore(banker,betList[i] * result[i].award)
+                local.changeScore(i,-(betList[i] * result[i].award))
+            }
+        }
         //结算庄家积分
           
         //发送消息
@@ -257,10 +277,26 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         }
         local.sendAll(notify)
     }
+
+    //积分改变
+    local.changeScore = function(chair,score) {
+      if(player[chair].score + score >= 0){
+          player[chair].score += score;
+          var notify = {
+            "cmd" : "changeScore",
+            "chair" : chair,
+            "difference" : score,
+            "score" : player[chair].score
+          }      
+          local.sendAll(notify)        
+      }
+    }
+
     //广播消息
     local.sendAll = function(notify) {
       room.channel.pushMessage('onMessage',notify)    
     }
+
     //通过uid 单播消息
     local.sendUid = function(uid,notify) {
       var tsid =  room.channel.getMember(uid)['sid']
@@ -276,3 +312,4 @@ var GS_SETTLEMENT   = 1004              //结算阶段
 var log = function(str) {
     console.log("LOG NiuNiu : "+str)
 }
+
