@@ -90,23 +90,24 @@ var GS_SETTLEMENT   = 1004              //结算阶段
       cb(true)
     }
     //玩家离开
-    room.leave = function(uid,sid,param,cb) {
+    room.leave = function(uid) {
       //判断是否在椅子上
       var chair = chairMap[uid]
       if(chair === undefined){
-        cb(false)
         return
       }
       player[chair].isActive = false
       playerCount--
-      room.channel.leave(uid,sid)
+      var tsid =  room.channel.getMember(uid)['sid']
+      if(tsid){
+        room.channel.leave(uid,tsid)
+      }
       var notify = {
         cmd: "userLeave",
         uid: uid,
         chair : chair
       }
       local.sendAll(notify)
-      cb(true)
     }
     //玩家准备
     room.ready = function(uid,sid,param,cb) {

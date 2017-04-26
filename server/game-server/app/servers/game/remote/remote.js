@@ -57,3 +57,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	}
 
 };
+
+
+GameRemote.prototype.kick = function(uid,cb) {
+	console.log("user leave1 : "+uid)
+	if(GameRemote.userMap[uid]){
+		var roomId = GameRemote.userMap[uid]
+		GameRemote.roomList[roomId].leave(uid)
+	}
+};

@@ -34,7 +34,7 @@ handler.enter = function(msg, session, next) {
     }
   });
   console.log("uid : "+session.get("uid"))
-  //session.on('closed', onUserLeave.bind(null, self.app));
+  session.on('closed', onUserLeave.bind(null, self.app));
 
   //put user into channel
     next(null, {
@@ -57,3 +57,13 @@ handler.sendData = function(msg, session, next){
           next(null,{flag : false})
     }
 }
+
+//用户离开事件处理
+var onUserLeave = function(app, session) {
+  console.log("onUserLeave  "+session.uid)
+  //console.log(session)
+  if(!session || !session.uid) {
+    return;
+  }
+  app.rpc.game.remote.kick(session,session.uid,null);
+};
