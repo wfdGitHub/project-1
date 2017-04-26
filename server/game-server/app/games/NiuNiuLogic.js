@@ -18,7 +18,8 @@ module.exports.getType = function(handCard) {
       var result = {
         "type" : 0,                       
         "card" : {},
-        "award": 0
+        "award": 0,
+        "Comb" : {}
       }
       //先找出最大的单张牌
       result.card = handCard[0]
@@ -88,6 +89,7 @@ module.exports.getType = function(handCard) {
               }else if(result.type === 7){
                 result.award = 2
               }
+              result.Comb = allComb[i]
               break;
           }
       }

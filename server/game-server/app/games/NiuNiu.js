@@ -44,7 +44,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
       player[i].isReady = false           //准备状态
       player[i].isBanker = false          //是否为庄家
       player[i].handCard = new Array(5)   //手牌
-      player[i].score = 10000;            //当前金币
+      player[i].score = 10000;            //当前积分
     }
 
     var local = {}                        //私有方法
@@ -168,9 +168,15 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         cb(false)
         return
       }
+      //庄家不能下注
+      if(chair == banker){
+        cb(false)
+        return
+      }
       //判断金钱
-      if(param.betting && typeof(param.betting) == "number" && param.betting > 0 &&
-        player[chair].score >= (param.betting + betList[chair])){
+      if(param.betting && typeof(param.betting) == "number" 
+        && param.betting > 0 && param.betting < player[chair].score
+        && player[chair].score / 8 >= (param.betting + betList[chair])){
         betList[chair] += param.betting
         cb(true)
       }else{
@@ -183,6 +189,8 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         log("gameBegin")
         //状态改变
         gameState = GS_BETTING
+        banker = 0
+        player[0].isBanker = true
         //重置参数
         for(var i = 0;i < GAME_PLAYER;i++){
             betList[i] = 0;
@@ -224,17 +232,24 @@ var GS_SETTLEMENT   = 1004              //结算阶段
     //结算阶段
     local.settlement = function(){
         log("settlement")
+        //房间重置
         gameState = GS_FREE
         for(var i = 0;i < GAME_PLAYER; i++){
             player[i].isReady = false;
         }
         readyCount = 0
+
+        //计算牌型
         var result = {}
         for(var i = 0;i < GAME_PLAYER;i++){
-            result[i] = logic.getType(player[i].handCard);
+            result[i] = logic.getType(player[i].handCard); 
             console.log(result[i])
         }
+        //结算闲家积分
 
+        //结算庄家积分
+          
+        //发送消息
         var notify = {
           "cmd" : "settlement",
           "player" : player,
