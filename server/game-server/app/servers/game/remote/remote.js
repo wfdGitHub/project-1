@@ -10,11 +10,14 @@ var GameRemote = function(app) {
 	GameRemote.channelService = app.get('channelService');
 	//初始化房间
 	for(var i = 1;i < 2;i++){
-		GameRemote.roomList[i] = NiuNiu.createRoom(i,GameRemote.channelService)
+		GameRemote.roomList[i] = NiuNiu.createRoom(i,GameRemote.channelService,roomCallback)
 	}
 	console.log(this.app.get('serverId'))
 };
-
+//房间回调
+var roomCallback = function(roomId) {
+	console.log("room end "+ roomId)
+}
 //房间列表
 GameRemote.roomList = new Array(100);
 //房间状态
