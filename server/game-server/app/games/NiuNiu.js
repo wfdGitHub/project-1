@@ -89,6 +89,25 @@ var GS_SETTLEMENT   = 1004              //结算阶段
       local.sendUid(uid,notify)
       cb(true)
     }
+    //玩家重连
+    room.reconnection = function(uid,sid,param,cb) {
+      console.log("uid : "+uid + "  reconnection")
+      if(chairMap[uid] !== undefined){
+        var chair = chairMap[uid]
+        player[chair].isActive = true
+        player[chair].uid = uid
+        room.channel.add(uid,sid)
+        notify = {
+        cmd : "reconnection",
+        player : player,
+        state : gameState
+      }
+      local.sendUid(uid,notify)
+      cb(true)
+      }else{
+        cb(false)
+      }
+    }
     //玩家离开
     room.leave = function(uid) {
       //判断是否在椅子上
@@ -97,7 +116,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
         return
       }
       player[chair].isActive = false
-      playerCount--
+      //playerCount--
       var tsid =  room.channel.getMember(uid)['sid']
       if(tsid){
         room.channel.leave(uid,tsid)
@@ -254,7 +273,7 @@ var GS_SETTLEMENT   = 1004              //结算阶段
             result[i] = logic.getType(player[i].handCard); 
             //console.log(result[i])
         }
-        //结算闲家积分
+        //结算积分
         for(var i = 0;i < GAME_PLAYER;i++){
             if(i === banker) continue
             //比较大小
@@ -268,7 +287,6 @@ var GS_SETTLEMENT   = 1004              //结算阶段
                 local.changeScore(i,-(betList[i] * result[banker].award))
             }
         }
-        //结算庄家积分
           
         //发送消息
         var notify = {

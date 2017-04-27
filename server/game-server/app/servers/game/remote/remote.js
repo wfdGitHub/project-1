@@ -26,19 +26,21 @@ GameRemote.userMap = {}
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	console.log("code : "+code)
 	//加入房间需要用户不在房间内
-	if(code == "add"){
+	if(code == "join"){
 		if(!GameRemote.userMap[uid]){
 			var roomId = 1
 			GameRemote.roomList[roomId].join(uid,sid,null,function (flag) {
 				if(flag === true){
 					GameRemote.userMap[uid] = roomId;
-					cb(flag)
-				}else{
-					cb(flag)
 				}
+				cb(flag)
 			})
 		}else{
-			cb(false)
+			var roomId = GameRemote.userMap[uid]
+			GameRemote.roomList[roomId].reconnection(uid,sid,null,function(flag) {
+				cb(flag)
+			})
+			
 		}		
 	}else{
 		//用户存在房间内时才执行
