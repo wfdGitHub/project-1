@@ -264,8 +264,8 @@ var GS_SETTLEMENT   = 1004              //结算阶段
                 local.changeScore(banker,- (betList[i] * result[i].award))
             }else{
                 //庄家赢
-                local.changeScore(banker,betList[i] * result[i].award)
-                local.changeScore(i,-(betList[i] * result[i].award))
+                local.changeScore(banker,betList[i] * result[banker].award)
+                local.changeScore(i,-(betList[i] * result[banker].award))
             }
         }
         //结算庄家积分
