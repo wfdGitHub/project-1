@@ -3,7 +3,7 @@ module.exports = function(app) {
 };
 
 var Handler = function(app) {
-		this.app = app;
+	this.app = app;
 };
 
 var handler = Handler.prototype;

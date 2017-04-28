@@ -1,5 +1,5 @@
 var pomelo = require('pomelo');
-
+var NiuNiuService = require("./app/services/NiuNiuService.js")
 /**
  * Init app for client.
  */
@@ -17,6 +17,10 @@ app.configure('production|development', 'connector', function(){
     });
 });
 
+//加载NiuNiuService
+app.configure('production|development', 'game', function() {
+  app.load(NiuNiuService(app))
+});
 // start app
 app.start();
 
