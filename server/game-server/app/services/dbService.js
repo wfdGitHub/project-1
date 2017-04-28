@@ -17,7 +17,7 @@ dbService.prototype.start = function(cb){
 	db.on("ready",function(res) {
 		dbService.db = db
 		dbService.db.get("nn:acc:lastid",function(err,data) {
-			if(err){
+			if(data === null){
 		        console.log("\033[33m[INFO] DataBase check - nn:acc:lastid\033[0m");
 		        db.set("nn:acc:lastid",-1);
     		}
