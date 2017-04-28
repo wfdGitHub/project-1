@@ -24,7 +24,8 @@ handler.enter = function(msg, session, next) {
     });
     return;
   }
-
+  //创建账号
+  self.app.rpc.db.remote.check(session, uid,null);   
   session.bind(uid);
   session.set("uid", uid);
   session.push("uid", function(err) {
