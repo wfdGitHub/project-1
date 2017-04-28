@@ -36,6 +36,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			var roomId = GameRemote.niuniuService.userMap[uid];
 			if(roomId != undefined && GameRemote.niuniuService.roomList[roomId][code] != undefined){
 			    GameRemote.niuniuService.roomList[roomId][code](uid,sid,params,cb)
+			    cb(true)
 			}else{
 			    cb(false)
 			}

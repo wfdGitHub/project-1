@@ -23,6 +23,7 @@ var createAccount = function(uid) {
 
 DBRemote.prototype.check = function(uid,cb) {
 	DBRemote.dbService.getPlayer(uid,"uid",function(data) {
+		console.log("data : "+data)
 		if(data === false){
 			createAccount(uid)
 			console.log("create ok!!")

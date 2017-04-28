@@ -16,8 +16,8 @@ dbService.prototype.start = function(cb){
 	this.app.set("dbService",dbService)
 	db.on("ready",function(res) {
 		dbService.db = db
-		db.get("nn:acc:lastid",function(data) {
-			if(data == null){
+		dbService.db.get("nn:acc:lastid",function(err,data) {
+			if(err){
 		        console.log("\033[33m[INFO] DataBase check - nn:acc:lastid\033[0m");
 		        db.set("nn:acc:lastid",-1);
     		}
@@ -29,7 +29,9 @@ dbService.prototype.start = function(cb){
 
 
 dbService.setPlayer = function(uid,name,value,cb) {
-	dbService.db.set("nn:acc:"+uid+":"+name,value,function(flag) {
+	var cmd = "nn:acc:"+uid+":"+name
+	console.log(cmd + "  data : "+value)		
+	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
 			cb(flag)
 		}
@@ -37,14 +39,17 @@ dbService.setPlayer = function(uid,name,value,cb) {
 }
 
 dbService.getPlayer = function(uid,name,cb) {
-	dbService.db.get("nn:acc:"+uid+":"+name,function(data) {
-		if(data){
-			if(cb){
-				cb(data)
-			}
-		}else{
+	var cmd = "nn:acc:"+uid+":"+name
+	dbService.db.get(cmd,function(err,data) {
+		console.log(cmd + "  data : "+data)
+		if(err){
 			if(cb){
 				cb(false)
+			}
+
+		}else{
+			if(cb){
+				cb(data)
 			}
 		}
 	})
