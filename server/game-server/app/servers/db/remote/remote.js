@@ -28,6 +28,6 @@ DBRemote.prototype.check = function(uid,cb) {
 			createAccount(uid)
 			console.log("create ok!!")
 		}
-		cb()
+		cb(true)
 	})
 }

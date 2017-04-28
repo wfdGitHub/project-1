@@ -5,6 +5,7 @@ module.exports = function(app) {
 var Handler = function(app) {
   this.app = app;
   this.sessionService = this.app.get('sessionService');
+  this.channelService = this.app.get('channelService');
   this.loginUser = {};
 };
 
@@ -24,8 +25,6 @@ handler.enter = function(msg, session, next) {
     });
     return;
   }
-  //创建账号
-  self.app.rpc.db.remote.check(session, uid,null);   
   session.bind(uid);
   session.set("uid", uid);
   session.push("uid", function(err) {
@@ -35,6 +34,24 @@ handler.enter = function(msg, session, next) {
   });
   console.log("uid : "+session.get("uid"))
   session.on('closed', onUserLeave.bind(null, self.app));
+  //检查账号  账号不存在则创建
+  self.app.rpc.db.remote.check(session, uid,function(data) {
+      if(data){
+        var notify = {
+          cmd : "userInfo",
+          uid : uid,
+          diamond : 10,
+          head : 0,
+          nickName : "nickName"+uid
+        }
+        self.channelService.pushMessageByUids('onMessage', notify, [{
+        uid: uid,
+        sid: "connector-server-1"
+      }]);
+      }
+
+  });   
+
 
   //put user into channel
     next(null, {
