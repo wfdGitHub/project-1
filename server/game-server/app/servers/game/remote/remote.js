@@ -29,6 +29,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			})
 			
 		}		
+	}else if(code == "newRoom"){
+		if(!GameRemote.niuniuService.userMap[uid]){
+			var roomId = 1
+			GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
+				if(flag === true){
+					GameRemote.niuniuService.userMap[uid] = roomId;
+				}
+				cb(flag)
+			})
+		}else{
+			cb(false)
+		}
 	}else{
 		//用户存在房间内时才执行
 		console.log("room id : " + GameRemote.niuniuService.userMap[uid])

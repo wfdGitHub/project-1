@@ -28,7 +28,7 @@
           log: true
         }, function() {
           pomelo.request("connector.entryHandler.enter", {"uid" : 1001}, function(data) {
-              send("join")
+              
           });
         });
       }
@@ -38,6 +38,13 @@
       })
       var send = function(code,msg) {
           pomelo.request("connector.entryHandler.sendData", {"code" : code,"params" : msg}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+      var newRoom = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 1,
+            consumeMode: 1,gameNumber: 10}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );

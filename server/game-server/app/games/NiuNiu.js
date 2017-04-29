@@ -1,7 +1,7 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 2                 //游戏人数
-var TID_BETTING = 10000             //下注时间
+var GAME_PLAYER = 1                 //游戏人数
+var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
@@ -10,20 +10,33 @@ var GS_DEAL         = 1003              //发牌阶段
 var GS_SETTLEMENT   = 1004              //结算阶段
 
 
+var MODE_BANKER_ROB   = 1              //随机抢庄
+var MODE_BANKER_HOST  = 2              //房主做庄
+var MODE_BANKER_ORDER = 3              //轮庄
+var MODE_BANKER_NONE  = 4              //开船模式 无庄
+var MODE_BANKER_SHOW  = 5              //看牌抢庄
+
+var MODE_DIAMOND_HOST = 1              //房主扣钻
+var MODE_DIAMOND_EVERY = 2             //每人扣钻
+var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
 module.exports.createRoom = function(roomId,channelService,cb) {
-
   console.log("createRoom"+roomId)
   var room = {}
   room.roomId = roomId
   room.channel = channelService.getChannel(roomId,true)
-
+  //房间参数
+  room.gameMode = 0                    //游戏模式
+  room.gameNumber = 0                  //游戏局数
+  room.consumeMode = 0                 //消耗模式
   //房间属性
+  room.state = true                    //房间状态，true为可创建
   room.playerCount  = 0                //房间内玩家人数
   var readyCount = 0                   //游戏准备人数
   var gameState = GS_FREE              //游戏状态
   room.chairMap = {}                   //玩家UID与椅子号映射表
   var banker = -1                      //庄家椅子号
+  var roomHost = -1                    //房主椅子号
   //游戏属性
   var cards = {}                       //牌组
   var cardCount = 0                    //卡牌剩余数量
@@ -49,10 +62,49 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
 
   var local = {}                        //私有方法
+  //创建房间
+  room.newRoom = function(uid,sid,param,cb) {
+    log("newRoom"+uid)
+      //无效条件判断
+    if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 5 || param.gameMode < 0){
+      log("newRoom error   param.gameMode : "+param.gameMode)
+      cb(false)
+      return
+    }
+    if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
+      log("newRoom error   param.consumeMode : "+param.consumeMode)
+      cb(false)
+      return
+    }
+    if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+      log("newRoom error   param.gameNumber : "+param.gameNumber)
+      cb(false)
+      return
+    }    
+    if(room.state === true){
+      room.state = false
+      room.playerCount  = 0            //房间内玩家人数
+      readyCount = 0                   //游戏准备人数
+      gameState = GS_FREE              //游戏状态
+      room.chairMap = {}               //玩家UID与椅子号映射表
+      banker = 0                       //庄家椅子号
+      roomHost = 0                     //房主椅子号
+      room.gameMode = param.gameMode                     //游戏模式
+      room.gameNumber = param.gameNumber                 //游戏局数
+      room.consumeMode = param.consumeMode               //消耗模式
+      room.join(uid,sid,null,cb)
+    }else{
+      cb(false)
+    }
+  }
   //玩家加入
   room.join = function(uid,sid,param,cb) {
     log("serverId"+sid)
-    
+    //房间未创建不可加入
+    if(room.state == true){
+      cb(false)
+      return
+    }
     //查找空闲位置
     var chair = -1
     for(var i = 0;i < GAME_PLAYER;i++){
@@ -213,9 +265,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //游戏开始 进入下注阶段
   local.gameBegin = function() {
+    if(room.gameNumber > 0){
       log("gameBegin")
+      room.gameNumber--
       //状态改变
       gameState = GS_BETTING
+      //确定庄家
       banker = 0
       player[0].isBanker = true
       //重置参数
@@ -229,6 +284,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       local.sendAll(notify)
       //定时器启动下一阶段
       setTimeout(local.deal,TID_BETTING)
+    }else{
+      //总结算
+      room.state = true
+      var notify = {
+        "cmd" : "gameOver"
+      }
+      local.sendAll(notify)
+    }
+
   }
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
@@ -296,7 +360,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       local.sendAll(notify)
 
       //结束游戏
-      cb(room.roomId)
+      //cb(room.roomId)
   }
 
   //积分改变
@@ -315,7 +379,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //广播消息
   local.sendAll = function(notify) {
-    room.channel.pushMessage('onMessage',notify)    
+    room.channel.pushMessage('onMessage',notify)
   }
 
   //通过uid 单播消息
