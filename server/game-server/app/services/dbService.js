@@ -30,7 +30,7 @@ dbService.prototype.start = function(cb){
 
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	console.log(cmd + "  data : "+value)		
+	console.log(cmd + "  data : "+value)	
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
 			cb(flag)
@@ -49,7 +49,7 @@ dbService.getPlayer = function(uid,name,cb) {
 
 		}else{
 			if(cb){
-				cb(data)
+				cb(parseInt(data))
 			}
 		}
 	})

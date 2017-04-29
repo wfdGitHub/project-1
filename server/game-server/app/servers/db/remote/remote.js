@@ -28,6 +28,29 @@ DBRemote.prototype.check = function(uid,cb) {
 			createAccount(uid)
 			console.log("create ok!!")
 		}
-		cb(true)
+		if(cb){
+			cb(true)
+		}
 	})
+}
+
+DBRemote.prototype.setValue = function(uid,name,value,cb) {
+	console.log("uid : "+uid+" name : "+name+ " value : "+value)
+	DBRemote.dbService.getPlayer(uid,name,function(data) {
+		if(data != null){
+			//console.log("data : "+data)
+			//console.log('value :'+value)
+			value = parseInt(data) + parseInt(value)
+			//console.log('value :'+value)
+			DBRemote.dbService.setPlayer(uid,name,value,cb)
+		}else{
+			if(cb){
+				cb(false)
+			}
+		}
+	})
+}
+
+DBRemote.prototype.getValue = function(uid,name,cb) {
+	DBRemote.dbService.getPlayer(uid,name,cb)
 }

@@ -1,7 +1,7 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
 var GAME_PLAYER = 1                 //游戏人数
-var TID_BETTING = 1000              //下注时间
+var TID_BETTING = 10000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
@@ -29,6 +29,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.gameMode = 0                    //游戏模式
   room.gameNumber = 0                  //游戏局数
   room.consumeMode = 0                 //消耗模式
+  room.needDiamond = 0                 //钻石基数
   //房间属性
   room.state = true                    //房间状态，true为可创建
   room.playerCount  = 0                //房间内玩家人数
@@ -58,7 +59,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     player[i].isReady = false           //准备状态
     player[i].isBanker = false          //是否为庄家
     player[i].handCard = new Array(5)   //手牌
-    player[i].score = 10000;            //当前积分
+    player[i].score = 0;                //当前积分
   }
 
   var local = {}                        //私有方法
@@ -87,11 +88,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       readyCount = 0                   //游戏准备人数
       gameState = GS_FREE              //游戏状态
       room.chairMap = {}               //玩家UID与椅子号映射表
-      banker = 0                       //庄家椅子号
+      banker = -1                      //庄家椅子号
       roomHost = 0                     //房主椅子号
       room.gameMode = param.gameMode                     //游戏模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
+      room.needDiamond = Math.ceil(room.gameNumber / 10)
       room.join(uid,sid,null,cb)
     }else{
       cb(false)
@@ -271,28 +273,33 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //状态改变
       gameState = GS_BETTING
       //确定庄家
-      banker = 0
-      player[0].isBanker = true
+      console.log("room.gameMode : "+room.gameModee)
+      switch(room.gameMode){
+        case MODE_BANKER_ROB:
+          banker = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
+          break
+        case MODE_BANKER_ORDER:
+          banker = (banker + 1)%GAME_PLAYER
+          break
+        case MODE_DIAMOND_HOST:
+          banker = roomHost
+          break;
+      }
       //重置参数
       for(var i = 0;i < GAME_PLAYER;i++){
           betList[i] = 0;
+          player[i].isBanker = false
       }
+      console.log("banker : "+banker)
+      player[banker].isBanker = true
       //通知客户端
       var notify = {
         "cmd": "beginBetting"
       }
       local.sendAll(notify)
       //定时器启动下一阶段
-      setTimeout(local.deal,TID_BETTING)
-    }else{
-      //总结算
-      room.state = true
-      var notify = {
-        "cmd" : "gameOver"
-      }
-      local.sendAll(notify)
+      setTimeout(local.deal,TID_BETTING)      
     }
-
   }
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
@@ -358,9 +365,16 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         "result" : result
       }
       local.sendAll(notify)
-
-      //结束游戏
-      //cb(room.roomId)
+      if(room.gameNumber <= 0){
+        //总结算
+        room.state = true
+        var notify = {
+          "cmd" : "gameOver"
+        }
+        local.sendAll(notify)
+        //结束游戏
+        cb(room.roomId,player)
+    }
   }
 
   //积分改变
