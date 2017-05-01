@@ -34,24 +34,21 @@ handler.enter = function(msg, session, next) {
   });
   console.log("uid : "+session.get("uid"))
   session.on('closed', onUserLeave.bind(null, self.app));
-  //检查账号  账号不存在则创建
-  self.app.rpc.db.remote.check(session, uid,function(data) {
-      if(data){
-        var notify = {
-          cmd : "userInfo",
-          uid : uid,
-          diamond : 10,
-          head : 0,
-          nickName : "nickName"+uid
-        }
-        self.channelService.pushMessageByUids('onMessage', notify, [{
+    //检查账号  账号不存在则创建
+    self.app.rpc.db.remote.check(session, uid,function(flag) {
+
+    });   
+    //获取玩家信息
+    self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
+      var notify = {
+        cmd : "userInfo",
+        data : data
+      }
+      self.channelService.pushMessageByUids('onMessage', notify, [{
         uid: uid,
         sid: "connector-server-1"
       }]);
-      }
-
-  });   
-
+    })
 
   //put user into channel
     next(null, {

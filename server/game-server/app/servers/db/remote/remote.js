@@ -13,11 +13,19 @@ var DBRemote = function(app) {
 }
 
 var createAccount = function(uid) {
-	DBRemote.dbService.setPlayer(uid,"diamond",10)
-	DBRemote.dbService.setPlayer(uid,"nickname","name"+uid)
-	DBRemote.dbService.setPlayer(uid,"score",0)
-	DBRemote.dbService.setPlayer(uid,"head",0)
-	DBRemote.dbService.setPlayer(uid,"uid",uid)
+	var notify = {}
+	notify.uid = uid
+	notify.head = 0
+	notify.score = 0
+	notify.nickname = "name"+uid
+	notify.diamond = 100
+	DBRemote.dbService.setPlayer(uid,"diamond",notify.diamond)
+	DBRemote.dbService.setPlayer(uid,"nickname",notify.nickname)
+	DBRemote.dbService.setPlayer(uid,"score",notify.score)
+	DBRemote.dbService.setPlayer(uid,"head",notify.head)
+	DBRemote.dbService.setPlayer(uid,"uid",notify.uid)
+
+	cb(true)
 }
 
 
@@ -25,15 +33,18 @@ DBRemote.prototype.check = function(uid,cb) {
 	DBRemote.dbService.getPlayer(uid,"uid",function(data) {
 		console.log("data : "+data)
 		if(!data){
-			createAccount(uid)
+			createAccount(uid,cb)
 			console.log("create ok!!")
-		}
-		if(cb){
-			cb(true)
+		}else{
+			if(cb){
+				cb(true)
+			}
 		}
 	})
 }
-
+DBRemote.prototype.getPlayerInfo = function(uid,cb) {
+	DBRemote.dbService.getPlayerInfo(uid,cb)
+}
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	DBRemote.dbService.getPlayer(uid,name,function(data) {

@@ -27,7 +27,27 @@ dbService.prototype.start = function(cb){
 	cb()
 }
 
+dbService.getPlayerInfo = function(uid,cb) {
+	var cmd1 = "nn:acc:"+uid+":"+"diamond"
+	var cmd2 = "nn:acc:"+uid+":"+"uid"
+	var cmd3 = "nn:acc:"+uid+":"+"nickname"
+	var cmd4 = "nn:acc:"+uid+":"+"score"
+	var cmd5 = "nn:acc:"+uid+":"+"head"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,function(err,data) {
+		if(!err){
+			var notify = {}
+			notify["diamond"] = data[0]
+			notify["uid"] = data[1]
+			notify["nickname"] = data[2]
+			notify["score"] = data[3]
+			notify["head"] = data[4]
+			cb(notify)
+		}else{
+			cb(false)
+		}
+	})
 
+}
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
 	console.log(cmd + "  data : "+value)	

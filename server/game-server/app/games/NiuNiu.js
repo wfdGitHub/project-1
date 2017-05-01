@@ -1,7 +1,7 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
 var GAME_PLAYER = 1                 //游戏人数
-var TID_BETTING = 10000              //下注时间
+var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
@@ -53,13 +53,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var  player = {}
   for(var i = 0;i < GAME_PLAYER;i++){
     player[i] = {}
-    player[i].chair = i;                //椅子号
-    player[i].uid = 0;                  //uid
+    player[i].chair = i                 //椅子号
+    player[i].uid = 0                   //uid
     player[i].isActive = false          //当前椅子上是否有人
     player[i].isReady = false           //准备状态
     player[i].isBanker = false          //是否为庄家
     player[i].handCard = new Array(5)   //手牌
-    player[i].score = 0;                //当前积分
+    player[i].score = 0                 //当前积分
+    player[i].bankerCount = 0           //坐庄次数
+    player[i].cardsList  = {}           //总战绩列表
   }
 
   var local = {}                        //私有方法
@@ -90,6 +92,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.chairMap = {}               //玩家UID与椅子号映射表
       banker = -1                      //庄家椅子号
       roomHost = 0                     //房主椅子号
+      room.runCount = 0                //当前游戏局数
       room.gameMode = param.gameMode                     //游戏模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
@@ -285,6 +288,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           banker = roomHost
           break;
       }
+      player[banker].bankerCount++;
       //重置参数
       for(var i = 0;i < GAME_PLAYER;i++){
           betList[i] = 0;
@@ -341,37 +345,58 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       var result = {}
       for(var i = 0;i < GAME_PLAYER;i++){
           result[i] = logic.getType(player[i].handCard); 
-          //console.log(result[i])
+          player[i].cardsList[room.runCount] = result[i]
       }
       //结算积分
+      var curScores = new Array(GAME_PLAYER)
+      for(var i = 0;i < GAME_PLAYER;i++){
+        curScores[i] = 0
+      }
       for(var i = 0;i < GAME_PLAYER;i++){
           if(i === banker) continue
           //比较大小
           if(logic.compare(result[i],result[banker])){
               //闲家赢
-              local.changeScore(i,betList[i] * result[i].award)
-              local.changeScore(banker,- (betList[i] * result[i].award))
+              curScores[i] += betList[i] * result[i].award
+              curScores[banker] -= betList[i] * result[i].award
+              // local.changeScore(i,betList[i] * result[i].award)
+              // local.changeScore(banker,- (betList[i] * result[i].award))
           }else{
               //庄家赢
-              local.changeScore(banker,betList[i] * result[banker].award)
-              local.changeScore(i,-(betList[i] * result[banker].award))
+              curScores[i] -= betList[i] * result[banker].award
+              curScores[banker] += betList[i] * result[banker].award
+              // local.changeScore(banker,betList[i] * result[banker].award)
+              // local.changeScore(i,-(betList[i] * result[banker].award))
           }
       }
-        
+      for(var i = 0;i < GAME_PLAYER;i++){
+          local.changeScore(i,curScores[i])
+      }
+      room.runCount++
       //发送消息
       var notify = {
         "cmd" : "settlement",
         "player" : player,
-        "result" : result
+        "result" : result,
+        "curScores" : curScores
       }
       local.sendAll(notify)
       if(room.gameNumber <= 0){
         //总结算
         room.state = true
         var notify = {
-          "cmd" : "gameOver"
+          "cmd" : "gameOver",
+          "player" : player
         }
+
         local.sendAll(notify)
+        //房间清空
+        for(var i = 0;i < GAME_PLAYER;i++){
+          player[i].bankerCount = 0
+          player[i].cardsList = {}
+          player[i].score = 0
+        }
+        room.runCount = 0
         //结束游戏
         cb(room.roomId,player)
     }
