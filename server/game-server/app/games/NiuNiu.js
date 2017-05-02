@@ -140,7 +140,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     room.channel.add(uid,sid)
     notify = {
       cmd : "roomPlayer",
-      player:player
+      player:player,
+      gameMode : room.gameMode,
+      gameNumber : room.gameNumber,
+      consumeMode : room.consumeMode
     }
     local.sendUid(uid,notify)
     cb(true)
@@ -298,7 +301,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[banker].isBanker = true
       //通知客户端
       var notify = {
-        "cmd": "beginBetting"
+        cmd : "beginBetting",
+        banker : banker
       }
       local.sendAll(notify)
       //定时器启动下一阶段
