@@ -1,9 +1,9 @@
 //var gameHandle = require('../handler/handle');
-var GAME_PLAYER = 1                 //游戏人数
+var GAME_PLAYER = 1                    //游戏人数
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
-
+var ROOM_AMOUNT      = 10			   //房间数量
 var NiuNiu = require("../games/NiuNiu.js")
 module.exports = function(app) {
   return new NiuNiuService(app);
@@ -17,8 +17,7 @@ NiuNiuService.name = "NiuNiuService"
 //房间回调
 var roomCallback = function(roomId,players) {
 	console.log("room end "+ roomId)
-	//console.log(players)
-	//console.log(NiuNiuService.app)
+	NiuNiuService.roomState = true
 	//扣除钻石
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
 	switch(NiuNiuService.roomList[roomId].consumeMode){
@@ -48,18 +47,30 @@ var roomCallback = function(roomId,players) {
 	}
 }
 //房间列表
-NiuNiuService.roomList = new Array(10);
+NiuNiuService.roomList = new Array(ROOM_AMOUNT);
 //房间状态
-NiuNiuService.roomState = new Array(10);
+NiuNiuService.roomState = new Array(ROOM_AMOUNT);
 //用户房间映射表
 NiuNiuService.userMap = {}		
 
 NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
-	for(var i = 1;i < 2;i++){
+
+	for(var i = 0;i < ROOM_AMOUNT;i++){
 		NiuNiuService.roomList[i] = NiuNiu.createRoom(i,NiuNiuService.channelService,roomCallback)
+		NiuNiuService.roomState[i] = true
 	}
 	this.app.set("NiuNiuService",NiuNiuService)
 	cb()
+}
+
+//找到闲置房间
+NiuNiuService.getUnusedRoom = function() {
+	for(var i = 0;i < ROOM_AMOUNT;i++){
+		if(NiuNiuService.roomState[i] == true){
+			return i
+		}
+	}
+	return false
 }

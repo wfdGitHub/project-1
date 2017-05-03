@@ -1,6 +1,6 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 1                 //游戏人数
+var GAME_PLAYER = 2                 //游戏人数
 var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 //游戏状态
@@ -143,7 +143,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player:player,
       gameMode : room.gameMode,
       gameNumber : room.gameNumber,
-      consumeMode : room.consumeMode
+      consumeMode : room.consumeMode,
+      roomId : room.roomId
     }
     local.sendUid(uid,notify)
     cb(true)

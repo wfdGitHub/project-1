@@ -12,7 +12,7 @@ var DBRemote = function(app) {
     
 }
 
-var createAccount = function(uid) {
+var createAccount = function(uid,cb) {
 	var notify = {}
 	notify.uid = uid
 	notify.head = 0

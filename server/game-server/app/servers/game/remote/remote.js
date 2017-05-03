@@ -15,7 +15,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	//加入房间需要用户不在房间内
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
-			var roomId = 1
+			var roomId = params.roomId
 			GameRemote.niuniuService.roomList[roomId].join(uid,sid,null,function (flag) {
 				if(flag === true){
 					GameRemote.niuniuService.userMap[uid] = roomId;
@@ -27,24 +27,30 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			GameRemote.niuniuService.roomList[roomId].reconnection(uid,sid,null,function(flag) {
 				cb(flag)
 			})
-			
 		}		
 	}else if(code == "newRoom"){
-		if(!GameRemote.niuniuService.userMap[uid]){
-			var roomId = 1
-			GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
-				if(flag === true){
-					GameRemote.niuniuService.userMap[uid] = roomId;
-				}
-				cb(flag)
-			})
+		//用户不存在于房间内，且房间未开启
+		var roomId = GameRemote.niuniuService.getUnusedRoom()
+		if(roomId !== false){		
+			if(!GameRemote.niuniuService.userMap[uid]){
+				//找到空闲房间ID
+					GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
+						if(flag === true){
+							GameRemote.niuniuService.userMap[uid] = roomId;
+							GameRemote.niuniuService.roomState[roomId] = false;
+						}
+						cb(flag)
+					})
+			}else{
+				cb(false)
+			}
 		}else{
 			cb(false)
 		}
 	}else{
 		//用户存在房间内时才执行
 		console.log("room id : " + GameRemote.niuniuService.userMap[uid])
-		if(!!GameRemote.niuniuService.userMap[uid]){
+		if(GameRemote.niuniuService.userMap[uid] !== undefined){
 			var roomId = GameRemote.niuniuService.userMap[uid];
 			if(roomId != undefined && GameRemote.niuniuService.roomList[roomId][code] != undefined){
 			    GameRemote.niuniuService.roomList[roomId][code](uid,sid,params,cb)
