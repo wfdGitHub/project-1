@@ -1,8 +1,11 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 2                 //游戏人数
+var GAME_PLAYER = 1                 //游戏人数
+var TID_ROB_TIME = 10000            //抢庄时间
 var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
+
+var MING_CARD_NUM = 4               //明牌数量
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
 var GS_BETTING      = 1002              //下注阶段
@@ -28,6 +31,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var room = {}
   room.roomId = roomId
   room.channel = channelService.getChannel(roomId,true)
+  //房间初始化
+  //local.init()
   //房间参数
   room.gameMode = 0                    //游戏模式
   room.gameNumber = 0                  //游戏局数
@@ -43,6 +48,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
   //游戏属性
+  var robState = new Array(GAME_PLAYER) //抢庄状态记录
   var cards = {}                       //牌组
   var cardCount = 0                    //卡牌剩余数量
   for(var i = 1;i <= 13;i++){
@@ -74,7 +80,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
       //无效条件判断
-    if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 5 || param.gameMode < 0){
+    if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 4 || param.gameMode < 0){
       log("newRoom error   param.gameMode : "+param.gameMode)
       cb(false)
       return
@@ -84,6 +90,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }
+    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || param.bankerMode > 3 || param.bankerMode < 0){
+      log("newRoom error   param.bankerMode : "+param.bankerMode)
+      cb(false)
+      return
+    }       
     if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
       log("newRoom error   param.gameNumber : "+param.gameNumber)
       cb(false)
@@ -103,8 +114,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)
-      //房间初始化
-      local.init()
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
@@ -283,15 +292,115 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
 
   }
-  //定庄阶段
+  //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
-    
+    switch(room.bankerMode){
+      case MODE_BANKER_ROB :
+        //初始化抢庄状态为false
+        for(var i = 0; i < GAME_PLAYER;i++){
+          robState[i] = false
+        }
+        //抢庄
+        setTimeout(local.endRob,TID_ROB_TIME)    
+        break
+      case MODE_BANKER_ORDER :
+        //轮庄
+        banker = (banker + 1)%GAME_PLAYER
+
+        local.gameBegin()
+        break
+      case MODE_BANKER_HOST :
+        //房主当庄
+        banker = roomHost
+
+        local.gameBegin()
+        break
+      default:
+
+        local.gameBegin()
+        break
+    }
+  }
+
+  //结束抢庄
+  local.endRob = function() {
+    //统计抢庄人数
+    var num = 0
+    for(var i = 0; i < GAME_PLAYER;i++){
+      if(robState[i] == true){
+        num++
+      }
+    }
+    //无人抢庄从所有玩家中随机
+    if(num == 0){
+      num = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
+    }else{
+      //随机出一个庄家
+      var index = Math.floor(Math.random() * num)%num
+      num = 0
+      for(var i = 0; i < GAME_PLAYER;i++){
+        if(robState[i] == true){
+          if(num == index){
+            break;
+          }else{
+            num++
+          }
+        }
+      }      
+    }
+
+    banker = num
+
     local.gameBegin()
   }
-  //游戏开始 进入下注阶段
+
+  //游戏开始
   local.gameBegin = function() {
+    log("gameBegin")
+    //重置庄家信息
+    for(var i = 0;i < GAME_PLAYER;i++){
+        betList[i] = 0;
+        player[i].isBanker = false
+    }
+    console.log("banker : "+banker)
+    player[banker].isBanker = true
+    //提前发牌
+    //洗牌
+    for(var i = 0;i < cardCount;i++){
+      var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+      var tmpCard = cards[i]
+      cards[i] = cards[tmpIndex]
+      cards[tmpIndex] = tmpCard
+    }
+    //发牌
+    var index = 0;
+    for(var i = 0;i < GAME_PLAYER;i++){
+        for(var j = 0;j < 5;j++){
+            player[i].handCard[j] = cards[index++];
+        }
+    }
+
+    //明牌模式发牌
+    if(room.gameMode == MODE_GAME_MING){
+      var notify = {
+        "cmd" : "MingCard"
+      }
+      for(var i = 0;i < GAME_PLAYER;i++){
+        var tmpCards = {}
+        for(var j = 0;j < MING_CARD_NUM;j++){
+            tmpCards[j] = player[i].handCard[j];
+        }
+        notify.Cards = tmpCards
+        local.sendUid(player[i].uid,notify)    
+      }
+    }
+    //进入下注
+    local.betting()
+  }
+  //下注阶段
+  local.betting = function() {
     if(room.gameNumber > 0){
-      log("gameBegin")
+      log("betting")
       room.gameNumber--
       //状态改变
       gameState = GS_BETTING
@@ -309,13 +418,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //     break;
       // }
       // player[banker].bankerCount++;
-      //重置参数
-      for(var i = 0;i < GAME_PLAYER;i++){
-          betList[i] = 0;
-          player[i].isBanker = false
-      }
-      console.log("banker : "+banker)
-      player[banker].isBanker = true
+
       //通知客户端
       var notify = {
         cmd : "beginBetting",
@@ -330,22 +433,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   local.deal = function(){
       log("deal")
       gameState = GS_BETTING
-      //洗牌
-      for(var i = 0;i < cardCount;i++){
-        var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-        var tmpCard = cards[i]
-        cards[i] = cards[tmpIndex]
-        cards[tmpIndex] = tmpCard
-      }
       var notify = {
         "cmd" : "deal"
       }
       //发牌
-      var index = 0;
       for(var i = 0;i < GAME_PLAYER;i++){
-          for(var j = 0;j < 5;j++){
-              player[i].handCard[j] = cards[index++];
-          }
           notify.handCard = player[i].handCard
           local.sendUid(player[i].uid,notify)
       }
