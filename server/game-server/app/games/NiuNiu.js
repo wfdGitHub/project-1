@@ -9,13 +9,16 @@ var GS_BETTING      = 1002              //下注阶段
 var GS_DEAL         = 1003              //发牌阶段
 var GS_SETTLEMENT   = 1004              //结算阶段
 
-
+//游戏模式
+var MODE_GAME_NORMAL = 1              //常规模式
+var MODE_GAME_MING   = 2              //明牌模式
+var MODE_GAME_BULL   = 3              //斗公牛模式
+var MODE_GAME_SHIP   = 4              //开船模式
+//定庄模式
 var MODE_BANKER_ROB   = 1              //随机抢庄
 var MODE_BANKER_HOST  = 2              //房主做庄
 var MODE_BANKER_ORDER = 3              //轮庄
-var MODE_BANKER_NONE  = 4              //开船模式 无庄
-var MODE_BANKER_SHOW  = 5              //看牌抢庄
-
+//消耗模式
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
@@ -29,6 +32,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.gameMode = 0                    //游戏模式
   room.gameNumber = 0                  //游戏局数
   room.consumeMode = 0                 //消耗模式
+  room.bankerMode  = 0                 //定庄模式
   room.needDiamond = 0                 //钻石基数
   //房间属性
   room.state = true                    //房间状态，true为可创建
@@ -95,9 +99,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       roomHost = 0                     //房主椅子号
       room.runCount = 0                //当前游戏局数
       room.gameMode = param.gameMode                     //游戏模式
+      room.bankerMode = param.bankerMode                 //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)
+      //房间初始化
+      local.init()
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
@@ -218,7 +225,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     local.sendAll(notify)
     //准备人数等于房间人数时，游戏开始
     if(readyCount == GAME_PLAYER){
-        local.gameBegin();
+        //进入定庄阶段
+        local.chooseBanker()
     }
     cb(true)
   }
@@ -275,6 +283,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
 
   }
+  //定庄阶段
+  local.chooseBanker = function() {
+    
+    local.gameBegin()
+  }
   //游戏开始 进入下注阶段
   local.gameBegin = function() {
     if(room.gameNumber > 0){
@@ -283,19 +296,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //状态改变
       gameState = GS_BETTING
       //确定庄家
-      console.log("room.gameMode : "+room.gameModee)
-      switch(room.gameMode){
-        case MODE_BANKER_ROB:
-          banker = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
-          break
-        case MODE_BANKER_ORDER:
-          banker = (banker + 1)%GAME_PLAYER
-          break
-        case MODE_DIAMOND_HOST:
-          banker = roomHost
-          break;
-      }
-      player[banker].bankerCount++;
+      // console.log("room.gameMode : "+room.gameModee)
+      // switch(room.gameMode){
+      //   case MODE_BANKER_ROB:
+      //     banker = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
+      //     break
+      //   case MODE_BANKER_ORDER:
+      //     banker = (banker + 1)%GAME_PLAYER
+      //     break
+      //   case MODE_DIAMOND_HOST:
+      //     banker = roomHost
+      //     break;
+      // }
+      // player[banker].bankerCount++;
       //重置参数
       for(var i = 0;i < GAME_PLAYER;i++){
           betList[i] = 0;
@@ -436,6 +449,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       uid: uid,
       sid: tsid
     }]);
+  }
+
+  //房间初始化
+  local.init = function() {
+    
   }
   return room 
 }
