@@ -64,6 +64,11 @@ handler.sendData = function(msg, session, next){
     var uid = session.get("uid")
     console.log("uid : "+uid)
     if(!!uid){
+        if(msg.code == "join" || msg.code == "newRoom"){
+          if(msg.params){
+            msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
+          }
+        }
         self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag){
             next(null,{flag : flag});
         });   

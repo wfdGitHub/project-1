@@ -62,6 +62,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     player[i].score = 0                 //当前积分
     player[i].bankerCount = 0           //坐庄次数
     player[i].cardsList  = {}           //总战绩列表
+    player[i].ip  = undefined           //玩家ip地址
   }
 
   var local = {}                        //私有方法
@@ -97,7 +98,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)
-      room.join(uid,sid,null,cb)
+      room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
     }
@@ -127,6 +128,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     room.chairMap[uid] = chair
     player[chair].isActive = true
     player[chair].uid = uid
+    player[chair].ip = param.ip
     //玩家数量增加
     room.playerCount++
 
@@ -221,7 +223,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     cb(true)
   }
   //发送聊天
-  room.send = function(uid,sid,param,cb) {
+  room.say = function(uid,sid,param,cb) {
     //判断是否在椅子上
     var chair = room.chairMap[uid]
     if(chair == undefined){
@@ -230,9 +232,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }    
     log("sendMsg")
     var notify = {
-      "cmd": "userSend",
-      "uid": uid,
-      "msg": param.msg
+      cmd : "sayMsg",
+      uid : uid,
+      chair : chair,
+      msg : param.msg
     }
     local.sendAll(notify)
     cb(true)

@@ -4,9 +4,9 @@ module.exports = function(app) {
 };
 
 var GameRemote = function(app) {
-	this.app = app;
+	this.app = app
+	GameRemote.app = app
 	GameRemote.niuniuService = this.app.get("NiuNiuService")
-	//console.log(this.niuniuService)
 };
 
 
@@ -16,7 +16,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
 			var roomId = params.roomId
-			GameRemote.niuniuService.roomList[roomId].join(uid,sid,null,function (flag) {
+			var ip = params.ip;
+			GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip},function (flag) {
 				if(flag === true){
 					GameRemote.niuniuService.userMap[uid] = roomId;
 				}
