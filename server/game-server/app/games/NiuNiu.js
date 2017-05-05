@@ -347,6 +347,25 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }      
     }
   }
+  room.showCard = function(uid,sid,param,cb) {
+    //游戏状态为GS_DEAL
+    if(gameState !== GS_DEAL){
+      cb(false)
+      return
+    }
+    //判断是否在椅子上
+    var chair = room.chairMap[uid]
+    if(chair === undefined){
+      cb(false)
+      return
+    }
+    var notify = {
+      "cmd": "showCard",
+      "chair" : chair
+    }
+    local.sendAll(notify)
+
+  }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
     gameState = GS_ROB_BANKER
