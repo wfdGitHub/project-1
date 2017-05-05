@@ -581,11 +581,40 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             }            
           break
         case MODE_GAME_SHIP : 
-          
+          //开船模式先收集所有人的下注，再按从大到小赔付
+          //先减去下注额
+          var tmpAllBet = 0
+          for(var i = 0;i < GAME_PLAYER;i++){
+            curScores[i] -= betList[i]
+            tmpAllBet += betList[i]
+          }
+          //排序
+          var tmpUidList = new Array(GAME_PLAYER)
+          for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
+
+          for(var i = 0;i < GAME_PLAYER;i++){
+            for(var j = i+1;j < GAME_PLAYER;j++){
+              if(!logic.compare(result[i],result[j])){
+                 var tmpResult = result[i]
+                 result[i] = result[j]
+                 result[j] = tmpResult
+                 var tmpUid = tmpUidList[i]
+                 tmpUidList[i] = tmpUidList[j]
+                 tmpUidList[j] = tmpUid
+              }
+            }
+          }
+          //按牌型赔付
+          for(var i = 0;i < GAME_PLAYER;i++){
+            var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
+            if(tmpScore > tmpAllBet){
+              tmpScore = tmpAllBet
+            }
+            tmpAllBet -= tmpScore
+            curScores[tmpUidList[i]] += tmpScore
+          }  
           break 
       }
-
-      
 
       //发送当局结算消息
       var notify = {
