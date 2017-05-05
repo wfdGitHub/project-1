@@ -59,8 +59,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //下注信息
   var betList = new Array(GAME_PLAYER)
+  var betAmount = 0
   //下注上限
   var maxBet = 0
+  //斗公牛模式积分池
+  var bonusPool = 40
   //玩家属性
   var  player = {}
   for(var i = 0;i < GAME_PLAYER;i++){
@@ -308,21 +311,41 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }
-    //判断金钱
-    if(param.bet && typeof(param.bet) == "number" 
-      && param.bet > 0 && param.bet < player[chair].score && param.bet <= maxBet){
-      betList[chair] += param.bet
-      var notify = {
-        "cmd" : "bet",
-        "chair" : chair,
-        "bet" : param.bet
+    //斗公牛模式使用特殊下注限制
+    if(gameMode == MODE_GAME_BULL){
+      if(param.bet && typeof(param.bet) == "number" && (param.bet + betAmount) <= bonusPool){
+        betList[chair] += param.bet
+        betAmount += param.bet
+        var notify = {
+          "cmd" : "bet",
+          "chair" : chair,
+          "bet" : param.bet,
+          "betAmount" : betAmount
+        }
+        local.sendAll(notify)        
+        cb(true)
+        return
+      }else{
+        cb(false)
       }
-      local.sendAll(notify)
-      cb(true)
     }else{
-      cb(false)
+      //其他模式
+      if(param.bet && typeof(param.bet) == "number" 
+        && param.bet > 0 && param.bet <= maxBet){
+        betList[chair] += param.bet
+        betAmount += param.bet
+        var notify = {
+          "cmd" : "bet",
+          "chair" : chair,
+          "bet" : param.bet,
+          "betAmount" : betAmount
+        }
+        local.sendAll(notify)
+        cb(true)
+      }else{
+        cb(false)
+      }      
     }
-
   }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
@@ -391,51 +414,51 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     if(room.gameNumber > 0){
       log("gameBegin")      
       room.gameNumber--
-
-    //重置庄家信息
-    for(var i = 0;i < GAME_PLAYER;i++){
-        betList[i] = 0;
-        player[i].isBanker = false
-    }
-    console.log("banker : "+banker)
-    player[banker].isBanker = true
-    //广播庄家信息
-    var notify = {
-      "cmd" : "banker",
-      chair : banker
-    }
-    local.sendAll(notify)
-    //提前发牌
-    //洗牌
-    for(var i = 0;i < cardCount;i++){
-      var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-      var tmpCard = cards[i]
-      cards[i] = cards[tmpIndex]
-      cards[tmpIndex] = tmpCard
-    }
-    //发牌
-    var index = 0;
-    for(var i = 0;i < GAME_PLAYER;i++){
-        for(var j = 0;j < 5;j++){
-            player[i].handCard[j] = cards[index++];
-        }
-    }
-    //明牌模式发牌
-    if(room.gameMode == MODE_GAME_MING){
-      var notify = {
-        "cmd" : "MingCard"
-      }
+      bonusPool = 40
+      //重置庄家信息
       for(var i = 0;i < GAME_PLAYER;i++){
-        var tmpCards = {}
-        for(var j = 0;j < MING_CARD_NUM;j++){
-            tmpCards[j] = player[i].handCard[j];
-        }
-        notify.Cards = tmpCards
-        local.sendUid(player[i].uid,notify)    
+          betList[i] = 0;
+          player[i].isBanker = false
       }
-    }
-    //进入下注
-    local.betting()      
+      console.log("banker : "+banker)
+      player[banker].isBanker = true
+      //广播庄家信息
+      var notify = {
+        "cmd" : "banker",
+        chair : banker
+      }
+      local.sendAll(notify)
+      //提前发牌
+      //洗牌
+      for(var i = 0;i < cardCount;i++){
+        var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+        var tmpCard = cards[i]
+        cards[i] = cards[tmpIndex]
+        cards[tmpIndex] = tmpCard
+      }
+      //发牌
+      var index = 0;
+      for(var i = 0;i < GAME_PLAYER;i++){
+          for(var j = 0;j < 5;j++){
+              player[i].handCard[j] = cards[index++];
+          }
+      }
+      //明牌模式发牌
+      if(room.gameMode == MODE_GAME_MING){
+        var notify = {
+          "cmd" : "MingCard"
+        }
+        for(var i = 0;i < GAME_PLAYER;i++){
+          var tmpCards = {}
+          for(var j = 0;j < MING_CARD_NUM;j++){
+              tmpCards[j] = player[i].handCard[j];
+          }
+          notify.Cards = tmpCards
+          local.sendUid(player[i].uid,notify)    
+        }
+      }
+      //进入下注
+      local.betting()      
     }    
   }
   //下注阶段
@@ -472,6 +495,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //结算阶段
   local.settlement = function(){
       log("settlement")
+      room.runCount++
       //房间重置
       gameState = GS_FREE
       for(var i = 0;i < GAME_PLAYER; i++){
@@ -485,33 +509,85 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           result[i] = logic.getType(player[i].handCard); 
           player[i].cardsList[room.runCount] = result[i]
       }
-      //结算积分
+      //结算分
       var curScores = new Array(GAME_PLAYER)
       for(var i = 0;i < GAME_PLAYER;i++){
         curScores[i] = 0
       }
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(i === banker) continue
-          //比较大小
-          if(logic.compare(result[i],result[banker])){
-              //闲家赢
-              curScores[i] += betList[i] * result[i].award
-              curScores[banker] -= betList[i] * result[i].award
-              // local.changeScore(i,betList[i] * result[i].award)
-              // local.changeScore(banker,- (betList[i] * result[i].award))
-          }else{
-              //庄家赢
-              curScores[i] -= betList[i] * result[banker].award
-              curScores[banker] += betList[i] * result[banker].award
-              // local.changeScore(banker,betList[i] * result[banker].award)
-              // local.changeScore(i,-(betList[i] * result[banker].award))
+      switch(room.gameMode){
+        case MODE_GAME_NORMAL : 
+        case MODE_GAME_MING : 
+          //常规模式和明牌模式结算
+          for(var i = 0;i < GAME_PLAYER;i++){
+              if(i === banker) continue
+              //比较大小
+              if(logic.compare(result[i],result[banker])){
+                  //闲家赢
+                  curScores[i] += betList[i] * result[i].award
+                  curScores[banker] -= betList[i] * result[i].award
+              }else{
+                  //庄家赢
+                  curScores[i] -= betList[i] * result[banker].award
+                  curScores[banker] += betList[i] * result[banker].award
+              }
           }
+          for(var i = 0;i < GAME_PLAYER;i++){
+              local.changeScore(i,curScores[i])
+          }
+          break
+        case MODE_GAME_BULL : 
+          //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
+            //结算庄家赢
+            for(var i = 0;i < GAME_PLAYER;i++){
+              if(i === banker) continue
+              if(!logic.compare(result[i],result[banker])){
+                  //庄家赢
+                  var tmpScore = betList[i] * result[banker].award
+                  curScores[i] -= tmpScore
+                  curScores[banker] += tmpScore
+                  bonusPool += tmpScore
+              }
+            }
+            //结算庄家输
+            //牌型按大小排序
+            var tmpUidList = new Array(GAME_PLAYER)
+            for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
+
+            for(var i = 0;i < GAME_PLAYER;i++){
+              for(var j = i+1;j < GAME_PLAYER;j++){
+                if(!logic.compare(result[i],result[j])){
+                   var tmpResult = result[i]
+                   result[i] = result[j]
+                   result[j] = tmpResult
+                   var tmpUid = tmpUidList[i]
+                   tmpUidList[i] = tmpUidList[j]
+                   tmpUidList[j] = tmpUid
+                }
+              }
+            }
+            //优先赔付牌型大的闲家
+            for(var i = 0;i < GAME_PLAYER;i++){
+              if(tmpUidList[i] === banker) continue
+              if(logic.compare(result[tmpUidList[i]],result[banker])){
+                  //闲家赢
+                  var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
+                  if(tmpScore > bonusPool){
+                      tmpScore = bonusPool
+                  }
+                  curScores[tmpUidList[i]] += tmpScore
+                  curScores[banker] -= tmpScore
+                  bonusPool -= tmpScore
+              }
+            }            
+          break
+        case MODE_GAME_SHIP : 
+          
+          break 
       }
-      for(var i = 0;i < GAME_PLAYER;i++){
-          local.changeScore(i,curScores[i])
-      }
-      room.runCount++
-      //发送消息
+
+      
+
+      //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
         "player" : player,
@@ -519,27 +595,32 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         "curScores" : curScores
       }
       local.sendAll(notify)
+
+
       if(room.gameNumber <= 0){
-        //总结算
-        room.state = true
-        var notify = {
-          "cmd" : "gameOver",
-          "player" : player
-        }
-
-        local.sendAll(notify)
-        //房间清空
-        for(var i = 0;i < GAME_PLAYER;i++){
-          player[i].bankerCount = 0
-          player[i].cardsList = {}
-          player[i].score = 0
-        }
-        room.runCount = 0
-        //结束游戏
-        cb(room.roomId,player)
-    }
+          local.gameOver()
+      }
   }
+  //总结算
+  local.gameOver = function() {
+    //总结算
+    room.state = true
+    var notify = {
+      "cmd" : "gameOver",
+      "player" : player
+    }
 
+    local.sendAll(notify)
+    //房间清空
+    for(var i = 0;i < GAME_PLAYER;i++){
+      player[i].bankerCount = 0
+      player[i].cardsList = {}
+      player[i].score = 0
+    }
+    room.runCount = 0
+    //结束游戏
+    cb(room.roomId,player)
+  }
   //积分改变
   local.changeScore = function(chair,score) {
     if(player[chair].score + score >= 0){
