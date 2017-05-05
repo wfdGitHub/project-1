@@ -500,14 +500,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   local.deal = function(){
       log("deal")
       gameState = GS_DEAL
-      var notify = {
-        "cmd" : "deal"
-      }
+      var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
-          notify.handCard = player[i].handCard
-          local.sendUid(player[i].uid,notify)
+          tmpCards[i]= player[i].handCard
       }
+      var notify = {
+        "cmd" : "deal",
+        "handCards" : tmpCards
+      }
+      for(var i = 0;i < GAME_PLAYER;i++){
+        local.sendUid(player[i].uid,notify)
+      }
+      
       setTimeout(local.settlement,TID_SETTLEMENT)
   }
 
@@ -638,7 +643,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
-        "player" : player,
         "result" : result,
         "curScores" : curScores
       }
