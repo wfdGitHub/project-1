@@ -499,7 +499,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
       log("deal")
-      gameState = GS_BETTING
+      gameState = GS_DEAL
       var notify = {
         "cmd" : "deal"
       }
