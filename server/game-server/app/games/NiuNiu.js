@@ -388,7 +388,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //游戏开始
   local.gameBegin = function() {
-    log("gameBegin")
+    if(room.gameNumber > 0){
+      log("gameBegin")      
+      room.gameNumber--
+
     //重置庄家信息
     for(var i = 0;i < GAME_PLAYER;i++){
         betList[i] = 0;
@@ -417,7 +420,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             player[i].handCard[j] = cards[index++];
         }
     }
-
     //明牌模式发牌
     if(room.gameMode == MODE_GAME_MING){
       var notify = {
@@ -433,39 +435,24 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
     }
     //进入下注
-    local.betting()
+    local.betting()      
+    }    
   }
   //下注阶段
   local.betting = function() {
-    if(room.gameNumber > 0){
-      log("betting")
-      room.gameNumber--
-      //状态改变
-      gameState = GS_BETTING
-      //确定庄家
-      // console.log("room.gameMode : "+room.gameModee)
-      // switch(room.gameMode){
-      //   case MODE_BANKER_ROB:
-      //     banker = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
-      //     break
-      //   case MODE_BANKER_ORDER:
-      //     banker = (banker + 1)%GAME_PLAYER
-      //     break
-      //   case MODE_DIAMOND_HOST:
-      //     banker = roomHost
-      //     break;
-      // }
-      // player[banker].bankerCount++;
+    log("betting")
+    //状态改变
+    gameState = GS_BETTING
 
-      //通知客户端
-      var notify = {
-        cmd : "beginBetting",
-        banker : banker
-      }
-      local.sendAll(notify)
-      //定时器启动下一阶段
-      setTimeout(local.deal,TID_BETTING)      
+    //通知客户端
+    var notify = {
+      cmd : "beginBetting",
+      banker : banker
     }
+    local.sendAll(notify)
+    //定时器启动下一阶段
+    setTimeout(local.deal,TID_BETTING)      
+    
   }
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
