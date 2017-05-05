@@ -1,6 +1,6 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 1                 //游戏人数
+var GAME_PLAYER = 2                 //游戏人数
 var TID_ROB_TIME = 10000            //抢庄时间
 var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
@@ -11,6 +11,7 @@ var GS_FREE         = 1001              //空闲阶段
 var GS_BETTING      = 1002              //下注阶段
 var GS_DEAL         = 1003              //发牌阶段
 var GS_SETTLEMENT   = 1004              //结算阶段
+var GS_ROB_BANKER   = 1005              //抢庄阶段
 
 //游戏模式
 var MODE_GAME_NORMAL = 1              //常规模式
@@ -58,7 +59,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //下注信息
   var betList = new Array(GAME_PLAYER)
-
+  //下注上限
+  var maxBet = 0
   //玩家属性
   var  player = {}
   for(var i = 0;i < GAME_PLAYER;i++){
@@ -114,6 +116,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)
+      //设置下注上限
+      maxBet = 5
+      if(room.gameMode == MODE_GAME_BULL){
+        maxBet = 10
+      }
+      if(room.gameMode == MODE_GAME_SHIP){
+        maxBet = 10
+      }
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
@@ -162,6 +172,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       gameMode : room.gameMode,
       gameNumber : room.gameNumber,
       consumeMode : room.consumeMode,
+      bankerMode : room.bankerMode,
       roomId : room.roomId
     }
     local.sendUid(uid,notify)
@@ -239,6 +250,28 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     cb(true)
   }
+  //玩家抢庄
+  room.robBanker = function(uid,sid,param,cb) {
+    if(gameState !== GS_ROB_BANKER){
+      cb(false)
+      return
+    }
+    //判断是否在椅子上
+    var chair = room.chairMap[uid]
+    if(chair == undefined){
+      cb(false)
+      return
+    }    
+    log("robBanker")
+    //判断是否已抢庄
+    if(robState[chair] == true){
+      cb(false)
+      return
+    }
+    //记录抢庄
+    robState[chair] = true
+    cb(true)
+  }
   //发送聊天
   room.say = function(uid,sid,param,cb) {
     //判断是否在椅子上
@@ -277,8 +310,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     //判断金钱
     if(param.bet && typeof(param.bet) == "number" 
-      && param.bet > 0 && param.bet < player[chair].score
-      && player[chair].score / 8 >= (param.bet + betList[chair])){
+      && param.bet > 0 && param.bet < player[chair].score && param.bet <= maxBet){
       betList[chair] += param.bet
       var notify = {
         "cmd" : "bet",
@@ -294,6 +326,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
+    gameState = GS_ROB_BANKER
     switch(room.bankerMode){
       case MODE_BANKER_ROB :
         //初始化抢庄状态为false
@@ -301,6 +334,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           robState[i] = false
         }
         //抢庄
+        var notify = {
+          "cmd" : "beginRob"
+        }
+        local.sendAll(notify)
         setTimeout(local.endRob,TID_ROB_TIME)    
         break
       case MODE_BANKER_ORDER :
@@ -326,27 +363,22 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   local.endRob = function() {
     //统计抢庄人数
     var num = 0
+    var robList = {}
     for(var i = 0; i < GAME_PLAYER;i++){
       if(robState[i] == true){
-        num++
+        robList[num++] = i
+
       }
     }
+    console.log("endRob num : "+num)
     //无人抢庄从所有玩家中随机
     if(num == 0){
       num = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
     }else{
       //随机出一个庄家
       var index = Math.floor(Math.random() * num)%num
-      num = 0
-      for(var i = 0; i < GAME_PLAYER;i++){
-        if(robState[i] == true){
-          if(num == index){
-            break;
-          }else{
-            num++
-          }
-        }
-      }      
+      console.log("index : "+index)
+      num = robList[index]
     }
 
     banker = num
@@ -364,6 +396,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     console.log("banker : "+banker)
     player[banker].isBanker = true
+    //广播庄家信息
+    var notify = {
+      "cmd" : "banker",
+      chair : banker
+    }
+    local.sendAll(notify)
     //提前发牌
     //洗牌
     for(var i = 0;i < cardCount;i++){
