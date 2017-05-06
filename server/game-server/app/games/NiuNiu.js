@@ -625,7 +625,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           //按牌型赔付
           for(var i = 0;i < GAME_PLAYER;i++){
             if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number"){
-              var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
+              var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award + betList[tmpUidList[i]]
               if(tmpScore > tmpAllBet){
                 tmpScore = tmpAllBet
               }
