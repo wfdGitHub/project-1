@@ -43,7 +43,7 @@
           );
       }
       var newRoom = function() {
-          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 2,
+          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 4,
             consumeMode: 1,gameNumber: 10,bankerMode : 1}}, function(data) {
               console.log("flag is : "+data.flag)
             }

@@ -1,8 +1,8 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 2                 //游戏人数
-var TID_ROB_TIME = 10000            //抢庄时间
-var TID_BETTING = 1000              //下注时间
+var GAME_PLAYER = 3                 //游戏人数
+var TID_ROB_TIME = 1000            //抢庄时间
+var TID_BETTING = 10000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
@@ -22,6 +22,7 @@ var MODE_GAME_SHIP   = 4              //开船模式
 var MODE_BANKER_ROB   = 1              //随机抢庄
 var MODE_BANKER_HOST  = 2              //房主做庄
 var MODE_BANKER_ORDER = 3              //轮庄
+var MODE_BANKER_NONE  = 4              //无定庄模式
 //消耗模式
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
@@ -122,9 +123,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //设置下注上限
       maxBet = 5
       if(room.gameMode == MODE_GAME_BULL){
+        room.bankerMode = MODE_BANKER_NONE
+        banker = roomHost
         maxBet = 10
       }
       if(room.gameMode == MODE_GAME_SHIP){
+        room.bankerMode = MODE_BANKER_NONE
         maxBet = 10
       }
       room.join(uid,sid,{ip : param.ip},cb)
@@ -312,7 +316,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       return
     }
     //斗公牛模式使用特殊下注限制
-    if(gameMode == MODE_GAME_BULL){
+    if(room.gameMode == MODE_GAME_BULL){
       if(param.bet && typeof(param.bet) == "number" && (param.bet + betAmount) <= bonusPool){
         betList[chair] += param.bet
         betAmount += param.bet
@@ -415,19 +419,21 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("gameBegin")      
       room.gameNumber--
       bonusPool = 40
-      //重置庄家信息
-      for(var i = 0;i < GAME_PLAYER;i++){
-          betList[i] = 0;
-          player[i].isBanker = false
+      if(banker !== -1){
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }
+        console.log("banker : "+banker)
+        player[banker].isBanker = true    
+        //广播庄家信息
+        var notify = {
+          "cmd" : "banker",
+          chair : banker
+        }
+        local.sendAll(notify)   
       }
-      console.log("banker : "+banker)
-      player[banker].isBanker = true
-      //广播庄家信息
-      var notify = {
-        "cmd" : "banker",
-        chair : banker
-      }
-      local.sendAll(notify)
       //提前发牌
       //洗牌
       for(var i = 0;i < cardCount;i++){
