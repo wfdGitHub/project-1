@@ -438,6 +438,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("gameBegin")      
       room.gameNumber--
       bonusPool = 40
+      //重置下注信息
+      for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+      }
       if(banker !== -1){
         //重置庄家信息
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -615,8 +619,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           //先减去下注额
           var tmpAllBet = 0
           for(var i = 0;i < GAME_PLAYER;i++){
-            curScores[i] -= betList[i]
-            tmpAllBet += betList[i]
+            console.log(betList)
+            console.log(typeof(betList[i]) == "number")
+            if(betList[i] && typeof(betList[i]) == "number"){
+              curScores[i] -= betList[i]
+              tmpAllBet += betList[i]              
+            }
           }
           //排序
           var tmpUidList = new Array(GAME_PLAYER)
@@ -634,15 +642,21 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               }
             }
           }
+          log("curScores==================")
+          log(curScores)
           //按牌型赔付
           for(var i = 0;i < GAME_PLAYER;i++){
-            var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
-            if(tmpScore > tmpAllBet){
-              tmpScore = tmpAllBet
+            if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number"){
+              var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
+              if(tmpScore > tmpAllBet){
+                tmpScore = tmpAllBet
+              }
+              log("award : "+tmpScore)
+              tmpAllBet -= tmpScore
+              curScores[tmpUidList[i]] += tmpScore
             }
-            tmpAllBet -= tmpScore
-            curScores[tmpUidList[i]] += tmpScore
           }  
+
           break 
       }
 
