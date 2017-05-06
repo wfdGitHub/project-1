@@ -1,8 +1,8 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 3                 //游戏人数
+var GAME_PLAYER = 1                 //游戏人数
 var TID_ROB_TIME = 1000            //抢庄时间
-var TID_BETTING = 10000              //下注时间
+var TID_BETTING = 1000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
@@ -30,23 +30,14 @@ var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
 module.exports.createRoom = function(roomId,channelService,cb) {
   console.log("createRoom"+roomId)
+  var roomCallBack = cb
   var room = {}
   room.roomId = roomId
   room.channel = channelService.getChannel(roomId,true)
   //房间初始化
-  //local.init()
-  //房间参数
-  room.gameMode = 0                    //游戏模式
-  room.gameNumber = 0                  //游戏局数
-  room.consumeMode = 0                 //消耗模式
-  room.bankerMode  = 0                 //定庄模式
-  room.needDiamond = 0                 //钻石基数
-  //房间属性
-  room.state = true                    //房间状态，true为可创建
-  room.playerCount  = 0                //房间内玩家人数
+  var local = {}                        //私有方法
   var readyCount = 0                   //游戏准备人数
   var gameState = GS_FREE              //游戏状态
-  room.chairMap = {}                   //玩家UID与椅子号映射表
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
   //游戏属性
@@ -67,21 +58,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var bonusPool = 40
   //玩家属性
   var  player = {}
-  for(var i = 0;i < GAME_PLAYER;i++){
-    player[i] = {}
-    player[i].chair = i                 //椅子号
-    player[i].uid = 0                   //uid
-    player[i].isActive = false          //当前椅子上是否有人
-    player[i].isReady = false           //准备状态
-    player[i].isBanker = false          //是否为庄家
-    player[i].handCard = new Array(5)   //手牌
-    player[i].score = 0                 //当前积分
-    player[i].bankerCount = 0           //坐庄次数
-    player[i].cardsList  = {}           //总战绩列表
-    player[i].ip  = undefined           //玩家ip地址
-  }
 
-  var local = {}                        //私有方法
   //创建房间
   room.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
@@ -106,6 +83,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }    
+    local.init()
     if(room.state === true){
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -683,15 +661,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
 
     local.sendAll(notify)
-    //房间清空
-    for(var i = 0;i < GAME_PLAYER;i++){
-      player[i].bankerCount = 0
-      player[i].cardsList = {}
-      player[i].score = 0
-    }
-    room.runCount = 0
     //结束游戏
-    cb(room.roomId,player)
+    roomCallBack(room.roomId,player)
   }
   //积分改变
   local.changeScore = function(chair,score) {
@@ -723,8 +694,53 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //房间初始化
   local.init = function() {
-    
+    room.gameMode = 0                    //游戏模式
+    room.gameNumber = 0                  //游戏局数
+    room.consumeMode = 0                 //消耗模式
+    room.bankerMode  = 0                 //定庄模式
+    room.needDiamond = 0                 //钻石基数
+    //房间属性
+    room.state = true                    //房间状态，true为可创建
+    room.playerCount  = 0                //房间内玩家人数
+    readyCount = 0                   //游戏准备人数
+    gameState = GS_FREE              //游戏状态
+    room.chairMap = {}                   //玩家UID与椅子号映射表
+    banker = -1                      //庄家椅子号
+    roomHost = -1                    //房主椅子号
+    //游戏属性
+    robState = new Array(GAME_PLAYER) //抢庄状态记录
+    cards = {}                       //牌组
+    cardCount = 0                    //卡牌剩余数量
+    for(var i = 1;i <= 13;i++){
+      for(var j = 0;j < 4;j++){
+        cards[cardCount++] = {num : i,type : j}
+      }
+    }
+    //下注信息
+    betList = new Array(GAME_PLAYER)
+    betAmount = 0
+    //下注上限
+    maxBet = 0
+    //斗公牛模式积分池
+    bonusPool = 40
+    //玩家属性
+    player = {}
+    for(var i = 0;i < GAME_PLAYER;i++){
+      player[i] = {}
+      player[i].chair = i                 //椅子号
+      player[i].uid = 0                   //uid
+      player[i].isActive = false          //当前椅子上是否有人
+      player[i].isReady = false           //准备状态
+      player[i].isBanker = false          //是否为庄家
+      player[i].handCard = new Array(5)   //手牌
+      player[i].score = 0                 //当前积分
+      player[i].bankerCount = 0           //坐庄次数
+      player[i].cardsList  = {}           //总战绩列表
+      player[i].ip  = undefined           //玩家ip地址
+    }    
   }
+
+
   return room 
 }
 

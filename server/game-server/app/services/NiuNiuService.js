@@ -17,7 +17,13 @@ NiuNiuService.name = "NiuNiuService"
 //房间回调
 var roomCallback = function(roomId,players) {
 	console.log("room end "+ roomId)
-	NiuNiuService.roomState = true
+	NiuNiuService.roomState[roomId] = true
+	//将玩家从房间中解锁
+	for(var index in players){
+		if(players.hasOwnProperty(index)){
+			delete NiuNiuService.userMap[players[index].uid]
+		}
+	}	
 	//扣除钻石
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
 	switch(NiuNiuService.roomList[roomId].consumeMode){
