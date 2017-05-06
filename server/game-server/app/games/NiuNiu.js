@@ -351,6 +351,25 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }      
     }
   }
+  room.showCard = function(uid,sid,param,cb) {
+    //游戏状态为GS_DEAL
+    if(gameState !== GS_DEAL){
+      cb(false)
+      return
+    }
+    //判断是否在椅子上
+    var chair = room.chairMap[uid]
+    if(chair === undefined){
+      cb(false)
+      return
+    }
+    var notify = {
+      "cmd": "showCard",
+      "chair" : chair
+    }
+    local.sendAll(notify)
+
+  }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
     gameState = GS_ROB_BANKER
@@ -486,15 +505,20 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
       log("deal")
-      gameState = GS_BETTING
-      var notify = {
-        "cmd" : "deal"
-      }
+      gameState = GS_DEAL
+      var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
-          notify.handCard = player[i].handCard
-          local.sendUid(player[i].uid,notify)
+          tmpCards[i]= player[i].handCard
       }
+      var notify = {
+        "cmd" : "deal",
+        "handCards" : tmpCards
+      }
+      for(var i = 0;i < GAME_PLAYER;i++){
+        local.sendUid(player[i].uid,notify)
+      }
+      
       setTimeout(local.settlement,TID_SETTLEMENT)
   }
 
@@ -625,7 +649,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
-        "player" : player,
         "result" : result,
         "curScores" : curScores
       }
