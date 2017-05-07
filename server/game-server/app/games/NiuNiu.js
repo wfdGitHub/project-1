@@ -164,7 +164,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     var notify = {
       cmd: "userJoin",
       uid: uid,
-      chair : chair
+      chair : chair,
+      player : player[chair]
     }
     local.sendAll(notify)
 
