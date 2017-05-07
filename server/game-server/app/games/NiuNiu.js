@@ -314,7 +314,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }else{
       //其他模式
       if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && param.bet <= maxBet){
+        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
         betList[chair] += param.bet
         betAmount += param.bet
         var notify = {
