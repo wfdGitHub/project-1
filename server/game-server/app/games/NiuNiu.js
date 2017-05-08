@@ -122,6 +122,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }
+    //不可重复加入
+    for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].uid === uid){
+          cb(false)
+          return
+        }
+    }
     //查找空闲位置
     var chair = -1
     for(var i = 0;i < GAME_PLAYER;i++){
