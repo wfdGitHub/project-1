@@ -104,6 +104,9 @@ module.exports.compare = function(result1,result2) {
     if(result1.type == result2.type && result1.card.num > result2.card.num){
         return true
     }
+    if(result1.type == result2.type && result1.card.num == result2.card.num && result1.card.type > result2.card.type){
+      return true
+    }
     return false
 }
  return module

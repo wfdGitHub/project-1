@@ -1,8 +1,8 @@
 var logic = require("./NiuNiuLogic.js")
 //常量定义
-var GAME_PLAYER = 1                 //游戏人数
-var TID_ROB_TIME = 1000            //抢庄时间
-var TID_BETTING = 1000              //下注时间
+var GAME_PLAYER = 3                 //游戏人数
+var TID_ROB_TIME = 8000            //抢庄时间
+var TID_BETTING = 8000              //下注时间
 var TID_SETTLEMENT = 1000           //结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
@@ -522,6 +522,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           result[i] = logic.getType(player[i].handCard); 
           player[i].cardsList[room.runCount] = result[i]
       }
+      var trueResult = copyObj(result)
+
       //结算分
       var curScores = new Array(GAME_PLAYER)
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -565,23 +567,25 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //牌型按大小排序
             var tmpUidList = new Array(GAME_PLAYER)
             for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
-
-            for(var i = 0;i < GAME_PLAYER;i++){
-              for(var j = i+1;j < GAME_PLAYER;j++){
-                if(!logic.compare(result[i],result[j])){
-                   var tmpResult = result[i]
-                   result[i] = result[j]
+            //console.log(result)
+            for(var i = 0;i < GAME_PLAYER - 1;i++){
+              for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
+                if(!logic.compare(result[j],result[j + 1])){
+                   var tmpResult = result[j + 1]
+                   result[j + 1] = result[j]
                    result[j] = tmpResult
-                   var tmpUid = tmpUidList[i]
-                   tmpUidList[i] = tmpUidList[j]
+                   var tmpUid = tmpUidList[j + 1]
+                   tmpUidList[j + 1] = tmpUidList[j]
                    tmpUidList[j] = tmpUid
                 }
               }
             }
+            //console.log(trueResult)
+            //console.log(tmpUidList)
             //优先赔付牌型大的闲家
             for(var i = 0;i < GAME_PLAYER;i++){
               if(tmpUidList[i] === banker) continue
-              if(logic.compare(result[tmpUidList[i]],result[banker])){
+              if(logic.compare(result[i],result[tmpUidList[banker]])){
                   //闲家赢
                   var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
                   if(tmpScore > bonusPool){
@@ -609,14 +613,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           var tmpUidList = new Array(GAME_PLAYER)
           for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
 
-          for(var i = 0;i < GAME_PLAYER;i++){
-            for(var j = i+1;j < GAME_PLAYER;j++){
-              if(!logic.compare(result[i],result[j])){
-                 var tmpResult = result[i]
-                 result[i] = result[j]
+          console.log(result)
+          for(var i = 0;i < GAME_PLAYER - 1;i++){
+            for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
+              if(!logic.compare(result[j],result[j + 1])){
+                 var tmpResult = result[j + 1]
+                 result[j + 1] = result[j]
                  result[j] = tmpResult
-                 var tmpUid = tmpUidList[i]
-                 tmpUidList[i] = tmpUidList[j]
+                 var tmpUid = tmpUidList[j + 1]
+                 tmpUidList[j + 1] = tmpUidList[j]
                  tmpUidList[j] = tmpUid
               }
             }
@@ -642,7 +647,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
-        "result" : result,
+        "result" : trueResult,
         "curScores" : curScores
       }
       local.sendAll(notify)
@@ -750,3 +755,10 @@ var log = function(str) {
     console.log("LOG NiuNiu : "+str)
 }
 
+var copyObj = function(obj) {
+  let res = {}
+  for (var key in obj) {
+    res[key] = obj[key]
+  }
+  return res
+}
