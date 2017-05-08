@@ -616,14 +616,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             if(bonusPool <= 0){
                 banker = (banker + 1)%GAME_PLAYER
                 bonusPool = 40
-                //斗牛模式更新积分池
-                if(room.gameMode == MODE_GAME_BULL){
-                  var notify = {
-                    "cmd" : "bonusPool",
-                    "bonusPool" : bonusPool
-                  }
-                  local.sendAll(notify)          
-                }
+            }
+            //斗牛模式更新积分池
+            if(room.gameMode == MODE_GAME_BULL){
+              var notify = {
+                "cmd" : "bonusPool",
+                "bonusPool" : bonusPool
+              }
+              local.sendAll(notify)          
             }
             console.log("bonusPool : "+bonusPool)           
           break
