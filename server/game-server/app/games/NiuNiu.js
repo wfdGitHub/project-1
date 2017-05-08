@@ -777,8 +777,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[i].ip  = undefined           //玩家ip地址
     }    
   }
-
-
+  //channel清空
+  channelService.destroyChannel(roomId)
+  room.channel = channelService.getChannel(roomId,true)
   return room 
 }
 
