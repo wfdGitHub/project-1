@@ -424,6 +424,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("gameBegin")      
       room.gameNumber--
       bonusPool = 40
+      betAmount = 0
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
             betList[i] = 0;
