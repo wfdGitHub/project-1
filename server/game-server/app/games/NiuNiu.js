@@ -423,7 +423,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     if(room.gameNumber > 0){
       log("gameBegin")      
       room.gameNumber--
-      bonusPool = 40
       betAmount = 0
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -443,6 +442,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           chair : banker
         }
         local.sendAll(notify)   
+      }
+      //斗牛模式更新积分池
+      if(room.gameMode == MODE_GAME_BULL){
+        var notify = {
+          "cmd" : "bonusPool",
+          "bonusPool" : bonusPool
+        }
+        local.sendAll(notify)          
       }
       //提前发牌
       //洗牌
@@ -608,6 +615,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   bonusPool -= tmpScore
               }
             } 
+            //积分池空则换庄
+            if(bonusPool <= 0){
+                banker = (banker + 1)%GAME_PLAYER
+            }
             console.log("bonusPool : "+bonusPool)           
           break
         case MODE_GAME_SHIP : 
