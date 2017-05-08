@@ -595,7 +595,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               if(tmpUidList[i] === banker) continue
               if(logic.compare(result[i],result[tmpUidList[banker]])){
                   //闲家赢
-                  var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award
+                  var tmpScore = betList[tmpUidList[i]] * result[i].award
                   if(tmpScore > bonusPool){
                       tmpScore = bonusPool
                   }
