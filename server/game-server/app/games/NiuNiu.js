@@ -561,16 +561,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         case MODE_GAME_BULL : 
           //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
             //结算庄家赢
+            console.log(betList)
             for(var i = 0;i < GAME_PLAYER;i++){
               if(i === banker) continue
               if(!logic.compare(result[i],result[banker])){
                   //庄家赢
                   var tmpScore = betList[i] * result[banker].award
+                  console.log("uid : "+player[i].uid+"  chair : "+i+"  lose tmpScore : "+tmpScore)
                   curScores[i] -= tmpScore
                   curScores[banker] += tmpScore
                   bonusPool += tmpScore
               }
             }
+            console.log("bonusPool : "+bonusPool)
             //结算庄家输
             //牌型按大小排序
             var tmpUidList = new Array(GAME_PLAYER)
@@ -599,11 +602,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   if(tmpScore > bonusPool){
                       tmpScore = bonusPool
                   }
+                  console.log("uid : "+player[tmpUidList[i]].uid+"  chair : "+tmpUidList[i]+"  win tmpScore : "+tmpScore)
                   curScores[tmpUidList[i]] += tmpScore
                   curScores[banker] -= tmpScore
                   bonusPool -= tmpScore
               }
-            }            
+            } 
+            console.log("bonusPool : "+bonusPool)           
           break
         case MODE_GAME_SHIP : 
           //开船模式先收集所有人的下注，再按从大到小赔付
