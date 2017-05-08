@@ -531,7 +531,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           player[i].cardsList[room.runCount] = result[i]
       }
       var trueResult = copyObj(result)
-
+      var bankerResult = result[banker]
       //结算分
       var curScores = new Array(GAME_PLAYER)
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -596,7 +596,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //优先赔付牌型大的闲家
             for(var i = 0;i < GAME_PLAYER;i++){
               if(tmpUidList[i] === banker) continue
-              if(logic.compare(result[i],result[tmpUidList[banker]])){
+              if(logic.compare(result[i],bankerResult)){
                   //闲家赢
                   var tmpScore = betList[tmpUidList[i]] * result[i].award
                   if(tmpScore > bonusPool){
