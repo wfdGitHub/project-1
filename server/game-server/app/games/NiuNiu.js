@@ -561,9 +561,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   curScores[banker] += betList[i] * result[banker].award
               }
           }
-          for(var i = 0;i < GAME_PLAYER;i++){
-              local.changeScore(i,curScores[i])
-          }
           break
         case MODE_GAME_BULL : 
           //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
@@ -668,7 +665,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
           break 
       }
-
+      //积分改变
+      for(var i = 0;i < GAME_PLAYER;i++){
+          local.changeScore(i,curScores[i])
+      }
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
