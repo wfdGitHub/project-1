@@ -697,7 +697,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //积分改变
   local.changeScore = function(chair,score) {
-    if(player[chair].score + score >= 0){
         player[chair].score += score;
         var notify = {
           "cmd" : "changeScore",
@@ -706,7 +705,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           "score" : player[chair].score
         }      
         local.sendAll(notify)        
-    }
   }
 
   //广播消息
