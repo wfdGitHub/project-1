@@ -618,6 +618,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //积分池空则换庄
             if(bonusPool <= 0){
                 banker = (banker + 1)%GAME_PLAYER
+                bonusPool = 40
             }
             console.log("bonusPool : "+bonusPool)           
           break
