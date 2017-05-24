@@ -16,13 +16,20 @@ dbService.prototype.start = function(cb){
 	this.app.set("dbService",dbService)
 	db.on("ready",function(res) {
 		dbService.db = db
+		//数据库初始配置
 		dbService.db.get("nn:acc:lastid",function(err,data) {
 			if(data === null){
 		        console.log("\033[33m[INFO] DataBase check - nn:acc:lastid\033[0m");
 		        db.set("nn:acc:lastid",-1);
     		}
 		})
-
+		dbService.db.get("nn:notifys",function(err,data) {
+			if(data === null){
+		        console.log("\033[33m[INFO] DataBase check - nn:notifys\033[0m");
+		        var notify = {"1" : {"name" : "新服开启","content" : "新服火爆开启"} , "2" : {"name" : "首冲双倍","content" : "首次充值双倍返还"}}
+		        db.set("nn:notifys",JSON.stringify(notify));
+    		}
+		})
 	})
 	cb()
 }
@@ -72,5 +79,24 @@ dbService.getPlayer = function(uid,name,cb) {
 				cb(parseInt(data))
 			}
 		}
+	})
+}
+
+dbService.setNotify = function(notify,cb) {
+	var cmd = "nn:notifys"
+	notify = [{"name":"公告1","content":"新服开启"},{"name":"公告2","content":"首冲双倍"}]
+	dbService.db.set(cmd,notify,function(flag) {
+		if(cb){
+			cb(flag)
+		}
+	})
+}
+
+dbService.getNotify = function(cb) {
+	var cmd = "nn:notifys"
+	dbService.db.get(cmd,function(err,data) {
+		//console.log(cmd + "  data : "+data)
+		//console.log(JSON.parse(data))
+		cb(JSON.parse(data))
 	})
 }

@@ -11,6 +11,14 @@ var Handler = function(app) {
 
 var handler = Handler.prototype;
 
+//获取公告
+handler.getNotify = function(msg,session,next) {
+  var self = this;
+  self.app.rpc.db.remote.getNotify(session,function(data) {
+      next(null,data)
+  })
+}
+
 //登录
 handler.enter = function(msg, session, next) {
   var self = this;

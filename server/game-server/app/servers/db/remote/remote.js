@@ -45,6 +45,9 @@ DBRemote.prototype.check = function(uid,cb) {
 DBRemote.prototype.getPlayerInfo = function(uid,cb) {
 	DBRemote.dbService.getPlayerInfo(uid,cb)
 }
+DBRemote.prototype.getNotify = function(cb) {
+	DBRemote.dbService.getNotify(cb)
+}
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	DBRemote.dbService.getPlayer(uid,name,function(data) {
