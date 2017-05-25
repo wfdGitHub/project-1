@@ -1,4 +1,6 @@
 var logic = require("./NiuNiuLogic.js")
+//var conf = require("../conf/niuniuConf.js").niuConf
+
 //常量定义
 var GAME_PLAYER = 3                 //游戏人数
 var TID_ROB_TIME = 8000            //抢庄时间
@@ -97,7 +99,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.bankerMode = param.bankerMode                 //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
-      room.needDiamond = Math.ceil(room.gameNumber / 10)
+      room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
       //设置下注上限
       maxBet = 5
       if(room.gameMode == MODE_GAME_BULL){
