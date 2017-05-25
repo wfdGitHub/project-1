@@ -17,7 +17,6 @@ var GS_ROB_BANKER   = 1005              //抢庄阶段
 
 //游戏模式
 var MODE_GAME_NORMAL = 1              //常规模式
-var MODE_GAME_MING   = 2              //明牌模式
 var MODE_GAME_BULL   = 3              //斗公牛模式
 var MODE_GAME_SHIP   = 4              //开船模式
 //定庄模式
@@ -85,6 +84,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }    
+    if(!param.cardMode || typeof(param.cardMode) !== "number" || param.bankerMode > 2 || param.bankerMode < 0){
+      log("newRoom error   param.cardMode : "+param.cardMode)
+      cb(false)
+      return
+    }     
     local.init()
     if(room.state === true){
       room.state = false
@@ -99,6 +103,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.bankerMode = param.bankerMode                 //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.consumeMode = param.consumeMode               //消耗模式
+      room.cardMode = param.cardMode                     //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
       //设置下注上限
       maxBet = 5
@@ -168,6 +173,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       gameNumber : room.gameNumber,
       consumeMode : room.consumeMode,
       bankerMode : room.bankerMode,
+      cardMode : room.cardMode,
       roomId : room.roomId
     }
     local.sendUid(uid,notify)
@@ -469,7 +475,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           }
       }
       //明牌模式发牌
-      if(room.gameMode == MODE_GAME_MING){
+      if(room.cardMode == conf.MODE_CARD_SHOW){
         var notify = {
           "cmd" : "MingCard"
         }
