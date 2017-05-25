@@ -74,4 +74,7 @@ GameRemote.prototype.kick = function(uid,cb) {
 		var roomId = GameRemote.niuniuService.userMap[uid]
 		GameRemote.niuniuService.roomList[roomId].leave(uid)
 	}
+	if(cb){
+		cb()
+	}
 };

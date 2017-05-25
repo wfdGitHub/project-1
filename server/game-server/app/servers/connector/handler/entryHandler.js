@@ -6,6 +6,7 @@ var Handler = function(app) {
   this.app = app;
   this.sessionService = this.app.get('sessionService');
   this.channelService = this.app.get('channelService');
+  this.gameChanel = this.channelService.getChannel("GameChannel",true)
   this.loginUser = {};
 };
 
@@ -18,7 +19,14 @@ handler.getNotify = function(msg,session,next) {
       next(null,data)
   })
 }
-
+handler.test = function(msg,session,next) {
+  var notify = {
+    "cmd" : "broadcast",
+    "content" : "恭喜玩家47抽中了幸运大奖！价值499万美元法拉利一辆"
+  }
+  this.gameChanel.pushMessage('onNotify',notify)
+  next()
+}
 //登录
 handler.enter = function(msg, session, next) {
   var self = this;
@@ -41,24 +49,26 @@ handler.enter = function(msg, session, next) {
     }
   });
   console.log("uid : "+session.get("uid"))
-  session.on('closed', onUserLeave.bind(null, self.app));
-    //检查账号  账号不存在则创建
-    self.app.rpc.db.remote.check(session, uid,function(flag) {
+  session.on('closed', onUserLeave.bind(null, self));
+  //检查账号  账号不存在则创建
+  self.app.rpc.db.remote.check(session, uid,function(flag) {
 
-    });   
-    //获取玩家信息
-    self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
-      var notify = {
-        cmd : "userInfo",
-        data : data
-      }
-      self.channelService.pushMessageByUids('onMessage', notify, [{
-        uid: uid,
-        sid: "connector-server-1"
-      }]);
-    })
-
+  });   
+  //获取玩家信息
+  self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
+    var notify = {
+      cmd : "userInfo",
+      data : data
+    }
+    self.channelService.pushMessageByUids('onMessage', notify, [{
+      uid: uid,
+      sid: "connector-server-1"
+    }]);
+  })
+  this.gameChanel.add(uid,self.app.get('serverId'))
   //put user into channel
+    
+
     next(null, {
         code: 100,
     });
@@ -81,7 +91,7 @@ handler.sendData = function(msg, session, next){
             next(null,{flag : flag});
         });   
     }else{
-          next(null,{flag : false})
+        next(null,{flag : false})
     }
 }
 
@@ -92,5 +102,6 @@ var onUserLeave = function(app, session) {
   if(!session || !session.uid) {
     return;
   }
+  this.gameChanel.level(session.uid,this.app.get('serverId'))
   app.rpc.game.remote.kick(session,session.uid,null);
 };
