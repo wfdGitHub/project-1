@@ -51,6 +51,17 @@ var roomCallback = function(roomId,players) {
 			NiuNiuService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * GAME_PLAYER),null)
 			break;		
 	}
+	//记录战绩
+	for(var index in players){
+		if(players.hasOwnProperty(index)){
+			var record = players[index].score
+			console.log(NiuNiuService.app.rpc.db.remote)
+			NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,function(argument) {
+				// body...
+			})			
+		}	
+	}	
+
 }
 //房间列表
 NiuNiuService.roomList = new Array(ROOM_AMOUNT);

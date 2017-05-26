@@ -1,11 +1,11 @@
 var logic = require("./NiuNiuLogic.js")
-//var conf = require("../conf/niuniuConf.js").niuConf
+var conf = require("../conf/niuniuConf.js").niuConf
 
 //常量定义
-var GAME_PLAYER = 3                 //游戏人数
-var TID_ROB_TIME = 8000            //抢庄时间
-var TID_BETTING = 8000              //下注时间
-var TID_SETTLEMENT = 1000           //结算时间
+var GAME_PLAYER = 1                 //游戏人数
+var TID_ROB_TIME = 10000            //抢庄时间
+var TID_BETTING = 10000              //下注时间
+var TID_SETTLEMENT = 10000           //结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
 //游戏状态
@@ -553,8 +553,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         curScores[i] = 0
       }
       switch(room.gameMode){
-        case MODE_GAME_NORMAL : 
-        case MODE_GAME_MING : 
+        case conf.MODE_GAME_NORMAL : 
+        case conf.MODE_GAME_MING : 
           //常规模式和明牌模式结算
           for(var i = 0;i < GAME_PLAYER;i++){
               if(i === banker) continue
@@ -570,7 +570,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               }
           }
           break
-        case MODE_GAME_BULL : 
+        case conf.MODE_GAME_BULL : 
           //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
             //结算庄家赢
             console.log(betList)

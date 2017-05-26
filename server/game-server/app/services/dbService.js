@@ -40,7 +40,8 @@ dbService.getPlayerInfo = function(uid,cb) {
 	var cmd3 = "nn:acc:"+uid+":"+"nickname"
 	var cmd4 = "nn:acc:"+uid+":"+"score"
 	var cmd5 = "nn:acc:"+uid+":"+"head"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,function(err,data) {
+	var cmd6 = "nn:acc:"+uid+":"+"history"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -48,6 +49,8 @@ dbService.getPlayerInfo = function(uid,cb) {
 			notify["nickname"] = data[2]
 			notify["score"] = data[3]
 			notify["head"] = data[4]
+			console.log(data[5])
+			notify["history"] = JSON.parse(data[5])
 			cb(notify)
 		}else{
 			cb(false)
@@ -81,10 +84,37 @@ dbService.getPlayer = function(uid,name,cb) {
 		}
 	})
 }
+dbService.setPlayerObject = function(uid,name,value,cb) {
+	var cmd = "nn:acc:"+uid+":"+name
+	console.log(cmd)
+	console.log(value)
+	value = JSON.stringify(value)
+	dbService.db.set(cmd,value,function(flag) {
+		if(cb){
+			cb(flag)
+		}
+	})
+}
+dbService.getPlayerObject = function(uid,name,cb) {
+	var cmd = "nn:acc:"+uid+":"+name
+	dbService.db.get(cmd,function(err,data) {
+		console.log(cmd + "  data : "+data)
+		if(err){
+			if(cb){
+				cb(false)
+			}
 
+		}else{
+			if(cb){
+				data = JSON.parse(data)
+				cb(data)
+			}
+		}
+	})
+}
 dbService.setNotify = function(notify,cb) {
 	var cmd = "nn:notifys"
-	notify = [{"name":"公告1","content":"新服开启"},{"name":"公告2","content":"首冲双倍"}]
+	var notify = {"1" : {"name" : "新服开启","content" : "新服火爆开启"} , "2" : {"name" : "首冲双倍","content" : "首次充值双倍返还"}}
 	dbService.db.set(cmd,notify,function(flag) {
 		if(cb){
 			cb(flag)
@@ -98,5 +128,27 @@ dbService.getNotify = function(cb) {
 		//console.log(cmd + "  data : "+data)
 		//console.log(JSON.parse(data))
 		cb(JSON.parse(data))
+	})
+}
+//record 当局游戏总分数
+dbService.setHistory = function(uid,record) {
+	dbService.getPlayerObject(uid,"history",function(data) {
+		console.log(data)
+		data.allGameCount += 1
+		if(record >= 0){
+			data.winGameCount += 1
+		}
+		if(record > data.maxScore){
+			data.maxScore = record
+		}
+		dbService.setPlayerObject(uid,"history",data)
+	})
+}
+
+dbService.getHistory = function(uid,cb) {
+	dbService.getPlayer(uid,"history",function(data) {
+		if(cb){
+			cb(data)
+		}
 	})
 }

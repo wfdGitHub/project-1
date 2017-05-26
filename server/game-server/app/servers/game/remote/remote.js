@@ -53,11 +53,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			})
 		}		
 	}else if(code == "newRoom"){
+		//TODO  无效数据判断
+		
 		//获取玩家钻石，判断是否满足准入数额
 		this.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
 			var diamond = data
 			var needMond = Math.ceil(params.gameNumber / 10)
-			switch(GameRemote.niuniuService.roomList[roomId].consumeMode){
+			switch(params.consumeMode){
 				case conf.MODE_DIAMOND_HOST : 
 					needMond = needMond * conf.GAME_PLAYER
 				break;

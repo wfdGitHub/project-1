@@ -49,22 +49,22 @@ handler.enter = function(msg, session, next) {
     }
   });
   console.log("uid : "+session.get("uid"))
-  session.on('closed', onUserLeave.bind(null, self));
+  session.on('closed', onUserLeave.bind(null,self));
   //检查账号  账号不存在则创建
   self.app.rpc.db.remote.check(session, uid,function(flag) {
-
+    //获取玩家信息
+    self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
+      var notify = {
+        cmd : "userInfo",
+        data : data
+      }
+      self.channelService.pushMessageByUids('onMessage', notify, [{
+        uid: uid,
+        sid: "connector-server-1"
+      }]);
+    })
   });   
-  //获取玩家信息
-  self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
-    var notify = {
-      cmd : "userInfo",
-      data : data
-    }
-    self.channelService.pushMessageByUids('onMessage', notify, [{
-      uid: uid,
-      sid: "connector-server-1"
-    }]);
-  })
+
   this.gameChanel.add(uid,self.app.get('serverId'))
   //put user into channel
     
@@ -96,12 +96,13 @@ handler.sendData = function(msg, session, next){
 }
 
 //用户离开事件处理
-var onUserLeave = function(app, session) {
-  console.log("onUserLeave  "+session.uid)
+var onUserLeave = function(self, session) {
+  //console.log(self)
+  //console.log(session.uid)
   //console.log(session)
   if(!session || !session.uid) {
     return;
   }
-  this.gameChanel.level(session.uid,this.app.get('serverId'))
-  app.rpc.game.remote.kick(session,session.uid,null);
+  self.gameChanel.leave(session.uid,self.app.get('serverId'))
+  self.app.rpc.game.remote.kick(session,session.uid,null);
 };
