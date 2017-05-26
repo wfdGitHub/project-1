@@ -85,7 +85,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }    
-    if(!param.cardMode || typeof(param.cardMode) !== "number" || param.bankerMode > 2 || param.bankerMode < 0){
+    if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
       log("newRoom error   param.cardMode : "+param.cardMode)
       cb(false)
       return
