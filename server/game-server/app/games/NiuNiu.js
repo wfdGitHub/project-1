@@ -174,7 +174,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       consumeMode : room.consumeMode,
       bankerMode : room.bankerMode,
       cardMode : room.cardMode,
-      roomId : room.roomId
+      roomId : room.roomId,
+      TID_ROB_TIME : conf.TID_ROB_TIME,
+      TID_BETTING : conf.TID_BETTING,
+      TID_SETTLEMENT : conf.TID_SETTLEMENT
     }
     local.sendUid(uid,notify)
     cb(true)
