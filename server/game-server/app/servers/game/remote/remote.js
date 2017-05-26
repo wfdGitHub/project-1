@@ -17,8 +17,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	//加入房间需要用户不在房间内
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
+			//TODO  无效条件判断
+			
 			//获取玩家钻石，判断是否满足准入数额
 			this.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+				var roomId = params.roomId
 				var diamond = data
 				var needMond = 0
 				switch(GameRemote.niuniuService.roomList[roomId].consumeMode){
@@ -33,7 +36,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					break;
 				}
 				if(diamond >= needMond){
-					var roomId = params.roomId
 					var ip = params.ip;
 					GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip},function (flag) {
 						if(flag === true){

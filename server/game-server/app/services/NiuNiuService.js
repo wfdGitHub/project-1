@@ -1,5 +1,4 @@
 //var gameHandle = require('../handler/handle');
-var GAME_PLAYER = 1                    //游戏人数
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
@@ -15,8 +14,9 @@ var NiuNiuService = function(app) {
 }
 NiuNiuService.name = "NiuNiuService"
 //房间回调
-var roomCallback = function(roomId,players) {
+var roomCallback = function(roomId,players,cb) {
 	console.log("room end "+ roomId)
+	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
 	NiuNiuService.roomState[roomId] = true
 	//将玩家从房间中解锁
 	for(var index in players){
@@ -26,6 +26,8 @@ var roomCallback = function(roomId,players) {
 	}	
 	//扣除钻石
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
+	var GAME_PLAYER = NiuNiuService.roomList[roomId].GAME_PLAYER
+	console.log("diamond : "+diamond)
 	switch(NiuNiuService.roomList[roomId].consumeMode){
 		case MODE_DIAMOND_HOST: 
 			NiuNiuService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * GAME_PLAYER),null)
@@ -55,13 +57,11 @@ var roomCallback = function(roomId,players) {
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
 			var record = players[index].score
-			console.log(NiuNiuService.app.rpc.db.remote)
-			NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,function(argument) {
-				// body...
-			})			
+			//console.log(NiuNiuService.app.rpc.db.remote)
+			NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)			
 		}	
 	}	
-
+	cb()
 }
 //房间列表
 NiuNiuService.roomList = new Array(ROOM_AMOUNT);

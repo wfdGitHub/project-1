@@ -68,10 +68,13 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 		}
 	})
 }
-DBRemote.prototype.setHistory = function(uid,record) {
+DBRemote.prototype.setHistory = function(uid,record,cb) {
 	console.log("uid : "+uid)
 	console.log(record)
 	DBRemote.dbService.setHistory(uid,record)
+	if(cb){
+		cb()
+	}
 }
 
 DBRemote.prototype.getValue = function(uid,name,cb) {

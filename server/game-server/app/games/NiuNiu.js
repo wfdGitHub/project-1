@@ -2,10 +2,10 @@ var logic = require("./NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 
 //常量定义
-var GAME_PLAYER = 1                 //游戏人数
-var TID_ROB_TIME = 10000            //抢庄时间
-var TID_BETTING = 10000              //下注时间
-var TID_SETTLEMENT = 10000           //结算时间
+var GAME_PLAYER = conf.GAME_PLAYER      //游戏人数
+var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
+var TID_BETTING = conf.TID_BETTING      //下注时间
+var TID_SETTLEMENT = conf.TID_SETTLEMENT//结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
 //游戏状态
@@ -41,6 +41,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var gameState = GS_FREE              //游戏状态
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
+  room.GAME_PLAYER = GAME_PLAYER       //游戏人数
   //游戏属性
   var robState = new Array(GAME_PLAYER) //抢庄状态记录
   var cards = {}                       //牌组
@@ -90,6 +91,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       return
     }     
     local.init()
+    
     if(room.state === true){
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -180,6 +182,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_SETTLEMENT : conf.TID_SETTLEMENT
     }
     local.sendUid(uid,notify)
+    //console.log(room.channel)
     cb(true)
   }
   //玩家重连
@@ -712,8 +715,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
     local.sendAll(notify)
     //结束游戏
-    roomCallBack(room.roomId,player)
-    local.init()
+    roomCallBack(room.roomId,player,local.init)
   }
   //积分改变
   local.changeScore = function(chair,score) {
@@ -743,6 +745,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //房间初始化
   local.init = function() {
+    //console.log("enter init=====================================")
     room.gameMode = 0                    //游戏模式
     room.gameNumber = 0                  //游戏局数
     room.consumeMode = 0                 //消耗模式
@@ -765,6 +768,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         cards[cardCount++] = {num : i,type : j}
       }
     }
+    //console.log("enter init=====================================111111111111111")
     //下注信息
     betList = new Array(GAME_PLAYER)
     betAmount = 0
@@ -787,10 +791,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[i].cardsList  = {}           //总战绩列表
       player[i].ip  = undefined           //玩家ip地址
     }    
+       //console.log("enter init=====================================222")
+      //channel清空
+      channelService.destroyChannel(roomId)
+      room.channel = channelService.getChannel(roomId,true)
+      //console.log(room.channel)   
   }
-  //channel清空
-  channelService.destroyChannel(roomId)
-  room.channel = channelService.getChannel(roomId,true)
+
   return room 
 }
 
