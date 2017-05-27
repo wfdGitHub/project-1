@@ -110,7 +110,7 @@ handler.sendData = function(msg, session, next){
     var self = this;
     //判断登录
     var uid = session.get("uid")
-    console.log("uid : "+uid)
+    console.log("uid : "+uid)  
     if(!!uid){
         if(msg.code == "join" || msg.code == "newRoom"){
           if(msg.params){
