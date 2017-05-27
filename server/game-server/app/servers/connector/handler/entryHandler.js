@@ -1,3 +1,4 @@
+var async = require('async');
 module.exports = function(app) {
   return new Handler(app);
 };
@@ -50,28 +51,57 @@ handler.enter = function(msg, session, next) {
   });
   console.log("uid : "+session.get("uid"))
   session.on('closed', onUserLeave.bind(null,self));
-  //检查账号  账号不存在则创建
-  self.app.rpc.db.remote.check(session, uid,function(flag) {
-    //获取玩家信息
-    self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
-      var notify = {
-        cmd : "userInfo",
-        data : data
+  
+  // async.waterfall([
+
+  //     function(cb) { console.log('1.1.1: ', 'start'); cb(null, 3); },
+
+  //     function(n, cb) { console.log('1.1.2: ',n); cb(null,n, cb); },
+
+  //     function(n, cb) { console.log('1.1.3: ',n);}
+
+  // ], function (err, result) {
+
+  //     console.log('1.1 err: ', err);
+
+  //     console.log('1.1 result: ', result);
+
+  // });
+  //登陆验证
+  async.waterfall([
+      function(cb){
+        self.app.rpc.db.remote.check(session, uid,function(flag){
+            cb(null)
+        })
+      },
+      function(cb) {
+        self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
+        var notify = {
+          cmd : "userInfo",
+          data : data
+        }
+        self.channelService.pushMessageByUids('onMessage', notify, [{
+          uid: uid,
+          sid: "connector-server-1"
+        }]);
+        cb(null)        
+      })
+      },
+      function() {
+        self.gameChanel.add(uid,self.app.get('serverId'))
       }
-      self.channelService.pushMessageByUids('onMessage', notify, [{
-        uid: uid,
-        sid: "connector-server-1"
-      }]);
-    })
-  });   
-
-  this.gameChanel.add(uid,self.app.get('serverId'))
-  //put user into channel
-    
-
-    next(null, {
-        code: 100,
-    });
+      ],
+    function(err,result) {
+      console.log("enter error")
+      console.log(err)
+      console.log(result)
+      next(null,{code : -200})
+      return
+    }
+  )
+  next(null, {
+      code: 100
+  });
 };
 
 //接受客户端发送数据
