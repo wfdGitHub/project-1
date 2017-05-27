@@ -20,6 +20,24 @@ handler.getNotify = function(msg,session,next) {
       next(null,data)
   })
 }
+
+//获取自身数据
+handler.getSelfData = function(msg,session,next) {
+    var self = this;
+    if(session.get("uid")){
+       self.app.rpc.db.remote.getPlayerInfo(session,session.get("uid"),function(data) {
+          var notify = {
+            cmd : "userInfo",
+            data : data
+          }
+          next(null,notify)
+      })     
+     }else{
+      next(false)
+     }
+
+}
+
 handler.test = function(msg,session,next) {
   var notify = {
     "cmd" : "broadcast",
