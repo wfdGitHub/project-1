@@ -108,16 +108,16 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.cardMode = param.cardMode                     //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
       //设置下注上限
-      maxBet = 5
-      if(room.gameMode == MODE_GAME_BULL){
-        room.bankerMode = MODE_BANKER_NONE
-        banker = roomHost
-        maxBet = 10
-      }
-      if(room.gameMode == MODE_GAME_SHIP){
-        room.bankerMode = MODE_BANKER_NONE
-        maxBet = 10
-      }
+      maxBet = 20
+      // if(room.gameMode == MODE_GAME_BULL){
+      //   room.bankerMode = MODE_BANKER_NONE
+      //   banker = roomHost
+      //   maxBet = 10
+      // }
+      // if(room.gameMode == MODE_GAME_SHIP){
+      //   room.bankerMode = MODE_BANKER_NONE
+      //   maxBet = 10
+      // }
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
