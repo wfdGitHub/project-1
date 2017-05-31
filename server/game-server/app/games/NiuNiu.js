@@ -646,9 +646,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           //开船模式先收集所有人的下注，再按从大到小赔付
           //先减去下注额
           var tmpAllBet = 0
+          console.log(betList)
           for(var i = 0;i < GAME_PLAYER;i++){
-            console.log(betList)
-            console.log(typeof(betList[i]) == "number")
             if(betList[i] && typeof(betList[i]) == "number"){
               curScores[i] -= betList[i]
               tmpAllBet += betList[i]              
@@ -662,9 +661,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           for(var i = 0;i < GAME_PLAYER - 1;i++){
             for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
               if(!logic.compare(result[j],result[j + 1])){
-                 var tmpResult = result[j + 1]
-                 result[j + 1] = result[j]
-                 result[j] = tmpResult
                  var tmpUid = tmpUidList[j + 1]
                  tmpUidList[j + 1] = tmpUidList[j]
                  tmpUidList[j] = tmpUid

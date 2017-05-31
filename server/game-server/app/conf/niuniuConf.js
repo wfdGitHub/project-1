@@ -20,7 +20,7 @@ conf.COMB_TYPE_BOMB  =    13          // 炸弹  x8
 
 
 
-conf.GAME_PLAYER = 3                 //游戏人数
+conf.GAME_PLAYER = 2                 //游戏人数
 conf.TID_ROB_TIME = 5000            //抢庄时间
 conf.TID_BETTING = 5000              //下注时间
 conf.TID_SETTLEMENT = 5000           //结conf.
