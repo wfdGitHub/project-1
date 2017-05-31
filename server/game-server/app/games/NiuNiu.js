@@ -450,6 +450,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         console.log("banker : "+banker)
         player[banker].isBanker = true    
+        player[banker].bankerCount++
         //广播庄家信息
         var notify = {
           "cmd" : "banker",
