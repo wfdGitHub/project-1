@@ -141,8 +141,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 
 
 GameRemote.prototype.kick = function(uid,cb) {
-	console.log("user leave1 : "+uid)
-	if(GameRemote.niuniuService.userMap[uid]){
+	console.log("user leave : "+uid)
+	if(GameRemote.niuniuService.userMap[uid] != undefined){
 		var roomId = GameRemote.niuniuService.userMap[uid]
 		GameRemote.niuniuService.roomList[roomId].leave(uid)
 	}
@@ -150,3 +150,13 @@ GameRemote.prototype.kick = function(uid,cb) {
 		cb()
 	}
 };
+
+//检测是否需要重连
+GameRemote.prototype.reconnection = function(uid, sid,cb) {
+	if(GameRemote.niuniuService.userMap[uid] !== undefined){
+		var roomId = GameRemote.niuniuService.userMap[uid]
+		GameRemote.niuniuService.roomList[roomId]["reconnection"](uid,sid,null,cb)
+	}else{
+		cb()
+	}
+}

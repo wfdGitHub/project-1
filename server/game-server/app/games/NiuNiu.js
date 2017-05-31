@@ -154,6 +154,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //初始化玩家属性
     room.chairMap[uid] = chair
     player[chair].isActive = true
+    player[chair].isOnline = true
     player[chair].uid = uid
     player[chair].ip = param.ip
     //玩家数量增加
@@ -190,16 +191,27 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     console.log("uid : "+uid + "  reconnection")
     if(room.chairMap[uid] !== undefined){
       var chair = room.chairMap[uid]
-      player[chair].isActive = true
+      player[chair].isOnline = true
       player[chair].uid = uid
       room.channel.add(uid,sid)
       notify = {
-      cmd : "reconnection",
-      player : player,
-      state : gameState
-    }
-    local.sendUid(uid,notify)
-    cb(true)
+        cmd : "reconnection",
+        player : player,
+        state : gameState,
+        gameMode : room.gameMode,
+        gameNumber : room.gameNumber,
+        consumeMode : room.consumeMode,
+        bankerMode : room.bankerMode,
+        cardMode : room.cardMode,
+        roomId : room.roomId,
+        TID_ROB_TIME : conf.TID_ROB_TIME,
+        TID_BETTING : conf.TID_BETTING,
+        TID_SETTLEMENT : conf.TID_SETTLEMENT,
+        bonusPool : bonusPool,
+        gameNumber : room.gameNumber        
+      }
+    //local.sendUid(uid,notify)
+    cb(notify)
     }else{
       cb(false)
     }
@@ -207,22 +219,28 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //玩家离开
   room.leave = function(uid) {
     //判断是否在椅子上
+    // console.log("leave11111 : "+room.chairMap[uid])
     var chair = room.chairMap[uid]
     if(chair === undefined){
       return
     }
-    player[chair].isActive = false
-    //playerCount--
-    var tsid =  room.channel.getMember(uid)['sid']
-    if(tsid){
-      room.channel.leave(uid,tsid)
+    // console.log(room.channel)
+    // console.log("leave222222")
+    if(player[chair].isOnline == true){
+      player[chair].isOnline = false
+      //playerCount--
+      var tsid =  room.channel.getMember(uid)['sid']
+      if(tsid){
+        room.channel.leave(uid,tsid)
+      }
+      // console.log(room.channel)
+      var notify = {
+        cmd: "userLeave",
+        uid: uid,
+        chair : chair
+      }
+      local.sendAll(notify)      
     }
-    var notify = {
-      cmd: "userLeave",
-      uid: uid,
-      chair : chair
-    }
-    local.sendAll(notify)
   }
   //玩家准备
   room.ready = function(uid,sid,param,cb) {
@@ -780,6 +798,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[i].chair = i                 //椅子号
       player[i].uid = 0                   //uid
       player[i].isActive = false          //当前椅子上是否有人
+      player[i].isOnline = false          //玩家是否在线
       player[i].isReady = false           //准备状态
       player[i].isBanker = false          //是否为庄家
       player[i].handCard = new Array(5)   //手牌

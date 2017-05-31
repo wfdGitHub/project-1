@@ -86,6 +86,7 @@ handler.enter = function(msg, session, next) {
 
   // });
   //登陆验证
+  var notify = {}
   async.waterfall([
       function(cb){
         self.app.rpc.db.remote.check(session, uid,function(flag){
@@ -94,19 +95,25 @@ handler.enter = function(msg, session, next) {
       },
       function(cb) {
         self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
-        var notify = {
-          cmd : "userInfo",
-          data : data
-        }
+          notify.cmd = "userInfo"
+          notify.data = data
+          cb(null)        
+        })
+      },
+      function(cb){
+        self.app.rpc.game.remote.reconnection(session,uid,self.app.get('serverId'),function(data) {
+            if(data){
+              notify.reconnection = data
+            }
+            cb(null)
+        })
+      },
+      function() {
+        self.gameChanel.add(uid,self.app.get('serverId'))
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: uid,
           sid: "connector-server-1"
         }]);
-        cb(null)        
-      })
-      },
-      function() {
-        self.gameChanel.add(uid,self.app.get('serverId'))
       }
       ],
     function(err,result) {
