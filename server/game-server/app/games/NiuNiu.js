@@ -208,7 +208,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       notify = {
         roomInfo : {
-          player : player,
+          player : newPlayer,
           gameMode : room.gameMode,
           gameNumber : room.maxGameNumber,
           consumeMode : room.consumeMode,
