@@ -197,7 +197,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.channel.add(uid,sid)
       var newPlayer = copyObj(player)
       //deal阶段之前不返回牌
-      if(gameState < GameGS_DEAL){
+      if(gameState < conf.GS_DEAL){
         for(var i = 0; i < GAME_PLAYER;i++){
             delete newPlayer[i].handCard
         }
