@@ -854,10 +854,10 @@ var copyObj = function(obj) {
   return res
 }
 
-var deepCopy= function(source) { 
+var deepCopy = function(source) { 
   var result={}
   for (var key in source) {
-        result[key] = typeof source[key]==="object"? deepCoyp(source[key]): source[key]
+        result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
      } 
-     return result;
+  return result;
 }
