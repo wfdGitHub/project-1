@@ -42,6 +42,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var gameState = GS_FREE              //游戏状态
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
+  var beginPlayer = {}                 //当局游戏参与玩家
   room.GAME_PLAYER = GAME_PLAYER       //游戏人数
   //游戏属性
   
@@ -198,6 +199,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //console.log(room.channel)
     cb(true)
   }
+
   //玩家重连
   room.reconnection = function(uid,sid,param,cb) {
     console.log("uid : "+uid + "  reconnection")
@@ -520,8 +522,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //发牌
       var index = 0;
       for(var i = 0;i < GAME_PLAYER;i++){
-          for(var j = 0;j < 5;j++){
+          if(player[i].isActive){
+            beginPlayer[i] = true
+            for(var j = 0;j < 5;j++){
               player[i].handCard[j] = cards[index++];
+            }
           }
       }
       //明牌模式发牌
@@ -530,12 +535,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           "cmd" : "MingCard"
         }
         for(var i = 0;i < GAME_PLAYER;i++){
-          var tmpCards = {}
-          for(var j = 0;j < MING_CARD_NUM;j++){
-              tmpCards[j] = player[i].handCard[j];
+          if(player[i].isActive){
+            var tmpCards = {}
+            for(var j = 0;j < MING_CARD_NUM;j++){
+                tmpCards[j] = player[i].handCard[j];
+            }
+            notify.Cards = tmpCards
+            local.sendUid(player[i].uid,notify)    
           }
-          notify.Cards = tmpCards
-          local.sendUid(player[i].uid,notify)    
+
         }
       }
       //进入下注
@@ -572,14 +580,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
-          tmpCards[i]= player[i].handCard
+          if(beginPlayer[i]){
+            tmpCards[i]= player[i].handCard
+          }
       }
       var notify = {
         "cmd" : "deal",
         "handCards" : tmpCards
       }
       for(var i = 0;i < GAME_PLAYER;i++){
-        local.sendUid(player[i].uid,notify)
+        if(player[i].isActive){
+          local.sendUid(player[i].uid,notify)
+        }
       }
       
       setTimeout(local.settlement,TID_SETTLEMENT)
@@ -599,8 +611,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //计算牌型
       var result = {}
       for(var i = 0;i < GAME_PLAYER;i++){
-          result[i] = logic.getType(player[i].handCard); 
-          player[i].cardsList[room.runCount] = result[i]
+          if(beginPlayer[i]){
+            result[i] = logic.getType(player[i].handCard); 
+            player[i].cardsList[room.runCount] = result[i]           
+          }
       }
       var trueResult = deepCopy(result)
       var bankerResult = result[banker]
@@ -613,7 +627,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         case conf.MODE_GAME_NORMAL : 
           //常规模式和明牌模式结算
           for(var i = 0;i < GAME_PLAYER;i++){
-              if(i === banker) continue
+              if(i === banker || beginPlayer[i] != true) continue
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
@@ -631,7 +645,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //结算庄家赢
             console.log(betList)
             for(var i = 0;i < GAME_PLAYER;i++){
-              if(i === banker) continue
+              if(i === banker || beginPlayer[i] != true) continue
               if(!logic.compare(result[i],result[banker])){
                   //庄家赢
                   var tmpScore = betList[i] * result[banker].award
@@ -698,7 +712,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           var tmpAllBet = 0
           console.log(betList)
           for(var i = 0;i < GAME_PLAYER;i++){
-            if(betList[i] && typeof(betList[i]) == "number"){
+            if(betList[i] && typeof(betList[i]) == "number" && beginPlayer[i]){
               curScores[i] -= betList[i]
               tmpAllBet += betList[i]              
             }
@@ -710,10 +724,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           console.log(result)
           for(var i = 0;i < GAME_PLAYER - 1;i++){
             for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
-              if(!logic.compare(result[j],result[j + 1])){
-                 var tmpUid = tmpUidList[j + 1]
-                 tmpUidList[j + 1] = tmpUidList[j]
-                 tmpUidList[j] = tmpUid
+              if(beginPlayer[i] != true || !logic.compare(result[j],result[j + 1])){
+                  var tmpUid = tmpUidList[j + 1]
+                  tmpUidList[j + 1] = tmpUidList[j]
+                  tmpUidList[j] = tmpUid
               }
             }
           }
@@ -721,7 +735,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           log(curScores)
           //按牌型赔付
           for(var i = 0;i < GAME_PLAYER;i++){
-            if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number"){
+            if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number" && beginPlayer[tmpUidList[i]]){
               var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award + betList[tmpUidList[i]]
               if(tmpScore > tmpAllBet){
                 tmpScore = tmpAllBet
@@ -736,7 +750,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
-          local.changeScore(i,curScores[i])
+          if(beginPlayer[i]){
+            local.changeScore(i,curScores[i])
+          }
       }
       //发送当局结算消息
       var notify = {
@@ -807,6 +823,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     readyCount = 0                   //游戏准备人数
     gameState = GS_FREE              //游戏状态
     room.chairMap = {}                   //玩家UID与椅子号映射表
+    beginPlayer = {}
     banker = -1                      //庄家椅子号
     roomHost = -1                    //房主椅子号
     //游戏属性
