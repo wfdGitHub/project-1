@@ -208,6 +208,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           TID_BETTING : conf.TID_BETTING,
           TID_SETTLEMENT : conf.TID_SETTLEMENT
         },
+        betList : betList,
         state : gameState,
         bonusPool : bonusPool,
         surplusGameNumber : room.maxGameNumber - room.gameNumber
@@ -525,12 +526,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //状态改变
     gameState = GS_BETTING
     //默认底分
-    for(var index in betList){
-      if(betList.hasOwnproperty(index)){
-        if(player[index].isActive){
-          betList[index] = 1
+    for(var i = 0; i < GAME_PLAYER;i++){
+        if(player[i].isActive && i != banker){
+          betList[i] = 1
+          betAmount += 1
         }
-      }
     }
     //通知客户端
     var notify = {
@@ -761,11 +761,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //通过uid 单播消息
   local.sendUid = function(uid,notify) {
-    var tsid =  room.channel.getMember(uid)['sid']
-    channelService.pushMessageByUids('onMessage', notify, [{
-      uid: uid,
-      sid: tsid
-    }]);
+    if(room.channel.getMember(uid)){
+        var tsid =  room.channel.getMember(uid)['sid']
+        channelService.pushMessageByUids('onMessage', notify, [{
+          uid: uid,
+          sid: tsid
+        }]);  
+      }
   }
 
   //房间初始化
