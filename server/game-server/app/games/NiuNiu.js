@@ -203,7 +203,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         if(room.cardMode == conf.MODE_CARD_SHOW){
           newPlayer[chair].handCard = deepCopy(player[chair].handCard)
-          delete newPlayer[chair].handCard[5]
+          delete newPlayer[chair].handCard[4]
         }
       }
       notify = {
