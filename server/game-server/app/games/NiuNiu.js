@@ -36,14 +36,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.roomId = roomId
   room.channel = channelService.getChannel(roomId,true)
   //房间初始化
-  var local = {}                        //私有方法
+  var local = {}                       //私有方法
+  var player = {}                      //玩家属性
   var readyCount = 0                   //游戏准备人数
   var gameState = GS_FREE              //游戏状态
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
   room.GAME_PLAYER = GAME_PLAYER       //游戏人数
   //游戏属性
-  var robState = new Array(GAME_PLAYER) //抢庄状态记录
+  
   var cards = {}                       //牌组
   var cardCount = 0                    //卡牌剩余数量
   for(var i = 1;i <= 13;i++){
@@ -52,14 +53,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
   }
   //下注信息
-  var betList = new Array(GAME_PLAYER)
+  
   var betAmount = 0
   //下注上限
   var maxBet = 0
   //斗公牛模式积分池
   var bonusPool = 40
-  //玩家属性
-  var  player = {}
+  var robState,betList
 
   //创建房间
   room.newRoom = function(uid,sid,param,cb) {
@@ -89,9 +89,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("newRoom error   param.cardMode : "+param.cardMode)
       cb(false)
       return
-    }     
+    } 
+    if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
+      log("newRoom error   param.playerAmount : "+param.playerAmount)
+      cb(false)
+      return
+    }
+    //房间人数设置    
+    GAME_PLAYER = param.playerAmount
+
+    //房间初始化
     local.init()
-    
+
     if(room.state === true){
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -284,8 +293,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       chair : chair
     }
     local.sendAll(notify)
-    //准备人数等于房间人数时，游戏开始
-    if(readyCount == GAME_PLAYER){
+    //房间内玩家全部准备且人数大于2时开始游戏
+    if(readyCount == room.playerCount && room.playerCount >= 2){
         //进入定庄阶段
         local.chooseBanker()
     }
