@@ -104,6 +104,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.gameMode = param.gameMode                     //游戏模式
       room.bankerMode = param.bankerMode                 //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
+      room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
@@ -195,20 +196,21 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[chair].uid = uid
       room.channel.add(uid,sid)
       notify = {
-        cmd : "reconnection",
-        player : player,
+        roomInfo : {
+          player : player,
+          gameMode : room.gameMode,
+          gameNumber : room.maxGameNumber,
+          consumeMode : room.consumeMode,
+          bankerMode : room.bankerMode,
+          cardMode : room.cardMode,
+          roomId : room.roomId,
+          TID_ROB_TIME : conf.TID_ROB_TIME, 
+          TID_BETTING : conf.TID_BETTING,
+          TID_SETTLEMENT : conf.TID_SETTLEMENT
+        },
         state : gameState,
-        gameMode : room.gameMode,
-        gameNumber : room.gameNumber,
-        consumeMode : room.consumeMode,
-        bankerMode : room.bankerMode,
-        cardMode : room.cardMode,
-        roomId : room.roomId,
-        TID_ROB_TIME : conf.TID_ROB_TIME,
-        TID_BETTING : conf.TID_BETTING,
-        TID_SETTLEMENT : conf.TID_SETTLEMENT,
         bonusPool : bonusPool,
-        gameNumber : room.gameNumber        
+        surplusGameNumber : room.maxGameNumber - room.gameNumber
       }
     //local.sendUid(uid,notify)
     cb(notify)
@@ -522,11 +524,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     log("betting")
     //状态改变
     gameState = GS_BETTING
-
+    //默认底分
+    for(var index in betList){
+      if(betList.hasOwnproperty(index)){
+        if(player[index].isActive){
+          betList[index] = 1
+        }
+      }
+    }
     //通知客户端
     var notify = {
       cmd : "beginBetting",
-      banker : banker
+      banker : banker,
+      betList : betList
     }
     local.sendAll(notify)
     //定时器启动下一阶段
@@ -646,7 +656,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               }
             } 
             //积分池空则换庄
-            if(bonusPool <= 0){
+            if(bonusPool <= GAME_PLAYER){
                 banker = (banker + 1)%GAME_PLAYER
                 bonusPool = 40
             }
@@ -763,6 +773,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //console.log("enter init=====================================")
     room.gameMode = 0                    //游戏模式
     room.gameNumber = 0                  //游戏局数
+    room.maxGameNumber = 0               //游戏最大局数
     room.consumeMode = 0                 //消耗模式
     room.bankerMode  = 0                 //定庄模式
     room.needDiamond = 0                 //钻石基数
