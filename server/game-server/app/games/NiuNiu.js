@@ -195,6 +195,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[chair].isOnline = true
       player[chair].uid = uid
       room.channel.add(uid,sid)
+      var newPlayer = copyObj(player)
+      for(var i = 0; i < GAME_PLAYER;i++){
+          delete newPlayer[i].handCard
+      }
+      //deal阶段之前不返回牌
+      if(gameState >= GameGS_DEAL){
+        newPlayer[chair].handCard = copyObj(player[chair].handCard)
+      }else{
+        if(room.cardMode == conf.MODE_CARD_SHOW){
+          newPlayer[chair].handCard = copyObj(player[chair].handCard)
+          delete newPlayer[chair].handCard[5]
+        }
+      }
       notify = {
         roomInfo : {
           player : player,
