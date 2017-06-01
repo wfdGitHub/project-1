@@ -118,6 +118,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       if(room.gameMode == MODE_GAME_SHIP){
         room.bankerMode = MODE_BANKER_NONE
       }
+      if(room.gameMode == MODE_GAME_BULL){
+        room.bankerMode = MODE_BANKER_HOST
+      }
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
       cb(false)
@@ -668,6 +671,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             if(bonusPool <= GAME_PLAYER){
                 banker = (banker + 1)%GAME_PLAYER
                 bonusPool = 40
+                log("banker change : "+banker)
             }
             //斗牛模式更新积分池
             if(room.gameMode == MODE_GAME_BULL){
