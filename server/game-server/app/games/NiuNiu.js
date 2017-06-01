@@ -115,11 +115,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //   banker = roomHost
       //   maxBet = 10
       // }
-      if(room.gameMode == MODE_GAME_SHIP){
+      if(room.gameMode == MODE_GAME_SHIP || room.bankerMode = MODE_BANKER_HOST){
         room.bankerMode = MODE_BANKER_NONE
       }
       if(room.gameMode == MODE_GAME_BULL){
-        room.bankerMode = MODE_BANKER_HOST
+        banker = roomHost
       }
       room.join(uid,sid,{ip : param.ip},cb)
     }else{
