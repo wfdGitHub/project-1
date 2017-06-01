@@ -599,7 +599,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       switch(room.gameMode){
         case conf.MODE_GAME_NORMAL : 
-        case conf.MODE_GAME_MING : 
           //常规模式和明牌模式结算
           for(var i = 0;i < GAME_PLAYER;i++){
               if(i === banker) continue
