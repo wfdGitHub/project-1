@@ -195,14 +195,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[chair].isOnline = true
       player[chair].uid = uid
       room.channel.add(uid,sid)
-      var newPlayer = copyObj(player)
+      var newPlayer = deepCopy(player)
       //deal阶段之前不返回牌
       if(gameState < conf.GS_DEAL){
         for(var i = 0; i < GAME_PLAYER;i++){
             delete newPlayer[i].handCard
         }
         if(room.cardMode == conf.MODE_CARD_SHOW){
-          newPlayer[chair].handCard = copyObj(player[chair].handCard)
+          newPlayer[chair].handCard = deepCopy(player[chair].handCard)
           delete newPlayer[chair].handCard[5]
         }
       }
@@ -591,7 +591,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           result[i] = logic.getType(player[i].handCard); 
           player[i].cardsList[room.runCount] = result[i]
       }
-      var trueResult = copyObj(result)
+      var trueResult = deepCopy(result)
       var bankerResult = result[banker]
       //结算分
       var curScores = new Array(GAME_PLAYER)
@@ -852,4 +852,12 @@ var copyObj = function(obj) {
     res[key] = obj[key]
   }
   return res
+}
+
+var deepCopy= function(source) { 
+  var result={}
+  for (var key in source) {
+        result[key] = typeof source[key]===’object’? deepCoyp(source[key]): source[key]
+     } 
+     return result;
 }
