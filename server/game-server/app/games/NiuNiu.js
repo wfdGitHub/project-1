@@ -305,6 +305,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       if(readyCount == room.playerCount && room.playerCount >= 2){
           //进入定庄阶段
           console.log("beginGame")
+          //发送游戏开始消息
+          notify = {
+            "cmd" : "gameStart"
+          }
+          local.sendAll(notify)
           local.chooseBanker()
       }      
     }
@@ -578,7 +583,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     gameState = GS_BETTING
     //默认底分
     for(var i = 0; i < GAME_PLAYER;i++){
-        if(player[i].isActive && i != banker){
+        if(beginPlayer[i] && player[i].isActive && i != banker){
           betList[i] = 1
           betAmount += 1
         }
