@@ -193,7 +193,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       roomId : room.roomId,
       TID_ROB_TIME : conf.TID_ROB_TIME,
       TID_BETTING : conf.TID_BETTING,
-      TID_SETTLEMENT : conf.TID_SETTLEMENT
+      TID_SETTLEMENT : conf.TID_SETTLEMENT,
+      state : room.gameState
     }
     local.sendUid(uid,notify)
     //console.log(room.channel)
@@ -285,20 +286,20 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     if(player[chair].isReady === false){
       player[chair].isReady = true
       readyCount++
-    }else{
-      player[chair].isReady = false
-      readyCount--
-    }
-    var notify = {
-      cmd: "userReady",
-      uid: uid,
-      chair : chair
-    }
-    local.sendAll(notify)
-    //房间内玩家全部准备且人数大于2时开始游戏
-    if(readyCount == room.playerCount && room.playerCount >= 2){
-        //进入定庄阶段
-        local.chooseBanker()
+      var notify = {
+        cmd: "userReady",
+        uid: uid,
+        chair : chair
+      }
+      local.sendAll(notify)
+      //房间内玩家全部准备且人数大于2时开始游戏
+      console.log("readyCount : "+readyCount) 
+      console.log("room.playerCount : "+room.playerCount)
+      if(readyCount == room.playerCount && room.playerCount >= 2){
+          //进入定庄阶段
+          console.log("beginGame")
+          local.chooseBanker()
+      }      
     }
     cb(true)
   }
@@ -417,6 +418,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
+    //记录本局参与游戏玩家
+    beginPlayer = {} 
+    for(var i = 0;i < GAME_PLAYER;i++){
+      if(player[i].isActive){
+        beginPlayer[i] = true
+      }
+    }
+
     gameState = GS_ROB_BANKER
     switch(room.bankerMode){
       case MODE_BANKER_ROB :
@@ -462,15 +471,21 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
     }
     console.log("endRob num : "+num)
-    //无人抢庄从所有玩家中随机
+    //无人抢庄将所有参与游戏的玩家加入抢庄列表
     if(num == 0){
-      num = Math.floor(Math.random() * GAME_PLAYER)%GAME_PLAYER
-    }else{
-      //随机出一个庄家
-      var index = Math.floor(Math.random() * num)%num
-      console.log("index : "+index)
-      num = robList[index]
+      for(var i = 0; i < GAME_PLAYER;i++){
+        //console.log("i : "+i +"player[i].isActive : "+player[i].isActive+" beginPlayer[i] : "+ beginPlayer[i])
+        if(player[i].isActive && beginPlayer[i]){
+          robList[num++] = i
+        }
+      }
     }
+    console.log("num : "+num)
+    //随机出一个庄家
+    var index = Math.floor(Math.random() * num)%num
+    console.log("index : "+index)
+    num = robList[index]
+    
 
     banker = num
 
@@ -522,8 +537,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //发牌
       var index = 0;
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive){
-            beginPlayer[i] = true
+          if(player[i].isActive && beginPlayer[i]){
             for(var j = 0;j < 5;j++){
               player[i].handCard[j] = cards[index++];
             }
@@ -535,7 +549,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           "cmd" : "MingCard"
         }
         for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive){
+          if(player[i].isActive && beginPlayer[i]){
             var tmpCards = {}
             for(var j = 0;j < MING_CARD_NUM;j++){
                 tmpCards[j] = player[i].handCard[j];
@@ -627,17 +641,24 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         case conf.MODE_GAME_NORMAL : 
           //常规模式和明牌模式结算
           for(var i = 0;i < GAME_PLAYER;i++){
-              if(i === banker || beginPlayer[i] != true) continue
-              //比较大小
-              if(logic.compare(result[i],result[banker])){
-                  //闲家赢
-                  curScores[i] += betList[i] * result[i].award
-                  curScores[banker] -= betList[i] * result[i].award
-              }else{
-                  //庄家赢
-                  curScores[i] -= betList[i] * result[banker].award
-                  curScores[banker] += betList[i] * result[banker].award
-              }
+            if(player[i].isActive){
+                // console.log("banker : "+banker)
+                // console.log("i : "+i+"  beginPlayer[i] : "+beginPlayer[i])
+                // console.log(result[i])
+                // console.log(result[banker])
+                if(i === banker || beginPlayer[i] != true) continue
+                //比较大小
+                if(logic.compare(result[i],result[banker])){
+                    //闲家赢
+                    curScores[i] += betList[i] * result[i].award
+                    curScores[banker] -= betList[i] * result[i].award
+                }else{
+                    //庄家赢
+                    curScores[i] -= betList[i] * result[banker].award
+                    curScores[banker] += betList[i] * result[banker].award
+                }              
+            }
+
           }
           break
         case conf.MODE_GAME_BULL : 
@@ -663,7 +684,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //console.log(result)
             for(var i = 0;i < GAME_PLAYER - 1;i++){
               for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
-                if(!logic.compare(result[j],result[j + 1])){
+                if(!beginPlayer[tmpUidList[j + 1]]){ continue }
+                if(beginPlayer[tmpUidList[j]] != true || !logic.compare(result[j],result[j + 1])){
                    var tmpResult = result[j + 1]
                    result[j + 1] = result[j]
                    result[j] = tmpResult
@@ -677,7 +699,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             //console.log(tmpUidList)
             //优先赔付牌型大的闲家
             for(var i = 0;i < GAME_PLAYER;i++){
-              if(tmpUidList[i] === banker) continue
+              if(tmpUidList[i] === banker || beginPlayer[tmpUidList[i]] != true) continue
               if(logic.compare(result[i],bankerResult)){
                   //闲家赢
                   var tmpScore = betList[tmpUidList[i]] * result[i].award
@@ -724,19 +746,26 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           console.log(result)
           for(var i = 0;i < GAME_PLAYER - 1;i++){
             for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
-              if(beginPlayer[i] != true || !logic.compare(result[j],result[j + 1])){
+              if(beginPlayer[tmpUidList[j + 1]] != true){ 
+                continue 
+              }
+              if(beginPlayer[tmpUidList[j]] != true || !logic.compare(result[j],result[j + 1])){
                   var tmpUid = tmpUidList[j + 1]
                   tmpUidList[j + 1] = tmpUidList[j]
                   tmpUidList[j] = tmpUid
+                  var tmpResult = result[j + 1]
+                  result[j + 1] = result[j]
+                  result[j] = tmpResult
               }
             }
           }
+          console.log(result)
           log("curScores==================")
           log(curScores)
           //按牌型赔付
           for(var i = 0;i < GAME_PLAYER;i++){
             if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number" && beginPlayer[tmpUidList[i]]){
-              var tmpScore = betList[tmpUidList[i]] * result[tmpUidList[i]].award + betList[tmpUidList[i]]
+              var tmpScore = betList[tmpUidList[i]] * result[i].award + betList[tmpUidList[i]]
               if(tmpScore > tmpAllBet){
                 tmpScore = tmpAllBet
               }
@@ -750,15 +779,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(beginPlayer[i]){
-            local.changeScore(i,curScores[i])
-          }
+          local.changeScore(i,curScores[i])
       }
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
         "result" : trueResult,
-        "curScores" : curScores
+        "curScores" : curScores,
+        "beginPlayer" : beginPlayer
       }
       local.sendAll(notify)
 

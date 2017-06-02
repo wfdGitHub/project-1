@@ -20,7 +20,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
 			//TODO  无效条件判断
-			
+			if(typeof(params.roomId) != "number" || params.roomId < 0 || !GameRemote.niuniuService.roomList[params.roomId]){
+				console.log("params.roomId : "+params.roomId)
+				console.log("type : "+typeof(params.roomId))
+				console.log(GameRemote.niuniuService.roomList[roomId])
+				cb(false)
+				return
+			}
 			async.waterfall([
 				function(next) {
 					//获取玩家钻石，判断是否满足准入数额
