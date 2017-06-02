@@ -180,11 +180,17 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player : player[chair]
     }
     local.sendAll(notify)
-
+    var newPlayer = deepCopy(player)
+    //deal阶段之前不返回牌
+    if(gameState < conf.GS_DEAL){
+      for(var i = 0; i < GAME_PLAYER;i++){
+          delete newPlayer[i].handCard
+      }
+    }
     room.channel.add(uid,sid)
     notify = {
       cmd : "roomPlayer",
-      player:player,
+      player:newPlayer,
       gameMode : room.gameMode,
       gameNumber : room.gameNumber,
       consumeMode : room.consumeMode,
@@ -194,8 +200,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_ROB_TIME : conf.TID_ROB_TIME,
       TID_BETTING : conf.TID_BETTING,
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
-      state : room.gameState
+      state : gameState
     }
+    //console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
     cb(true)
