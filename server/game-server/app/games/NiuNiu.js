@@ -125,6 +125,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //   banker = roomHost
       //   maxBet = 10
       // }
+      //console.log("room maxGameNumber : "+room.maxGameNumber)
       if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
         room.bankerMode = MODE_BANKER_NONE
       }
@@ -187,13 +188,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           delete newPlayer[i].handCard
       }
     }
+    //console.log("param.maxGameNumber : "+param.maxGameNumber)
+    //console.log("room.gameNumber : "+room.gameNumber)
     room.channel.add(uid,sid)
     notify = {
       cmd : "roomPlayer",
       player:newPlayer,
       gameMode : room.gameMode,
       maxGameNumber : room.maxGameNumber,
-      gameNumber : param.maxGameNumber - room.gameNumber,
+      gameNumber : room.maxGameNumber - room.gameNumber,
       consumeMode : room.consumeMode,
       bankerMode : room.bankerMode,
       cardMode : room.cardMode,
@@ -203,7 +206,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
       state : gameState
     }
-    //console.log(notify)
+    console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
     cb(true)
