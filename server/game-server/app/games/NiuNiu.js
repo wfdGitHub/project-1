@@ -193,7 +193,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player:newPlayer,
       gameMode : room.gameMode,
       maxGameNumber : room.maxGameNumber,
-      gameNumber : room.gameNumber,
+      gameNumber : param.maxGameNumber - room.gameNumber,
       consumeMode : room.consumeMode,
       bankerMode : room.bankerMode,
       cardMode : room.cardMode,
