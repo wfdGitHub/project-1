@@ -98,7 +98,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     //房间人数设置    
     GAME_PLAYER = param.playerAmount
-
+    room.GAME_PLAYER = GAME_PLAYER
     //房间初始化
     local.init()
 

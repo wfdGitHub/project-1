@@ -28,6 +28,7 @@ var roomCallback = function(roomId,players,cb) {
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
 	var GAME_PLAYER = NiuNiuService.roomList[roomId].GAME_PLAYER
 	console.log("diamond : "+diamond)
+	console.log("GAME_PLAYER : "+GAME_PLAYER)
 	switch(NiuNiuService.roomList[roomId].consumeMode){
 		case MODE_DIAMOND_HOST: 
 			NiuNiuService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * GAME_PLAYER),null)
@@ -49,16 +50,19 @@ var roomCallback = function(roomId,players,cb) {
 						winScore = players[index].score
 					}
 				}
-			}		
+			}
 			NiuNiuService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * GAME_PLAYER),null)
 			break;		
 	}
 	//记录战绩
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
-			var record = players[index].score
-			//console.log(NiuNiuService.app.rpc.db.remote)
-			NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)			
+			if(players[index].isActive){
+				var record = players[index].score
+				//console.log(NiuNiuService.app.rpc.db.remote)
+				NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)			
+			}
+		
 		}	
 	}	
 	cb()

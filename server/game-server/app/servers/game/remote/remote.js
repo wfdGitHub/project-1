@@ -77,6 +77,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		}		
 	}else if(code == "newRoom"){
 		//TODO  无效数据判断
+		if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
+	      log("newRoom error   param.playerAmount : "+param.playerAmount)
+	      cb(false)
+	      return
+	    }
 	  async.waterfall([
 			function(next) {
 				//获取玩家钻石，判断是否满足准入数额
@@ -89,13 +94,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				var needMond = Math.ceil(params.gameNumber / 10)
 				switch(params.consumeMode){
 					case conf.MODE_DIAMOND_HOST : 
-						needMond = needMond * conf.GAME_PLAYER
+						needMond = needMond * params.playerAmount
 					break;
 					case conf.MODE_DIAMOND_EVERY :
 						needMond = needMond
 					break;
 					case conf.MODE_DIAMOND_WIN : 
-						needMond = needMond * conf.GAME_PLAYER
+						needMond = needMond * params.playerAmount
 					break;
 				}
 				if(diamond >= needMond){
