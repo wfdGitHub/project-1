@@ -538,6 +538,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
             betList[i] = 0;
+            player[i].isShowCard = false
       }
       if(banker !== -1){
         //重置庄家信息
