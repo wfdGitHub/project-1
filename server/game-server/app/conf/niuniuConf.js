@@ -23,7 +23,7 @@ conf.COMB_TYPE_BOMB  =    13          // 炸弹  x8
 conf.GAME_PLAYER = 2                 //游戏人数
 conf.TID_ROB_TIME = 1000            //抢庄时间
 conf.TID_BETTING = 1000              //下注时间
-conf.TID_SETTLEMENT = 1000           //结conf.
+conf.TID_SETTLEMENT = 1000           //结算时间
 conf.MING_CARD_NUM = 4               //明牌数量
 //游戏状态
 conf.GS_FREE         = 1001              //空闲阶段
