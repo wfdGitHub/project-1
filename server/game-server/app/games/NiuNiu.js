@@ -43,6 +43,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var banker = -1                      //庄家椅子号
   var roomHost = -1                    //房主椅子号
   var beginPlayer = {}                 //当局游戏参与玩家
+  var timer                            //定时器句柄
   room.GAME_PLAYER = GAME_PLAYER       //游戏人数
   //游戏属性
   
@@ -425,11 +426,30 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }
+    //已经开牌则不能再开牌
+    if(player[chair].isShowCard == true){
+      cb(false)
+      return
+    }
+    player[chair].isShowCard = true
+    
     var notify = {
       "cmd": "showCard",
       "chair" : chair
     }
     local.sendAll(notify)
+    //所有参与游戏的玩家都开牌则在三秒后进入结算
+    var flag = true
+    for(var i = 0; i < GAME_PLAYER;i++){
+      if(beginPlayer[i] == true && player[i].isShowCard == false){
+        flag = false
+      }
+    }
+
+    if(flag){
+      clearTimeout(timer)
+      timer = setTimeout(local.settlement,3000) 
+    }
 
   }
   //定庄阶段  有抢庄则进入抢庄
@@ -485,7 +505,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     for(var i = 0; i < GAME_PLAYER;i++){
       if(robState[i] == true){
         robList[num++] = i
-
       }
     }
     console.log("endRob num : "+num)
@@ -602,7 +621,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     local.sendAll(notify)
     //定时器启动下一阶段
-    setTimeout(local.deal,TID_BETTING)      
+    timer = setTimeout(local.deal,TID_BETTING)      
     
   }
   //发牌阶段  等待摊牌后进入结算
@@ -626,7 +645,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
       }
       
-      setTimeout(local.settlement,TID_SETTLEMENT)
+      timer = setTimeout(function(){
+        gameState = GS_FREE
+        timer = setTimeout(local.settlement,3000) 
+      },TID_SETTLEMENT)
   }
 
   //结算阶段
@@ -799,7 +821,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
-          local.changeScore(i,curScores[i])
+          if(curScores[i] != 0){
+            local.changeScore(i,curScores[i])
+          }
       }
       //发送当局结算消息
       var notify = {
@@ -874,6 +898,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     beginPlayer = {}
     banker = -1                      //庄家椅子号
     roomHost = -1                    //房主椅子号
+    timer = undefined                //定时器句柄
     //游戏属性
     robState = new Array(GAME_PLAYER) //抢庄状态记录
     cards = {}                       //牌组
@@ -901,6 +926,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       player[i].isOnline = false          //玩家是否在线
       player[i].isReady = false           //准备状态
       player[i].isBanker = false          //是否为庄家
+      player[i].isShowCard = false        //是否开牌
       player[i].handCard = new Array(5)   //手牌
       player[i].score = 0                 //当前积分
       player[i].bankerCount = 0           //坐庄次数
