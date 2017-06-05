@@ -77,8 +77,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		}		
 	}else if(code == "newRoom"){
 		//TODO  无效数据判断
-		if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
-	      log("newRoom error   param.playerAmount : "+param.playerAmount)
+		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
+	      log("newRoom error   param.playerAmount : "+params.playerAmount)
 	      cb(false)
 	      return
 	    }
