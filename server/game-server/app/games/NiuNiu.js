@@ -34,6 +34,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var roomCallBack = cb
   var room = {}
   room.roomId = roomId
+  room.roomType = "niuniu"
   room.channel = channelService.getChannel(roomId,true)
   //房间初始化
   var local = {}                       //私有方法
@@ -207,7 +208,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
       state : gameState
     }
-    console.log(notify)
+    //console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
     cb(true)
@@ -305,8 +306,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       local.sendAll(notify)
       //房间内玩家全部准备且人数大于2时开始游戏
-      console.log("readyCount : "+readyCount) 
-      console.log("room.playerCount : "+room.playerCount)
+      //console.log("readyCount : "+readyCount) 
+      //console.log("room.playerCount : "+room.playerCount)
       if(readyCount == room.playerCount && room.playerCount >= 2){
           //进入定庄阶段
           console.log("beginGame")
@@ -507,7 +508,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         robList[num++] = i
       }
     }
-    console.log("endRob num : "+num)
+    //console.log("endRob num : "+num)
     //无人抢庄将所有参与游戏的玩家加入抢庄列表
     if(num == 0){
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -517,10 +518,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
       }
     }
-    console.log("num : "+num)
+    //console.log("num : "+num)
     //随机出一个庄家
     var index = Math.floor(Math.random() * num)%num
-    console.log("index : "+index)
+    //console.log("index : "+index)
     num = robList[index]
     
 
@@ -786,7 +787,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           var tmpUidList = new Array(GAME_PLAYER)
           for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
 
-          console.log(result)
+          //console.log(result)
           for(var i = 0;i < GAME_PLAYER - 1;i++){
             for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
               if(beginPlayer[tmpUidList[j + 1]] != true){ 
@@ -802,7 +803,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               }
             }
           }
-          console.log(result)
+          //console.log(result)
           log("curScores==================")
           log(curScores)
           //按牌型赔付

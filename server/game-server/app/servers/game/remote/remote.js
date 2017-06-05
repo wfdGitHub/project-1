@@ -105,9 +105,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				}
 				if(diamond >= needMond){
 					//用户不存在于房间内，且房间未开启
-					var roomId = GameRemote.niuniuService.getUnusedRoom()
+					var roomId = GameRemote.niuniuService.getUnusedRoom("niuniu")
 					if(roomId !== false){		
-						if(!GameRemote.niuniuService.userMap[uid]){
+						if(GameRemote.niuniuService.userMap[uid] === undefined){
 							//找到空闲房间ID
 								GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
 									if(flag === true){
