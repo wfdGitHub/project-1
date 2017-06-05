@@ -458,7 +458,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         break
       case MODE_BANKER_ORDER :
         //轮庄
-        banker = (banker + 1)%GAME_PLAYER
+        do{
+            banker = (banker + 1)%GAME_PLAYER
+        }while(player[banker].isActive == false)
 
         local.gameBegin()
         break
@@ -730,7 +732,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             } 
             //积分池空则换庄
             if(bonusPool <= GAME_PLAYER){
-                banker = (banker + 1)%GAME_PLAYER
+                do{
+                    banker = (banker + 1)%GAME_PLAYER
+                }while(player[banker].isActive == false)
                 bonusPool = 40
                 log("banker change : "+banker)
             }
