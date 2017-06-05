@@ -28,6 +28,13 @@ module.exports.getType = function(handCard) {
               result.card = handCard[i]
           }
       }
+      //五小牛
+      if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
+          result.type = COMB_TYPE_MICRO
+          result.award = 8
+          return result
+      }
+
       //炸弹
       var count = 0
       for(var i = 0;i < 5;i++){
@@ -40,15 +47,9 @@ module.exports.getType = function(handCard) {
         if(count === 4){
           result.type = COMB_TYPE_BOMB
           result.card = handCard[i]
-          result.award = 8
-          return result
-        }
-      }
-      //五小牛
-      if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
-          result.type = COMB_TYPE_MICRO
           result.award = 7
           return result
+        }
       }
       //五花牛
       var flag = true
@@ -81,12 +82,10 @@ module.exports.getType = function(handCard) {
               result.type = COMB_TYPE_NONE + (__card_val[handCard[allComb[i][3]].num] + __card_val[handCard[allComb[i][4]].num]) % 10
               if(result.type === 0){
                 result.type = COMB_TYPE_OX10
-                result.award = 5
-              }else if(result.type === 9){
                 result.award = 4
-              }else if(result.type === 8){
+              }else if(result.type === 9){
                 result.award = 3
-              }else if(result.type === 7){
+              }else if(result.type === 8){
                 result.award = 2
               }
               result.Comb = allComb[i]
