@@ -46,29 +46,99 @@ handler.test = function(msg,session,next) {
   this.gameChanel.pushMessage('onNotify',notify)
   next()
 }
+//游客登录
+handler.visitorEnter = function(msg, session, next) {
+  var self = this;
+  var sessionService = self.app.get('sessionService');
+  var userId = msg.uid
+  var notify = {}
+  var result = {}
+  async.waterfall([
+      function(cb) {
+        if(userId != undefined){
+          cb()
+        }else{
+          self.app.rpc.db.remote.getPlayerId(session,function(uid) {
+              console.log("uid : "+uid)
+              userId = parseInt(uid) + 1
+              cb()
+          })
+        }
+      },
+      function(cb){
+        result.openId = userId
+        result.sex = 1
+        result.head = null
+        result.nickname = "游客"+userId
+        result.headimgurl = null
+        result.uid = userId
+        result.unionid = userId
+        console.log(result)
+        self.app.rpc.db.remote.check(session,result,function(flag){
+            cb(null)
+        })
+      },
+      function(cb) {
+        self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
+          notify.cmd = "userInfo"
+          notify.data = data
+          //保存session
+          if( !! sessionService.getByUid(userId)) {
+            next(null, {
+              code: 500,
+              error: true
+            });
+            return;
+          }
+          session.bind(userId);
+          session.set("uid", userId);
+          session.push("uid", function(err) {
+            if(err) {
+              console.error('set uid for session service failed! error is : %j', err.stack);
+            }
+          });
+          console.log("uid : "+session.get("uid"))
+          session.on('closed', onUserLeave.bind(null,self));
+
+          cb(null)        
+        })
+      },
+      function(cb){
+        self.app.rpc.game.remote.reconnection(session,userId,self.app.get('serverId'),function(data) {
+            if(data){
+              notify.reconnection = data
+            }
+            cb(null)
+        })
+      },
+      function() {
+        self.gameChanel.add(userId,self.app.get('serverId'))
+        self.channelService.pushMessageByUids('onMessage', notify, [{
+          uid: userId,
+          sid: "connector-server-1"
+        }]);
+      }
+      ],
+    function(err,result) {
+      console.log("enter error")
+      console.log(err)
+      console.log(result)
+      next(null,{code : -200})
+      return
+    }
+  )
+  next(null, {
+      code: 100
+  });  
+}
 //登录
 handler.enter = function(msg, session, next) {
   var self = this;
-  var uid = msg.uid
+  var openId = msg.openId
+  var token = msg.token
   var sessionService = self.app.get('sessionService');
 
   //duplicate log in
-  if( !! sessionService.getByUid(uid)) {
-    next(null, {
-      code: 500,
-      error: true
-    });
-    return;
-  }
-  session.bind(uid);
-  session.set("uid", uid);
-  session.push("uid", function(err) {
-    if(err) {
-      console.error('set uid for session service failed! error is : %j', err.stack);
-    }
-  });
-  console.log("uid : "+session.get("uid"))
-  session.on('closed', onUserLeave.bind(null,self));
   
   // async.waterfall([
 
@@ -86,22 +156,52 @@ handler.enter = function(msg, session, next) {
 
   // });
   //登陆验证
+  var userId = 0
   var notify = {}
   async.waterfall([
-      function(cb){
-        self.app.rpc.db.remote.check(session, uid,function(flag){
+      function(cb) {
+        self.app.rpc.login.remote.checkUser(session, {"openId" : openId,"token" : token},function(result){
+            if(result == false){
+                cb(true)
+            }else{
+              cb(null,result)
+            }
+        })        
+      },
+      function(result,cb){
+        console.log(result)
+        userId = result.unionid
+        self.app.rpc.db.remote.check(session,result,function(flag){
             cb(null)
         })
       },
       function(cb) {
-        self.app.rpc.db.remote.getPlayerInfo(session,uid,function(data) {
+        self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
+          //保存session
+          if( !! sessionService.getByUid(userId)) {
+            next(null, {
+              code: 500,
+              error: true
+            });
+            return;
+          }
+          session.bind(userId);
+          session.set("uid", userId);
+          session.push("uid", function(err) {
+            if(err) {
+              console.error('set uid for session service failed! error is : %j', err.stack);
+            }
+          });
+          console.log("uid : "+session.get("uid"))
+          session.on('closed', onUserLeave.bind(null,self));
+
           cb(null)        
         })
       },
       function(cb){
-        self.app.rpc.game.remote.reconnection(session,uid,self.app.get('serverId'),function(data) {
+        self.app.rpc.game.remote.reconnection(session,userId,self.app.get('serverId'),function(data) {
             if(data){
               notify.reconnection = data
             }
@@ -109,9 +209,9 @@ handler.enter = function(msg, session, next) {
         })
       },
       function() {
-        self.gameChanel.add(uid,self.app.get('serverId'))
+        self.gameChanel.add(userId,self.app.get('serverId'))
         self.channelService.pushMessageByUids('onMessage', notify, [{
-          uid: uid,
+          uid: userId,
           sid: "connector-server-1"
         }]);
       }

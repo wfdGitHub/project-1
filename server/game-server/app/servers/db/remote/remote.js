@@ -7,23 +7,18 @@ var DBRemote = function(app) {
     DBRemote.dbService = this.app.get("dbService")
     if(DBRemote.dbService && DBRemote.dbService.db){
     	DBRemote.db = DBRemote.dbService.db
-    	console.log(DBRemote.db.get("nn:acc:lastid"))
     }
     
 }
 
-var createAccount = function(uid,cb) {
-	var notify = {}
-	notify.uid = uid
-	notify.head = 0
-	notify.score = 0
-	notify.nickname = "name"+uid
-	notify.diamond = 100
-	DBRemote.dbService.setPlayer(uid,"diamond",notify.diamond)
-	DBRemote.dbService.setPlayer(uid,"nickname",notify.nickname)
-	DBRemote.dbService.setPlayer(uid,"score",notify.score)
-	DBRemote.dbService.setPlayer(uid,"head",notify.head)
-	DBRemote.dbService.setPlayer(uid,"uid",notify.uid)
+var createAccount = function(result,cb) {
+	var uid = result.unionid
+	DBRemote.dbService.setPlayer(uid,"diamond",100)
+	DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
+	DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
+	DBRemote.dbService.setPlayer(uid,"uid",uid)
+	DBRemote.dbService.setPlayer(uid,"sex",result.sex)
+	DBRemote.dbService.setUserId(uid)
 	var record = {}
 	record.allGameCount = 0
 	record.winGameCount = 0
@@ -32,20 +27,36 @@ var createAccount = function(uid,cb) {
 	cb(true)
 }
 
-
-DBRemote.prototype.check = function(uid,cb) {
-	DBRemote.dbService.getPlayer(uid,"uid",function(data) {
+//每次登陆更新微信信息
+var updateAccount = function(result) {
+	var uid = result.unionid
+	DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
+	DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
+	DBRemote.dbService.setPlayer(uid,"sex",result.sex)
+}
+//检查账号是否存在
+DBRemote.prototype.check = function(result,cb) {
+	//console.log("=================")
+	//console.log("result.unionid : "+result.unionid)
+	DBRemote.dbService.getPlayerString(result.unionid,"uid",function(data) {
 		console.log("data : "+data)
 		if(!data){
-			createAccount(uid,cb)
+			createAccount(result,cb)
 			console.log("create ok!!")
 		}else{
+			updateAccount(result)
 			if(cb){
 				cb(true)
 			}
 		}
 	})
 }
+//获取一个空闲ID
+DBRemote.prototype.getPlayerId = function(cb) {
+	DBRemote.dbService.db.get("nn:acc:lastid",function(err,data) {
+		cb(data)
+	})
+} 
 DBRemote.prototype.getPlayerInfo = function(uid,cb) {
 	DBRemote.dbService.getPlayerInfo(uid,cb)
 }

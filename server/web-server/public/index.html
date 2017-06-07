@@ -77,6 +77,17 @@
           });
         });          
       }
+      var vlogin = function(uid) {
+        pomelo.init({
+          host: host,
+          port: port,
+          log: true
+        }, function() {
+          pomelo.request("connector.entryHandler.visitorEnter", {"uid" : uid}, function(data) {
+
+          });
+        });          
+      }
       var test = function() {
           pomelo.request("connector.entryHandler.test",null,null);
       }

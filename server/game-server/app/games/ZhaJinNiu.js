@@ -202,6 +202,10 @@ var MING_CARD_NUM = 3               //明牌数量
       player[chair].isNoGiveUp = true //true表示未放弃
       player[chair].uid = uid
       player[chair].ip = param.ip
+      player[chair].sex = param.playerInfo.sex
+      player[chair].playerId = param.playerInfo.playerId
+      player[chair].head = param.playerInfo.head
+      player[chair].nickname = param.playerInfo.nickname
       //玩家数量增加
       room.playerCount++
 

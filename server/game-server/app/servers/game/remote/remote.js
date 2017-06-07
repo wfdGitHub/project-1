@@ -34,7 +34,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						next(null,data)
 					})
 				},
-				function(data) {
+				function(data,next) {
 					var roomId = params.roomId
 					var diamond = data
 					var needMond = 0
@@ -50,17 +50,27 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						break;
 					} 
 					if(diamond >= needMond){
-						var ip = params.ip;
-						GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip},function (flag) {
-							if(flag === true){
-								GameRemote.niuniuService.userMap[uid] = roomId;
-							}
-							cb(flag)
-						})
+						next()
 					}else{
 						cb(false)
+						return
 					}
-					return
+				},
+				function(next) {
+					//获取玩家信息
+					self.app.rpc.db.remote.getPlayerInfo(null,uid,function(data) {
+						next(null,data)
+					})
+				},
+				function(playerInfo) {
+					//加入房间
+					var ip = params.ip;
+					GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag) {
+						if(flag === true){
+							GameRemote.niuniuService.userMap[uid] = roomId;
+						}
+						cb(flag)
+					})
 				}
 			],function(err,result) {
 				console.log(err)
@@ -89,7 +99,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					next(null,data)
 				})
 			}, 
-			function(data) {
+			function(data,next) {
 				var diamond = data
 				var needMond = Math.ceil(params.gameNumber / 10)
 				switch(params.consumeMode){
@@ -103,27 +113,33 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						needMond = needMond * params.playerAmount
 					break;
 				}
-				if(diamond >= needMond){
-					//用户不存在于房间内，且房间未开启
-					var roomId = GameRemote.niuniuService.getUnusedRoom("ZhaJinNiu")
-					if(roomId !== false){		
-						if(GameRemote.niuniuService.userMap[uid] === undefined){
-							//找到空闲房间ID
-								GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
-									if(flag === true){
-										GameRemote.niuniuService.userMap[uid] = roomId;
-										GameRemote.niuniuService.roomState[roomId] = false;
-									}
-									cb(flag)
-								})
-						}else{
-							cb(false)
-						}
-					}else{
-						cb(false)
-					}
+				if(diamond >= needMond && GameRemote.niuniuService.userMap[uid] === undefined){
+					next(null)
 				}
 				return
+			},
+			function(next) {
+				//获取玩家信息
+				console.log(GameRemote.dbService)
+				self.app.rpc.db.remote.getPlayerInfo(null,uid,function(data) {
+					next(null,data)
+				})
+			},
+			function(playerInfo) {
+				//找到空闲房间ID
+				params.playerInfo = playerInfo
+				var roomId = GameRemote.niuniuService.getUnusedRoom("niuniu")
+				if(roomId !== false){		
+					GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
+						if(flag === true){
+							GameRemote.niuniuService.userMap[uid] = roomId;
+							GameRemote.niuniuService.roomState[roomId] = false;
+						}
+						cb(flag)
+					})
+				}else{
+					cb(false)
+				}
 			}
 	  	], function (err, result) {
 			console.log(err)

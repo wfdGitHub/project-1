@@ -7,7 +7,7 @@ var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
-	"ZhaJinNiu" : ZhaJinNiu
+	"zhajinniu" : ZhaJinNiu
 }
 module.exports = function(app) {
   return new NiuNiuService(app);

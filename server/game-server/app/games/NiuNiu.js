@@ -134,7 +134,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       if(room.gameMode == MODE_GAME_BULL){
         banker = roomHost
       }
-      room.join(uid,sid,{ip : param.ip},cb)
+      room.join(uid,sid,{ip : param.ip, playerInfo : param.playerInfo},cb)
     }else{
       cb(false)
     }
@@ -173,6 +173,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     player[chair].isOnline = true
     player[chair].uid = uid
     player[chair].ip = param.ip
+    player[chair].sex = param.playerInfo.sex
+    player[chair].playerId = param.playerInfo.playerId
+    player[chair].head = param.playerInfo.head
+    player[chair].nickname = param.playerInfo.nickname
     //玩家数量增加
     room.playerCount++
 
