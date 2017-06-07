@@ -641,9 +641,62 @@ var MING_CARD_NUM = 3               //明牌数量
     //玩家重连
     room.reconnection = function(uid,sid,param,cb) {
       console.log("uid : "+uid + "  reconnection")
+      var chair = room.chairMap[uid]
+      if(chair === undefined){
+        cb(false)
+        return
+      }
+      player[chair].isOnline = true
+      room.channel.add(uid,sid)
+      var newPlayer = deepCopy(player)
 
-
-      cb(true)
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        for(var i = 0; i < GAME_PLAYER;i++){
+            if(i == chair){
+              if(curRound == 0){
+                delete newPlayer[i].handCard[3]
+                delete newPlayer[i].handCard[4]
+              }else if(curRound == 1){
+                  delete newPlayer[i].handCard[4]
+              }
+            }else{
+              delete newPlayer[i].handCard[3]
+              delete newPlayer[i].handCard[4]
+            }
+        }
+      }else if(room.cardMode == conf.MODE_CARD_HIDE){
+        for(var i = 0; i < GAME_PLAYER;i++){
+            if(i == chair){
+              if(player[chair].isShowCard){
+                if(curRound == 0){
+                  delete newPlayer[i].handCard[3]
+                  delete newPlayer[i].handCard[4]
+                }else if(curRound == 1){
+                    delete newPlayer[i].handCard[4]
+                }
+              }else{
+                delete newPlayer[i].handCard
+              }
+            }else{
+              delete newPlayer[i].handCard
+            }
+        }        
+      }
+      var notify = {
+          roomInfo : {
+          player : newPlayer,
+          gameNumber : room.maxGameNumber,
+          consumeMode : room.consumeMode,
+          bankerMode : room.bankerMode,
+          cardMode : room.cardMode,
+          roomId : room.roomId,
+          TID_ZHAJINNIU : conf.TID_ZHAJINNIU
+        },
+        betList : betList,
+        state : gameState,
+        surplusGameNumber : room.maxGameNumber - room.gameNumber
+      }
+      cb(notify)
     }
 
     //玩家离开
