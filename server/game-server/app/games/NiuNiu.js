@@ -596,7 +596,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             notify.Cards = tmpCards
             local.sendUid(player[i].uid,notify)    
           }
-
         }
       }
       //进入下注
@@ -705,7 +704,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           break
         case conf.MODE_GAME_BULL : 
           //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
-            //结算庄家赢
+          //结算庄家赢
             console.log(betList)
             for(var i = 0;i < GAME_PLAYER;i++){
               if(i === banker || beginPlayer[i] != true) continue

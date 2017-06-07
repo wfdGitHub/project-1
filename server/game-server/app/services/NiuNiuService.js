@@ -4,8 +4,10 @@ var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 var ROOM_ALL_AMOUNT = 20			   //总房间数量
 var NiuNiu = require("../games/NiuNiu.js")
+var ZhaJinNiu = require("../games/ZhaJinNiu.js")
 var ROOM_FACTORY = {
-	"niuniu" : NiuNiu
+	"niuniu" : NiuNiu,
+	"ZhaJinNiu" : ZhaJinNiu
 }
 module.exports = function(app) {
   return new NiuNiuService(app);

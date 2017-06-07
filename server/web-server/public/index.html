@@ -40,13 +40,32 @@
             }
           );
       }
-      var newRoom = function() {
-          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 4,
-            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 2,playerAmount: 6}}, function(data) {
+      var sendBet = function(bet) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "bet","bet" : bet}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );
       }
+      var sendGiveUp = function(bet) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "giveUp"}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+      var compare = function(target) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "compare","target" : target}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+      var newRoom = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 4,
+            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+
       var login = function(uid) {
         pomelo.init({
           host: host,

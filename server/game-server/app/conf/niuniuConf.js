@@ -24,18 +24,24 @@ conf.GAME_PLAYER = 2                 //游戏人数
 conf.TID_ROB_TIME = 1000            //抢庄时间
 conf.TID_BETTING = 1000              //下注时间
 conf.TID_SETTLEMENT = 1000           //结算时间
+
+conf.TID_ZHAJINNIU = 10000			 //诈金牛模式玩家操作时间
+
 conf.MING_CARD_NUM = 4               //明牌数量
+
 //游戏状态
 conf.GS_FREE         = 1001              //空闲阶段
 conf.GS_BETTING      = 1002              //下注阶段
 conf.GS_DEAL         = 1003              //发牌阶段
 conf.GS_SETTLEMENT   = 1004              //结算阶段
 conf.GS_ROB_BANKER   = 1005              //抢庄阶段
+conf.GS_GAMEING 	 = 1006				 //游戏已开始
 
 //游戏模式
 conf.MODE_GAME_NORMAL = 1              //常规模式
 conf.MODE_GAME_BULL   = 3              //斗公牛模式
 conf.MODE_GAME_SHIP   = 4              //开船模式
+conf.MODE_GAME_ZHAJINNIU = 5		   //炸金牛
 //定庄模式
 conf.MODE_BANKER_ROB   = 1              //随机抢庄
 conf.MODE_BANKER_HOST  = 2              //房主做庄
