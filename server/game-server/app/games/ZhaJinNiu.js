@@ -160,7 +160,7 @@ var MING_CARD_NUM = 3               //明牌数量
         room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
         //设置下注上限
         maxBet = 20
-        room.join(uid,sid,{ip : param.ip},cb)
+        room.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
       }else{
         cb(false)
       }
@@ -202,10 +202,7 @@ var MING_CARD_NUM = 3               //明牌数量
       player[chair].isNoGiveUp = true //true表示未放弃
       player[chair].uid = uid
       player[chair].ip = param.ip
-      player[chair].sex = param.playerInfo.sex
-      player[chair].playerId = param.playerInfo.playerId
-      player[chair].head = param.playerInfo.head
-      player[chair].nickname = param.playerInfo.nickname
+      player[chair].playerInfo = param.playerInfo
       //玩家数量增加
       room.playerCount++
 
@@ -243,7 +240,8 @@ var MING_CARD_NUM = 3               //明牌数量
         curRound : curRound,
         curPlayer : curPlayer,
         betList : betList,
-        state : gameState
+        state : gameState,
+        roomType : room.roomType
       }
       //console.log(notify)
       local.sendUid(uid,notify)
@@ -694,7 +692,8 @@ var MING_CARD_NUM = 3               //明牌数量
           bankerMode : room.bankerMode,
           cardMode : room.cardMode,
           roomId : room.roomId,
-          TID_ZHAJINNIU : conf.TID_ZHAJINNIU
+          TID_ZHAJINNIU : conf.TID_ZHAJINNIU,
+          roomType : room.roomType
         },
         betList : betList,
         state : gameState,

@@ -173,10 +173,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     player[chair].isOnline = true
     player[chair].uid = uid
     player[chair].ip = param.ip
-    player[chair].sex = param.playerInfo.sex
-    player[chair].playerId = param.playerInfo.playerId
-    player[chair].head = param.playerInfo.head
-    player[chair].nickname = param.playerInfo.nickname
+    player[chair].playerInfo = param.playerInfo
+    //console.log(player[chair])
     //玩家数量增加
     room.playerCount++
 
@@ -186,6 +184,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       chair : chair,
       player : player[chair]
     }
+    console.log(notify)
     local.sendAll(notify)
     var newPlayer = deepCopy(player)
     //deal阶段之前不返回牌
@@ -210,7 +209,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_ROB_TIME : conf.TID_ROB_TIME,
       TID_BETTING : conf.TID_BETTING,
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
-      state : gameState
+      state : gameState,
+      roomType : room.roomType
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -248,7 +248,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           roomId : room.roomId,
           TID_ROB_TIME : conf.TID_ROB_TIME, 
           TID_BETTING : conf.TID_BETTING,
-          TID_SETTLEMENT : conf.TID_SETTLEMENT
+          TID_SETTLEMENT : conf.TID_SETTLEMENT,
+          roomType : room.roomType
         },
         betList : betList,
         state : gameState,

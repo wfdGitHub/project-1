@@ -58,6 +58,11 @@ DBRemote.prototype.getPlayerId = function(cb) {
 		cb(data)
 	})
 } 
+
+DBRemote.prototype.getPlayerInfoByUid = function(uid,cb) {
+	DBRemote.dbService.getPlayerInfoByUid(uid,cb)
+}
+
 DBRemote.prototype.getPlayerInfo = function(uid,cb) {
 	DBRemote.dbService.getPlayerInfo(uid,cb)
 }

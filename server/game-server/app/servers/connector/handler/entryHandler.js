@@ -51,7 +51,7 @@ handler.visitorEnter = function(msg, session, next) {
   var self = this;
   var sessionService = self.app.get('sessionService');
   var userId = msg.uid //微信ID
-  var playerId = 0  //玩家ID
+  var playerId = userId  //玩家ID
   var notify = {}
   var result = {}
   async.waterfall([

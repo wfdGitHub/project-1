@@ -58,12 +58,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				},
 				function(next) {
 					//获取玩家信息
-					self.app.rpc.db.remote.getPlayerInfo(null,uid,function(data) {
+					self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 						next(null,data)
 					})
 				},
 				function(playerInfo) {
 					//加入房间
+					var roomId = params.roomId
 					var ip = params.ip;
 					GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag) {
 						if(flag === true){
@@ -121,14 +122,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			function(next) {
 				//获取玩家信息
 				console.log(GameRemote.dbService)
-				self.app.rpc.db.remote.getPlayerInfo(null,uid,function(data) {
+				self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 					next(null,data)
 				})
 			},
 			function(playerInfo) {
 				//找到空闲房间ID
 				params.playerInfo = playerInfo
-				var roomId = GameRemote.niuniuService.getUnusedRoom("niuniu")
+				var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
 				if(roomId !== false){		
 					GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
 						if(flag === true){
