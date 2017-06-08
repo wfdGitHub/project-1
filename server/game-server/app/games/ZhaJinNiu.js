@@ -16,7 +16,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var roomCallBack = cb
     var room = {}
     room.roomId = roomId
-    room.roomType = "niuniu"
+    room.roomType = "zhajinniu"
     room.channel = channelService.getChannel(roomId,true)
 
     //房间初始化
@@ -33,6 +33,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var curPlayerCount = 0               //当前参与游戏人数
     var curBet = 0                       //当前下注
     var result = {}                      //牌型
+    var basic = 0                        //房间底分
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -138,12 +139,17 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       }
+      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
+        log("newRoom error   param.basic : "+param.basic)
+        cb(false)
+        return        
+      }
       //房间人数设置    
       GAME_PLAYER = param.playerAmount
       room.GAME_PLAYER = GAME_PLAYER
       //房间初始化
       local.init()
-
+      basic = param.basic
       if(room.state === true){
         room.state = false
         room.playerCount  = 0            //房间内玩家人数
@@ -241,7 +247,8 @@ var MING_CARD_NUM = 3               //明牌数量
         curPlayer : curPlayer,
         betList : betList,
         state : gameState,
-        roomType : room.roomType
+        roomType : room.roomType,
+        basic : basic
       }
       //console.log(notify)
       local.sendUid(uid,notify)
@@ -290,7 +297,7 @@ var MING_CARD_NUM = 3               //明牌数量
         room.gameNumber--
         //重置下注信息
         for(var i = 0;i < GAME_PLAYER;i++){
-              betList[i] = 0;
+              betList[i] = basic;
               player[i].isShowCard = false
         }
         //洗牌
@@ -320,6 +327,7 @@ var MING_CARD_NUM = 3               //明牌数量
             player[i].cardsList[room.runCount] = result[i]           
           }
       }
+
       //开始第一轮
       curRound = 0
       curPlayer = banker
@@ -693,7 +701,8 @@ var MING_CARD_NUM = 3               //明牌数量
           cardMode : room.cardMode,
           roomId : room.roomId,
           TID_ZHAJINNIU : conf.TID_ZHAJINNIU,
-          roomType : room.roomType
+          roomType : room.roomType,
+          basic : basic
         },
         betList : betList,
         state : gameState,
