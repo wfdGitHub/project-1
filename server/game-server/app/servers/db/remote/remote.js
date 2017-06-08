@@ -12,24 +12,24 @@ var DBRemote = function(app) {
 }
 
 var createAccount = function(result,cb) {
-	var uid = result.unionid
-	DBRemote.dbService.setPlayer(uid,"diamond",100)
-	DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
-	DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
-	DBRemote.dbService.setPlayer(uid,"uid",uid)
-	DBRemote.dbService.setPlayer(uid,"sex",result.sex)
-	DBRemote.dbService.setUserId(uid)
-	var record = {}
-	record.allGameCount = 0
-	record.winGameCount = 0
-	record.maxScore = 0
-	DBRemote.dbService.setPlayerObject(uid,"history",record)
-	cb(true)
+	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
+		var uid = playerId
+		DBRemote.dbService.setPlayer(uid,"diamond",100)
+		DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
+		DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
+		DBRemote.dbService.setPlayer(uid,"uid",uid)
+		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
+		var record = {}
+		record.allGameCount = 0
+		record.winGameCount = 0
+		record.maxScore = 0
+		DBRemote.dbService.setPlayerObject(uid,"history",record)
+		cb(true)
+	})
 }
-
 //每次登陆更新微信信息
 var updateAccount = function(result) {
-	var uid = result.unionid
+	var uid = result.playerId
 	DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
 	DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
 	DBRemote.dbService.setPlayer(uid,"sex",result.sex)
@@ -38,12 +38,13 @@ var updateAccount = function(result) {
 DBRemote.prototype.check = function(result,cb) {
 	//console.log("=================")
 	//console.log("result.unionid : "+result.unionid)
-	DBRemote.dbService.getPlayerString(result.unionid,"uid",function(data) {
+	DBRemote.dbService.getPlayerString(result.unionid,"uidMap",function(data) {
 		console.log("data : "+data)
 		if(!data){
 			createAccount(result,cb)
 			console.log("create ok!!")
 		}else{
+			result.playerId = parseInt(data)
 			updateAccount(result)
 			if(cb){
 				cb(true)

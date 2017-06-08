@@ -35,28 +35,36 @@ dbService.prototype.start = function(cb){
 }
 
 dbService.getPlayerInfo = function(uid,cb) {
-	var cmd1 = "nn:acc:"+uid+":"+"diamond"
-	var cmd2 = "nn:acc:"+uid+":"+"uid"
-	var cmd3 = "nn:acc:"+uid+":"+"nickname"
-	var cmd4 = "nn:acc:"+uid+":"+"head"
-	var cmd5 = "nn:acc:"+uid+":"+"history"
-	var cmd6 = "nn:acc:"+uid+":"+"sex"
-	var cmd7 = "nn:acc:"+uid+":"+"playerId"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,function(err,data) {
-		if(!err){
-			var notify = {}
-			notify["diamond"] = data[0]
-			notify["uid"] = data[1]
-			notify["nickname"] = data[2]
-			notify["head"] = data[3]
-			notify["history"] = JSON.parse(data[4])
-			notify["sex"] = data[5]
-			notify["playerId"] = data[6]
-			cb(notify)
-		}else{
+
+	dbService.getPlayerString(uid,"uidMap",function(data) {
+		if(!data){
 			cb(false)
+		}else{
+			uid = data
+			var cmd1 = "nn:acc:"+uid+":"+"diamond"
+			var cmd2 = "nn:acc:"+uid+":"+"uid"
+			var cmd3 = "nn:acc:"+uid+":"+"nickname"
+			var cmd4 = "nn:acc:"+uid+":"+"head"
+			var cmd5 = "nn:acc:"+uid+":"+"history"
+			var cmd6 = "nn:acc:"+uid+":"+"sex"
+			dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,function(err,data) {
+				if(!err){
+					var notify = {}
+					notify["diamond"] = data[0]
+					notify["uid"] = data[1]
+					notify["nickname"] = data[2]
+					notify["head"] = data[3]
+					notify["history"] = JSON.parse(data[4])
+					notify["sex"] = data[5]
+					notify["playerId"] = uid
+					cb(notify)
+				}else{
+					cb(false)
+				}
+			})
 		}
-	})
+	})	
+
 }
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
@@ -166,12 +174,14 @@ dbService.getHistory = function(uid,cb) {
 	})
 }
 
-dbService.setUserId = function(uid) {
+dbService.setUserId = function(uid,cb) {
 	dbService.db.get("nn:acc:lastid",function(err,data) {
+		console.log("nn:acc:lastid : "+data)
 		if(data){
-	        var userId = parseInt(data) + 1
-	        dbService.db.set("nn:acc:lastid",userId);
-	        dbService.setPlayer(uid,"playerId",userId)
+	        var playerId = parseInt(data) + 1
+	        dbService.db.set("nn:acc:lastid",playerId);
+	        dbService.setPlayer(uid,"uidMap",playerId)
+	        cb(playerId)
 		}
 	})
 }

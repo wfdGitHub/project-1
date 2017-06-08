@@ -50,7 +50,8 @@ handler.test = function(msg,session,next) {
 handler.visitorEnter = function(msg, session, next) {
   var self = this;
   var sessionService = self.app.get('sessionService');
-  var userId = msg.uid
+  var userId = msg.uid //微信ID
+  var playerId = 0  //玩家ID
   var notify = {}
   var result = {}
   async.waterfall([
@@ -60,20 +61,21 @@ handler.visitorEnter = function(msg, session, next) {
         }else{
           self.app.rpc.db.remote.getPlayerId(session,function(uid) {
               console.log("uid : "+uid)
+              playerId = parseInt(uid) + 1
               userId = parseInt(uid) + 1
               cb()
           })
         }
       },
       function(cb){
-        result.openId = userId
+        result.openId = playerId
         result.sex = 1
-        result.head = null
-        result.nickname = "游客"+userId
-        result.headimgurl = null
-        result.uid = userId
-        result.unionid = userId
-        console.log(result)
+        result.head = ""
+        result.nickname = "游客"+playerId
+        result.headimgurl = ""
+        result.uid = playerId
+        result.unionid = playerId
+        //console.log(result)
         self.app.rpc.db.remote.check(session,result,function(flag){
             cb(null)
         })
@@ -82,16 +84,19 @@ handler.visitorEnter = function(msg, session, next) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
+          // console.log("===========")
+          // console.log(data)
           //保存session
-          if( !! sessionService.getByUid(userId)) {
+          playerId = data.playerId
+          if( !! sessionService.getByUid(playerId)) {
             next(null, {
               code: 500,
               error: true
             });
             return;
           }
-          session.bind(userId);
-          session.set("uid", userId);
+          session.bind(playerId);
+          session.set("uid", playerId);
           session.push("uid", function(err) {
             if(err) {
               console.error('set uid for session service failed! error is : %j', err.stack);
@@ -104,7 +109,7 @@ handler.visitorEnter = function(msg, session, next) {
         })
       },
       function(cb){
-        self.app.rpc.game.remote.reconnection(session,userId,self.app.get('serverId'),function(data) {
+        self.app.rpc.game.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
             if(data){
               notify.reconnection = data
             }
@@ -112,9 +117,9 @@ handler.visitorEnter = function(msg, session, next) {
         })
       },
       function() {
-        self.gameChanel.add(userId,self.app.get('serverId'))
+        self.gameChanel.add(playerId,self.app.get('serverId'))
         self.channelService.pushMessageByUids('onMessage', notify, [{
-          uid: userId,
+          uid: playerId,
           sid: "connector-server-1"
         }]);
       }
@@ -156,7 +161,8 @@ handler.enter = function(msg, session, next) {
 
   // });
   //登陆验证
-  var userId = 0
+  var userId = 0    //微信ID
+  var playerId = 0  //玩家ID
   var notify = {}
   async.waterfall([
       function(cb) {
@@ -180,15 +186,16 @@ handler.enter = function(msg, session, next) {
           notify.cmd = "userInfo"
           notify.data = data
           //保存session
-          if( !! sessionService.getByUid(userId)) {
+          playerId = data.playerId
+          if( !! sessionService.getByUid(playerId)) {
             next(null, {
               code: 500,
               error: true
             });
             return;
           }
-          session.bind(userId);
-          session.set("uid", userId);
+          session.bind(playerId);
+          session.set("uid", playerId);
           session.push("uid", function(err) {
             if(err) {
               console.error('set uid for session service failed! error is : %j', err.stack);
@@ -201,7 +208,7 @@ handler.enter = function(msg, session, next) {
         })
       },
       function(cb){
-        self.app.rpc.game.remote.reconnection(session,userId,self.app.get('serverId'),function(data) {
+        self.app.rpc.game.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
             if(data){
               notify.reconnection = data
             }
@@ -209,9 +216,9 @@ handler.enter = function(msg, session, next) {
         })
       },
       function() {
-        self.gameChanel.add(userId,self.app.get('serverId'))
+        self.gameChanel.add(playerId,self.app.get('serverId'))
         self.channelService.pushMessageByUids('onMessage', notify, [{
-          uid: userId,
+          uid: playerId,
           sid: "connector-server-1"
         }]);
       }
