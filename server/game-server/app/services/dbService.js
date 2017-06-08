@@ -204,6 +204,7 @@ dbService.setUserId = function(uid,cb) {
 	        var playerId = parseInt(data) + 1
 	        dbService.db.set("nn:acc:lastid",playerId);
 	        dbService.setPlayer(uid,"uidMap",playerId)
+	        dbService.setPlayer(playerId,"uidMap",uid)
 	        cb(playerId)
 		}
 	})
