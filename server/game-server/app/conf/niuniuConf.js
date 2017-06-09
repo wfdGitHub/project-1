@@ -52,6 +52,7 @@ conf.MODE_BANKER_NONE  = 4              //无定庄模式
 conf.MODE_DIAMOND_HOST = 1              //房主扣钻
 conf.MODE_DIAMOND_EVERY = 2             //每人扣钻
 conf.MODE_DIAMOND_WIN = 3               //大赢家扣钻
+conf.MODE_DIAMOND_NONOE = 10     		//已扣钻
 //明牌模式
 conf.MODE_CARD_HIDE  = 1 				//不明牌
 conf.MODE_CARD_SHOW  = 2 				//明牌

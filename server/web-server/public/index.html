@@ -58,6 +58,12 @@
             }
           );
       }
+      var compare = function(target) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "compare","target" : target}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
       var newRoom = function() {
           pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 4,
             consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,gameType : "niuniu"}}, function(data) {
@@ -65,7 +71,21 @@
             }
           );
       }
-
+      var zhajinniu = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {gameMode : 4,
+            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,gameType : "zhajinniu"}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+      var agency = function(argument) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "agency","params" : {gameMode : 4,
+            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,basic : 5 ,gameType : "zhajinniu"}}, function(data,msg) {
+              console.log("flag is : "+data.flag)
+              console.log(data.msg)
+            }
+          );          
+      }
       var login = function(uid) {
         pomelo.init({
           host: host,

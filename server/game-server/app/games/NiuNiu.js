@@ -63,7 +63,80 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //斗公牛模式积分池
   var bonusPool = 40
   var robState,betList
-
+  //代开房间
+  room.agency = function(uid,sid,param,cb) {
+    log("agency"+uid)
+    //无效条件判断
+    if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 4 || param.gameMode < 0){
+      log("agency error   param.gameMode : "+param.gameMode)
+      cb(false)
+      return
+    }
+    if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
+      log("agency error   param.consumeMode : "+param.consumeMode)
+      cb(false)
+      return
+    }
+    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || param.bankerMode > 3 || param.bankerMode < 0){
+      log("agency error   param.bankerMode : "+param.bankerMode)
+      cb(false)
+      return
+    }       
+    if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+      log("agency error   param.gameNumber : "+param.gameNumber)
+      cb(false)
+      return
+    }    
+    if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
+      log("agency error   param.cardMode : "+param.cardMode)
+      cb(false)
+      return
+    } 
+    if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
+      log("agency error   param.playerAmount : "+param.playerAmount)
+      cb(false)
+      return
+    }  
+    //房间人数设置    
+    GAME_PLAYER = param.playerAmount
+    room.GAME_PLAYER = GAME_PLAYER
+    //房间初始化
+    local.init()
+    if(room.state === true){
+      room.state = false
+      room.playerCount  = 0            //房间内玩家人数
+      readyCount = 0                   //游戏准备人数
+      gameState = GS_FREE              //游戏状态
+      room.chairMap = {}               //玩家UID与椅子号映射表
+      banker = -1                      //庄家椅子号
+      roomHost = 0                     //房主椅子号
+      room.runCount = 0                //当前游戏局数
+      room.gameMode = param.gameMode                     //游戏模式
+      room.bankerMode = param.bankerMode                 //定庄模式
+      room.gameNumber = param.gameNumber                 //游戏局数
+      room.maxGameNumber = param.gameNumber              //游戏最大局数
+      room.consumeMode = conf.MODE_DIAMOND_NONOE         //消耗模式
+      room.cardMode = param.cardMode                     //明牌模式
+      room.needDiamond = 0                               //本局每人消耗钻石
+      //设置下注上限
+      maxBet = 20
+      // if(room.gameMode == MODE_GAME_BULL){
+      //   room.bankerMode = MODE_BANKER_NONE
+      //   banker = roomHost
+      //   maxBet = 10
+      // }
+      //console.log("room maxGameNumber : "+room.maxGameNumber)
+      if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
+        room.bankerMode = MODE_BANKER_NONE
+      }
+      if(room.gameMode == MODE_GAME_BULL){
+        banker = roomHost
+      }
+      cb(true)
+    }else{
+      cb(false)
+    }    
+  }
   //创建房间
   room.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
@@ -784,7 +857,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           for(var i = 0;i < GAME_PLAYER;i++){
             if(betList[i] && typeof(betList[i]) == "number" && beginPlayer[i]){
               curScores[i] -= betList[i]
-              tmpAllBet += betList[i]              
+              tmpAllBet += betList[i]
             }
           }
           //排序

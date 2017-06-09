@@ -94,7 +94,11 @@ dbService.setPlayer = function(uid,name,value,cb) {
 	console.log(cmd + "  data : "+value)	
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
-			cb(flag)
+			if(!flag){
+				cb(true)
+			}else{
+				cb(false)
+			}
 		}
 	})
 }

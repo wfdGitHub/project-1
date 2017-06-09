@@ -117,7 +117,62 @@ var MING_CARD_NUM = 3               //明牌数量
         room.channel = channelService.getChannel(roomId,true)
         //console.log(room.channel)   
     }
-
+    room.agency = function(uid,sid,param,cb) {
+      console.log("agency")
+      log("agency"+uid)
+        //无效条件判断
+      if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
+        log("agency error   param.consumeMode : "+param.consumeMode)
+        cb(false)
+        return
+      } 
+      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+        log("agency error   param.gameNumber : "+param.gameNumber)
+        cb(false)
+        return
+      }    
+      if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
+        log("agency error   param.cardMode : "+param.cardMode)
+        cb(false)
+        return
+      } 
+      if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
+        log("agency error   param.playerAmount : "+param.playerAmount)
+        cb(false)
+        return
+      }
+      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
+        log("agency error   param.basic : "+param.basic)
+        cb(false)
+        return        
+      }
+      //房间人数设置    
+      GAME_PLAYER = param.playerAmount
+      room.GAME_PLAYER = GAME_PLAYER
+      //房间初始化
+      local.init()  
+      basic = param.basic
+      if(room.state === true){
+        room.state = false
+        room.playerCount  = 0            //房间内玩家人数
+        readyCount = 0                   //游戏准备人数
+        gameState = conf.GS_FREE         //游戏状态
+        room.chairMap = {}               //玩家UID与椅子号映射表
+        roomHost = 0                     //房主椅子号
+        banker = roomHost                //庄家椅子号
+        room.gameMode = param.gameMode                     //游戏模式
+        room.gameNumber = param.gameNumber                 //游戏局数
+        room.maxGameNumber = param.gameNumber              //游戏最大局数
+        room.consumeMode = conf.MODE_DIAMOND_NONOE         //消耗模式
+        room.cardMode = param.cardMode                     //明牌模式
+        room.needDiamond = 0                               //本局每人消耗钻石
+        //设置下注上限
+        maxBet = 20
+        cb(true)
+      }else{
+        cb(false)
+      }    
+    }
     //创建房间
     room.newRoom = function(uid,sid,param,cb) {
       console.log("newRoom")
@@ -171,10 +226,10 @@ var MING_CARD_NUM = 3               //明牌数量
         //设置下注上限
         maxBet = 20
         room.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+        cb(true)
       }else{
         cb(false)
       }
-      cb(true)
     }
 
     //玩家加入

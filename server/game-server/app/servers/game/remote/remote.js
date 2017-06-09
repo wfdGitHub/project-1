@@ -95,12 +95,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    }
 	  async.waterfall([
 			function(next) {
-				//获取玩家钻石，判断是否满足准入数额
+				//获取玩家钻石
 				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
 					next(null,data)
 				})
 			}, 
 			function(data,next) {
+				//判断是否满足准入数额
 				var diamond = data
 				var needMond = Math.ceil(params.gameNumber / 10)
 				switch(params.consumeMode){
@@ -148,6 +149,61 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			cb(false)
 			return
 	  });
+	}else if(code == "agency"){
+		//代开房
+		//TODO  无效数据判断
+		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
+	      log("newRoom error   param.playerAmount : "+params.playerAmount)
+	      cb(false)
+	      return
+	    }
+	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
+	    	cb(false)
+	    	return
+	    }
+	    async.waterfall([
+	    	function(next) {
+				//获取玩家钻石
+				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
+					next(null,data)
+				})	    		
+	    	},
+	    	function(data,next) {
+	    		//检查钻石是否足够
+				var diamond = data
+				var needMond = Math.ceil(params.gameNumber / 10)	
+				if(diamond < needMond || GameRemote.niuniuService.userMap[uid] !== undefined){
+					next(false)
+					return
+				}    		
+				//扣除钻石
+				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needMond,function(flag) {
+					if(flag){
+						next()
+					}else{
+						cb(false)
+						return						
+					}
+				})
+	    	},
+	    	function() {
+	    		//代开房
+	    		var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
+				GameRemote.niuniuService.roomList[roomId].agency(uid,sid,params,function (flag) {
+					if(flag === true){
+						GameRemote.niuniuService.roomState[roomId] = false;
+						cb(true,{"roomId" : roomId})
+					}else{
+						cb(false)
+					}
+				})	    		
+	    	}	    		    	
+	    	], function (err, result) {
+			console.log(err)
+			console.log(result)
+			cb(false)
+			return
+	  })		
 	}else{
 		//用户存在房间内时才执行
 		console.log("room id : " + GameRemote.niuniuService.userMap[uid])
@@ -164,7 +220,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			cb(false)
 		}
 	}
-
 };
 
 

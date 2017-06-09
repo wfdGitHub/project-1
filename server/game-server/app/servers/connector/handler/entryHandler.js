@@ -142,7 +142,10 @@ handler.enter = function(msg, session, next) {
   var openId = msg.openId
   var token = msg.token
   var sessionService = self.app.get('sessionService');
-
+  if(!openId || !token){
+    next(null,{code: -100})
+    return
+  }
   //duplicate log in
   
   // async.waterfall([
@@ -249,8 +252,8 @@ handler.sendData = function(msg, session, next){
             msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
           }
         }
-        self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag){
-            next(null,{flag : flag});
+        self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+            next(null,{flag : flag,msg : msg});
         });   
     }else{
         next(null,{flag : false})
