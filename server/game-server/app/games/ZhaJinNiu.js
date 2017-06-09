@@ -523,6 +523,24 @@ var MING_CARD_NUM = 3               //明牌数量
           //清除计时器 
           clearTimeout(timer)
     }
+    //发送聊天
+    room.say = function(uid,sid,param,cb) {
+      //判断是否在椅子上
+      var chair = room.chairMap[uid]
+      if(chair == undefined){
+        cb(false)
+        return
+      }    
+      log("sendMsg")
+      var notify = {
+        cmd : "sayMsg",
+        uid : uid,
+        chair : chair,
+        msg : param.msg
+      }
+      local.sendAll(notify)
+      cb(true)
+    }
     //玩家操作
     room.useCmd = function(uid,sid,param,cb) {
       if(gameState !== conf.GS_GAMEING){
