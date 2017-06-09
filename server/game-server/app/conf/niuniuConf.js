@@ -25,7 +25,8 @@ conf.TID_ROB_TIME = 1000            //抢庄时间
 conf.TID_BETTING = 1000              //下注时间
 conf.TID_SETTLEMENT = 1000           //结算时间
 
-conf.TID_ZHAJINNIU = 10000			 //诈金牛模式玩家操作时间
+conf.TID_ZHAJINNIU = 30000			 //诈金牛模式玩家操作时间
+conf.TID_ZHAJINNIU_SETTLEMENT = 3000 //炸金牛结算时间
 
 conf.MING_CARD_NUM = 4               //明牌数量
 
@@ -55,6 +56,9 @@ conf.MODE_DIAMOND_WIN = 3               //大赢家扣钻
 conf.MODE_CARD_HIDE  = 1 				//不明牌
 conf.MODE_CARD_SHOW  = 2 				//明牌
 
-
+conf.GAME_TYPE = {
+	"niuniu" : true,
+	"zhajinniu" : true
+}
 
 module.exports.niuConf = conf

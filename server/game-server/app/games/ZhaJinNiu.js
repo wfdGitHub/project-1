@@ -34,6 +34,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var curBet = 0                       //当前下注
     var result = {}                      //牌型
     var basic = 0                        //房间底分
+    var actionFlag = true                //行动标志
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -84,6 +85,9 @@ var MING_CARD_NUM = 3               //明牌数量
       //console.log("enter init=====================================111111111111111")
       //下注信息
       betList = new Array(GAME_PLAYER)
+      for(var  i = 0;i < GAME_PLAYER;i++){
+        betList[i] = 0
+      }
       betAmount = 0
       //下注上限
       maxBet = 0
@@ -248,7 +252,8 @@ var MING_CARD_NUM = 3               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basic : basic
+        basic : basic,
+        curBet : curBet
       }
       //console.log(notify)
       local.sendUid(uid,notify)
@@ -297,9 +302,16 @@ var MING_CARD_NUM = 3               //明牌数量
         room.gameNumber--
         //重置下注信息
         for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isReady){
               betList[i] = basic;
-              player[i].isShowCard = false
+              player[i].isShowCard = false    
+            }
         }
+        var notify = {
+          "cmd" : "gameBegin",
+          "betList" : betList
+        }
+        local.sendAll(notify)
         //洗牌
         for(var i = 0;i < cardCount;i++){
           var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
@@ -335,20 +347,21 @@ var MING_CARD_NUM = 3               //明牌数量
       //明牌模式
       if(room.cardMode == conf.MODE_CARD_SHOW){
         //先发三张牌
+        var notify = {
+          "cmd" : "curRound",
+          "curRound" : curRound,
+          "cards" : {}
+        }
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
-            var notify = {
-              "cmd" : "curRound",
-              "curRound" : curRound
-            }
             var tmpCards = {}
             for(var j = 0;j < MING_CARD_NUM;j++){
                 tmpCards[j] = player[i].handCard[j];
             }
-            notify.cards = tmpCards
-            local.sendUid(player[i].uid,notify)    
+            notify.cards[i] = tmpCards  
           }
         }
+        local.sendAll(notify)  
       }else if(room.cardMode == conf.MODE_CARD_HIDE){
         //暗牌模式
         var notify = {
@@ -363,19 +376,34 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       var notify = {
         "cmd" : "nextPlayer",
-        "chair" : curPlayer
+        "chair" : curPlayer,
+        "curBet" : curBet
       }
       local.sendAll(notify)
+      actionFlag = false
       timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINNIU)
     }
     //操作权移交到下一位玩家
     local.nextCurPlayer = function() {
+      if(actionFlag == false){
+        //未操作视为放弃
+        local.playerGiveUp(curPlayer) 
+        if(curPlayerCount < 2){
+          local.settlement()
+          return
+        }
+      }
+      actionFlag = false
+      var bankerFlag = false    //是否轮回到庄家
       do{
         curPlayer = (curPlayer + 1)%GAME_PLAYER
-      }while(player[curPlayer].isActive == false || player[curPlayer].isNoGiveUp == false)
+        if(curPlayer == banker){
+          bankerFlag = true
+        }
+      }while(player[curPlayer].isActive == false || player[curPlayer].isNoGiveUp == false || player[curPlayer].isReady == false)
 
       //当操作权转移到初始操作玩家   进入下一轮
-      if(curPlayer == banker){
+      if(bankerFlag){
           if(curRound == 3){
             //进入结算
             local.settlement()
@@ -384,17 +412,20 @@ var MING_CARD_NUM = 3               //明牌数量
           curRound++
           curBet = 0
           for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
+            if(player[i].isActive){
               var notify = {
                 "cmd" : "curRound",
                 "curRound" : curRound
               }
               if(room.cardMode == conf.MODE_CARD_SHOW || (room.cardMode == conf.MODE_CARD_HIDE && player[i].isShowCard)){
-                if(curRound == 1){
-                    notify.card = player[i].handCard[3]
-                }else if(curRound == 2){
-                    notify.card = player[i].handCard[4]
-                }                  
+                //已放弃不发牌
+                if(player[i].isNoGiveUp == true && player[i].isReady == true){
+                  if(curRound == 1){
+                      notify.card = player[i].handCard[3]
+                  }else if(curRound == 2){
+                      notify.card = player[i].handCard[4]
+                  }    
+                }
               }
               local.sendUid(player[i].uid,notify)    
             }
@@ -402,11 +433,40 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       var notify = {
         "cmd" : "nextPlayer",
-        "chair" : curPlayer
+        "chair" : curPlayer,
+        "curBet" : curBet
       }
       local.sendAll(notify)
       //设定时器到下一位玩家
+      actionFlag = false
       timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINNIU)
+    }
+    local.playerGiveUp = function(chair) {
+          player[chair].isNoGiveUp = false
+          curPlayerCount--
+
+          var notify = {
+            "cmd" : "giveUp",
+            "chair" : chair
+          }
+          for(var i = 0;i < GAME_PLAYER;i++){
+            if(i != chair){
+              local.sendUid(player[i].uid,notify)
+            }
+          }
+          //发送玩家手牌
+          var handCard = deepCopy(player[chair].handCard)
+          if(curRound == 0){
+              delete handCard[4]
+              delete handCard[3]
+          }else if(curRound == 1){
+              delete handCard[4]
+          }               
+          notify.handCard = handCard
+          local.sendUid(player[chair].uid,notify)
+          actionFlag = true
+          //清除计时器 
+          clearTimeout(timer)
     }
     //玩家操作
     room.useCmd = function(uid,sid,param,cb) {
@@ -439,7 +499,7 @@ var MING_CARD_NUM = 3               //明牌数量
             for(var i = 0; i < GAME_PLAYER; i++){
               if(player[i].isOnline && player[i].isActive){
                 var notify = {
-                  "cmd" : "handCard",
+                  "cmd" : "lookCard",
                   "chair" : chair
                 }
                 if(i == chair){
@@ -481,6 +541,7 @@ var MING_CARD_NUM = 3               //明牌数量
           }
           local.sendAll(notify)
           //清除计时器  轮到下一个玩家操作
+          actionFlag = true
           clearTimeout(timer)
           local.nextCurPlayer()
           return
@@ -493,34 +554,28 @@ var MING_CARD_NUM = 3               //明牌数量
             cb(false)
             return
           }       
-          player[chair].isNoGiveUp = false
-          curPlayerCount--
-
-          var notify = {
-            "cmd" : "giveUp",
-            "chair" : chair
-          }
-          local.sendAll(notify)
-          clearTimeout(timer)
+          local.playerGiveUp(chair)
           if(curPlayerCount >= 2){
-            //清除计时器  轮到下一个玩家操作
+            //轮到下一个玩家操作
             local.nextCurPlayer()
           }else{
             //TODO 游戏结束
             local.settlement()
-          }
-
+          }          
           return
         case "compare" :
           //比牌
+          console.log("111111111")
           if(curPlayer !== chair){
             cb(false)
             return
           }
+          console.log("2222222222")
           if(player[chair].isNoGiveUp == false){
             cb(false)
             return
           }        
+          console.log("3333333")
           var target = param.target
           if(target === undefined || target == chair || typeof(target) !== "number" || 
             !player[target] || !player[target].isActive 
@@ -528,11 +583,13 @@ var MING_CARD_NUM = 3               //明牌数量
             cb(false)
             return            
           }
+          console.log("44444444")
           //第二轮才能比牌      
           if(curRound !== 2){
             cb(false)
             return            
           }
+          console.log("5555555555")
           var bet = 0
           //扣除当前下注额+3分
            bet += 3
@@ -556,16 +613,28 @@ var MING_CARD_NUM = 3               //明牌数量
             "chair" : chair,
             "target" : target
           }
+          var lose = 0
           if(logic.compare(result[chair],result[target])){
               player[target].isNoGiveUp = false
               notify2.winPlayer = chair
+              lose = target
           }else{
             player[chair].isNoGiveUp == false
             notify2.winPlayer = target
+            lose = chair
           }
-          local.sendAll(notify2)
+          for(var i = 0;i < GAME_PLAYER;i++){
+            if(i != lose){
+              local.sendUid(player[i].uid,notify2)
+            }
+          }
+          //发送玩家手牌
+          var handCard = deepCopy(player[lose].handCard)
+          notify2.handCard = handCard
+          local.sendUid(player[lose].uid,notify2)
 
           curPlayerCount--
+          actionFlag = true
           clearTimeout(timer)
           if(curPlayerCount >= 2){
             //清除计时器  轮到下一个玩家操作
@@ -581,60 +650,64 @@ var MING_CARD_NUM = 3               //明牌数量
     }
     //结算
     local.settlement = function() {
-      console.log("settlemnt")
-      readyCount = 0
+      if(gameState !== conf.GS_SETTLEMENT){
+         gameState = conf.GS_SETTLEMENT
+        console.log("settlemnt")
+        readyCount = 0
 
-      //找出第一个在座位上且参与游戏的玩家
-      var maxIndex = 0
-      while(maxIndex < GAME_PLAYER && (player[maxIndex].isActive == false || player[maxIndex].isReady == false)){
-        maxIndex++
-      }
-      
-      for(var i = 1;i < GAME_PLAYER;i++){
-        if(player[i].isActive && player[i].isReady){
-          if(logic.compare(result[maxIndex],result[i]) == false){
-              maxIndex = i
+        //找出第一个在座位上且参与游戏的玩家
+        var maxIndex = 0
+        while(maxIndex < GAME_PLAYER && (player[maxIndex].isActive == false || player[maxIndex].isReady == false || player[maxIndex].isNoGiveUp == false)){
+          maxIndex++
+        }
+        console.log("chair : "+maxIndex)
+        for(var i = maxIndex+1;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady && player[i].isNoGiveUp && maxIndex != i){
+            console.log("change")
+            if(logic.compare(result[maxIndex],result[i]) == false){
+                maxIndex = i
+            }
           }
         }
-      }
-      console.log("chair : "+maxIndex)
-      console.log(result)
-      var curScores = new Array(GAME_PLAYER)
-      for(var i = 0;i < GAME_PLAYER;i++){
-        curScores[i] = 0
-      }
-      //赢家通吃
-      for(var i = 0;i < GAME_PLAYER;i++){
-        if(i != maxIndex){
-          curScores[i] = -betList[i]
-          curScores[maxIndex] = betList[i]
+        console.log("chair : "+maxIndex)
+        console.log(result)
+        var curScores = new Array(GAME_PLAYER)
+        for(var i = 0;i < GAME_PLAYER;i++){
+          curScores[i] = 0
         }
-      }
-      //积分改变
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(curScores[i] != 0){
-            local.changeScore(i,curScores[i])
+        //赢家通吃
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(i != maxIndex){
+            curScores[i] -= betList[i]
+            curScores[maxIndex] += betList[i]
           }
-      }
-      //发送当局结算消息
-      var notify = {
-        "cmd" : "settlement",
-        "result" : result,
-        "curScores" : curScores,
-        "player" : player
-      }
-      local.sendAll(notify)
-
-
-      //房间重置
-      gameState = conf.GS_FREE
-      for(var i = 0;i < GAME_PLAYER; i++){
-          player[i].isReady = false
-          player[i].isNoGiveUp = true
-          player[i].isShowCard = false
-      }
-      if(room.gameNumber <= 0){
-          local.gameOver()
+        }
+        //积分改变
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(curScores[i] != 0){
+              local.changeScore(i,curScores[i])
+            }
+        }
+        setTimeout(function(){
+          //发送当局结算消息
+          var notify = {
+            "cmd" : "settlement",
+            "result" : result,
+            "curScores" : curScores,
+            "player" : player
+          }
+          local.sendAll(notify)
+          //房间重置
+          gameState = conf.GS_FREE
+          for(var i = 0;i < GAME_PLAYER; i++){
+              player[i].isReady = false
+              player[i].isNoGiveUp = true
+              player[i].isShowCard = false
+          }
+          if(room.gameNumber <= 0){
+              local.gameOver()
+          }
+        },conf.TID_ZHAJINNIU_SETTLEMENT)       
       }
     }
     local.gameOver = function() {
@@ -702,7 +775,8 @@ var MING_CARD_NUM = 3               //明牌数量
           roomId : room.roomId,
           TID_ZHAJINNIU : conf.TID_ZHAJINNIU,
           roomType : room.roomType,
-          basic : basic
+          basic : basic,
+          curBet : curBet
         },
         betList : betList,
         state : gameState,
