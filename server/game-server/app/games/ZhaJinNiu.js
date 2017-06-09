@@ -776,7 +776,9 @@ var MING_CARD_NUM = 3               //明牌数量
           TID_ZHAJINNIU : conf.TID_ZHAJINNIU,
           roomType : room.roomType,
           basic : basic,
-          curBet : curBet
+          curBet : curBet,
+          curRound : curRound,
+          curPlayer : curPlayer
         },
         betList : betList,
         state : gameState,
