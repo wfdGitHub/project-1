@@ -171,7 +171,7 @@ handler.enter = function(msg, session, next) {
       function(cb) {
         self.app.rpc.login.remote.checkUser(session, {"openId" : openId,"token" : token},function(result){
             if(result == false){
-                cb(true)
+                cb(false)
             }else{
               cb(null,result)
             }

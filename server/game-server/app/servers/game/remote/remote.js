@@ -93,6 +93,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }
+		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
+	      console.log("agency error   param.gameNumber : "+params.gameNumber)
+	      cb(false)
+	      return
+	    }  
 	  async.waterfall([
 			function(next) {
 				//获取玩家钻石
@@ -153,14 +158,19 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		//代开房
 		//TODO  无效数据判断
 		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
-	      log("newRoom error   param.playerAmount : "+params.playerAmount)
-	      cb(false)
-	      return
+		    console.log("agency error   param.playerAmount : "+params.playerAmount)
+		    cb(false)
+		    return
 	    }
 	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
 	    	cb(false)
 	    	return
 	    }
+		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
+	      console.log("agency error   param.gameNumber : "+params.gameNumber)
+	      cb(false)
+	      return
+	    }   
 	    async.waterfall([
 	    	function(next) {
 				//获取玩家钻石
@@ -170,14 +180,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	},
 	    	function(data,next) {
 	    		//检查钻石是否足够
+	    		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
+					next(false)
+			      	return
+			    }  
 				var diamond = data
-				var needMond = Math.ceil(params.gameNumber / 10)	
+				var needMond = Math.ceil(params.gameNumber / 10) * params.playerAmount
 				if(diamond < needMond || GameRemote.niuniuService.userMap[uid] !== undefined){
 					next(false)
 					return
-				}    		
+				}    	
 				//扣除钻石
-				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needMond,function(flag) {
+				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
 					if(flag){
 						next()
 					}else{
