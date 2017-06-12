@@ -5,17 +5,155 @@ var async = require("async")
 module.exports = function(app) {
 	return new GameRemote(app);
 };
-
+var local = {}
 var GameRemote = function(app) {
 	this.app = app
 	GameRemote.app = app
 	GameRemote.niuniuService = this.app.get("NiuNiuService")
 };
+GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
+	switch(code){
+		case "finish" : 
+			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}
+			var roomId = GameRemote.niuniuService.userMap[uid]
+			//不能重复发送
+			if(GameRemote.niuniuService.roomLock[roomId] == false){
+				cb(false)
+				return
+			}
+			//只有空闲时间能解散
+			if(!GameRemote.niuniuService.roomList[roomId].isFree()){
+				cb(false)
+				return
+			}
+			//锁定房间
+			GameRemote.niuniuService.roomLock[roomId] = false
+			//通知其他玩家
+			var chair = GameRemote.niuniuService.roomList[roomId].chairMap[uid]
+			var notify = {
+				"cmd" : "finishGame",
+				"chair" : chair
+			}
+			GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
+			//发起解散的玩家默认同意
+			local.responseFinish(roomId,chair,true)
+			cb(true)
+			break
+		case "agreeFinish" :
+			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}
+			var roomId = GameRemote.niuniuService.userMap[uid]	
+			//房间必须已锁定		
+			if(GameRemote.niuniuService.roomLock[roomId] == true){
+				cb(false)
+				return
+			}
+			var chair = GameRemote.niuniuService.roomList[roomId].chairMap[uid]
+			//已发送不能再次发送
+			if(GameRemote.niuniuService.lockState[roomId][chair] !== undefined){
+				cb(false)
+				return
+			}
+			local.responseFinish(roomId,chair,true)
+			cb(true)
+			break
+		case "refuseFinish" :
+			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}
+			var roomId = GameRemote.niuniuService.userMap[uid]	
+			//房间必须已锁定		
+			if(GameRemote.niuniuService.roomLock[roomId] == true){
+				cb(false)
+				return
+			}
+			var chair = GameRemote.niuniuService.roomList[roomId].chairMap[uid]
+			//已发送不能再次发送
+			if(GameRemote.niuniuService.lockState[roomId][chair] !== undefined){
+				cb(false)
+				return
+			}
+			local.responseFinish(roomId,chair,false)
+			cb(true)
+			break
+	}
+}
 
-
+local.responseFinish = function(roomId,chair,flag) {
+	//记录响应状态
+	GameRemote.niuniuService.lockState[roomId][chair] = flag
+	//同意人数大于等于一半   或者拒绝人数大于一半结束请求
+	var roomPlayer = GameRemote.niuniuService.roomList[roomId].getPlayerCount()
+	var agreeCount = 0
+	var refuseCount = 0
+	for(var index in GameRemote.niuniuService.lockState[roomId]){
+		if(GameRemote.niuniuService.lockState[roomId].hasOwnProperty(index)){
+			if(GameRemote.niuniuService.lockState[roomId][chair] == true){
+				agreeCount++
+			}else{
+				refuseCount++
+			}
+		}
+	}
+	if(agreeCount >= roomPlayer/2){
+		local.endFinish(roomId)
+	}else if(refuseCount > roomId/2){
+		local.endFinish(roomId)
+	}
+}
+local.endFinish = function(roomId) {
+	//结束响应请求
+	var roomPlayer = GameRemote.niuniuService.roomList[roomId].getPlayerCount()
+	var agreeCount = 0
+	var refuseCount = 0
+	for(var index in GameRemote.niuniuService.lockState[roomId]){
+		if(GameRemote.niuniuService.lockState[roomId].hasOwnProperty(index)){
+			if(GameRemote.niuniuService.lockState[roomId][index] == true){
+				agreeCount++
+			}else{
+				refuseCount++
+			}
+		}
+	}
+	if(agreeCount >= roomPlayer/2){
+		//解散房间
+		if(GameRemote.niuniuService.roomList[roomId].finishGame){
+			GameRemote.niuniuService.roomList[roomId].finishGame()
+		}
+		var notify = {
+			"cmd" : "endFinish",
+			"result" : true
+		}
+		GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
+	}else if(refuseCount > roomId/2){
+		//不解散房间
+		var notify = {
+			"cmd" : "endFinish",
+			"result" : false
+		}
+		GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
+	}
+	GameRemote.niuniuService.roomLock[roomId] = true
+	GameRemote.niuniuService.lockState[roomId] = {}
+}
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
+	console.log("uid : "+uid+"code : "+code)
+	//房间已锁定则拒绝操作
+	if(GameRemote.niuniuService.userMap[uid]){
+		var roomId = GameRemote.niuniuService.userMap[uid]
+		if(GameRemote.niuniuService.roomLock[roomId] == false){
+			cb(false)
+			return
+		}
+	}
+
 	var self = this
-	console.log("code : "+code)
 	//加入房间需要用户不在房间内
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
@@ -27,6 +165,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				cb(false)
 				return
 			}
+			var roomId = params.roomId
+			//不能进入锁定的房间
+			if(GameRemote.niuniuService.roomLock[roomId] == false){
+				cb(false)
+				return
+			}
 			async.waterfall([
 				function(next) {
 					//获取玩家钻石，判断是否满足准入数额
@@ -35,7 +179,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					})
 				},
 				function(data,next) {
-					var roomId = params.roomId
 					var diamond = data
 					var needMond = 0
 					switch(GameRemote.niuniuService.roomList[roomId].consumeMode){
@@ -106,6 +249,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				})
 			}, 
 			function(data,next) {
+				console.log("a111111 : "+GameRemote.niuniuService.userMap[uid])
 				//判断是否满足准入数额
 				var diamond = data
 				var needMond = Math.ceil(params.gameNumber / 10)
@@ -122,10 +266,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				}
 				if(diamond >= needMond && GameRemote.niuniuService.userMap[uid] === undefined){
 					next(null)
+				}else{
+					cb(false)
 				}
 				return
 			},
 			function(next) {
+				console.log("a222222")
 				//获取玩家信息
 				console.log(GameRemote.dbService)
 				self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
@@ -133,6 +280,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				})
 			},
 			function(playerInfo) {
+				console.log("a3333")
 				//找到空闲房间ID
 				params.playerInfo = playerInfo
 				var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)

@@ -111,6 +111,24 @@
       var test = function() {
           pomelo.request("connector.entryHandler.test",null,null);
       }
+      var finish = function() {
+          pomelo.request("connector.entryHandler.sendFrame", {"code" : "finish"},null, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }
+      var agreeFinish = function() {
+          pomelo.request("connector.entryHandler.sendFrame", {"code" : "agreeFinish"},null, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          )
+      }
+      var refuseFinish = function() {
+          pomelo.request("connector.entryHandler.sendFrame", {"code" : "refuseFinish"},null, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          )
+      }      
     </script>
   </head>
   <body>

@@ -498,6 +498,7 @@ var MING_CARD_NUM = 3               //明牌数量
       local.sendAll(notify)
       //设定时器到下一位玩家
       actionFlag = false
+      console.log("now Player : "+curPlayer)
       timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINNIU)
     }
     local.playerGiveUp = function(chair) {
@@ -642,17 +643,17 @@ var MING_CARD_NUM = 3               //明牌数量
           return
         case "compare" :
           //比牌
-          console.log("111111111")
+          //console.log("111111111")
           if(curPlayer !== chair){
             cb(false)
             return
           }
-          console.log("2222222222")
+          //console.log("2222222222")
           if(player[chair].isNoGiveUp == false){
             cb(false)
             return
           }        
-          console.log("3333333")
+          //console.log("3333333")
           var target = param.target
           if(target === undefined || target == chair || typeof(target) !== "number" || 
             !player[target] || !player[target].isActive 
@@ -660,13 +661,13 @@ var MING_CARD_NUM = 3               //明牌数量
             cb(false)
             return            
           }
-          console.log("44444444")
+          //console.log("44444444")
           //第二轮才能比牌      
           if(curRound !== 2){
             cb(false)
             return            
           }
-          console.log("5555555555")
+          //console.log("5555555555")
           var bet = 0
           //扣除当前下注额+3分
            bet += 3
@@ -728,6 +729,7 @@ var MING_CARD_NUM = 3               //明牌数量
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
+         clearTimeout(timer)
          gameState = conf.GS_SETTLEMENT
         console.log("settlemnt")
         readyCount = 0
@@ -918,6 +920,29 @@ var MING_CARD_NUM = 3               //明牌数量
           }]);  
         }
     }
+  //房间是否空闲
+  room.isFree = function() {
+    return gameState === conf.GS_FREE
+  }
+  //获取房间人数
+  room.getPlayerCount = function() {
+    var count = 0
+    for(var i = 0;i < GAME_PLAYER;i++){
+      if(player[i].isActive){
+        count++
+      }
+    }
+    return count
+  }
+  //解散游戏
+  room.finishGame = function(argument) {
+    //游戏一局都没开始则不扣钻石
+    if(room.runCount == 0){
+      room.needDiamond = 0
+    }
+    room.gameNumber = 0
+    local.settlement()
+  }
     return room 
 }
 

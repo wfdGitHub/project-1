@@ -260,6 +260,20 @@ handler.sendData = function(msg, session, next){
     }
 }
 
+handler.sendFrame = function(msg, session, next) {
+    console.log("code : "+msg.code)
+    var self = this;
+    //判断登录
+    var uid = session.get("uid")
+    console.log("uid : "+uid)  
+    if(!!uid){
+        self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+            next(null,{flag : flag,msg : msg});
+        });   
+    }else{
+        next(null,{flag : false})
+    }
+}
 //用户离开事件处理
 var onUserLeave = function(self, session) {
   //console.log(self)

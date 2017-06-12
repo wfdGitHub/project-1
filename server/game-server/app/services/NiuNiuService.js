@@ -80,7 +80,10 @@ NiuNiuService.roomList = {};
 NiuNiuService.roomState = {};
 //用户房间映射表
 NiuNiuService.userMap = {}		
-
+//房间锁定状态   用户请求解散房间会锁定房间
+NiuNiuService.roomLock = {}
+//玩家相应解散状态
+NiuNiuService.lockState = {}
 NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
@@ -88,9 +91,9 @@ NiuNiuService.prototype.start = function(cb) {
 	for(var i = 200200;i < ROOM_ALL_AMOUNT + 200200;i++){
 		NiuNiuService.roomState[i] = true
 		NiuNiuService.roomList[i] = {}
+		NiuNiuService.roomLock[i] = true
+		NiuNiuService.lockState[i] = {}
 	}
-
-		
 
 	this.app.set("NiuNiuService",NiuNiuService)
 	cb()

@@ -732,6 +732,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //结算阶段
   local.settlement = function(){
+      clearTimeout(timer)
       log("settlement")
       room.runCount++
       //房间重置
@@ -1018,7 +1019,30 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.channel = channelService.getChannel(roomId,true)
       //console.log(room.channel)   
   }
-
+  
+  //房间是否空闲
+  room.isFree = function() {
+    return gameState === conf.GS_FREE
+  }
+  //获取房间人数
+  room.getPlayerCount = function() {
+    var count = 0
+    for(var i = 0;i < GAME_PLAYER;i++){
+      if(player[i].isActive){
+        count++
+      }
+    }
+    return count
+  }
+  //解散游戏
+  room.finishGame = function(argument) {
+    //游戏一局都没开始则不扣钻石
+    if(room.runCount == 0){
+      room.needDiamond = 0
+    }
+    room.gameNumber = 0
+    local.settlement()
+  }
   return room 
 }
 
