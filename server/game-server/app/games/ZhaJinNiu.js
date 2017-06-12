@@ -398,6 +398,10 @@ var MING_CARD_NUM = 3               //明牌数量
       //开始第一轮
       curRound = 0
       curPlayer = banker
+      while(player[curPlayer].isActive == false || player[curPlayer].isNoGiveUp == false || player[curPlayer].isReady == false){
+        curPlayer = (curPlayer + 1)%GAME_PLAYER
+        banker = curPlayer
+      }
       curBet = 0
       //明牌模式
       if(room.cardMode == conf.MODE_CARD_SHOW){
@@ -777,6 +781,7 @@ var MING_CARD_NUM = 3               //明牌数量
               player[i].isNoGiveUp = true
               player[i].isShowCard = false
           }
+          banker = (banker + 1) % GAME_PLAYER
           if(room.gameNumber <= 0){
               local.gameOver()
           }
