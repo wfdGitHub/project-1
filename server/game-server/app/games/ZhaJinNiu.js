@@ -19,9 +19,9 @@ var MING_CARD_NUM = 3               //明牌数量
     room.roomType = "zhajinniu"
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
-
+    room.handle = {}   //玩家操作
     //房间初始化
-    var local = {}                       //私有方法·
+    var local = {}                       //私有方法
     var player = {}                      //玩家属性
     var readyCount = 0                   //游戏准备人数
     var gameState = conf.GS_FREE         //游戏状态
@@ -118,7 +118,7 @@ var MING_CARD_NUM = 3               //明牌数量
         room.channel = channelService.getChannel(roomId,true)
         //console.log(room.channel)   
     }
-    room.agency = function(uid,sid,param,cb) {
+    room.handle.agency = function(uid,sid,param,cb) {
       console.log("agency")
       log("agency"+uid)
         //无效条件判断
@@ -175,7 +175,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }    
     }
     //创建房间
-    room.newRoom = function(uid,sid,param,cb) {
+    room.handle.newRoom = function(uid,sid,param,cb) {
       console.log("newRoom")
       log("newRoom"+uid)
         //无效条件判断
@@ -226,7 +226,7 @@ var MING_CARD_NUM = 3               //明牌数量
         room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
         //设置下注上限
         maxBet = 20
-        room.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+        room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
         cb(true)
       }else{
         cb(false)
@@ -234,7 +234,7 @@ var MING_CARD_NUM = 3               //明牌数量
     }
 
     //玩家加入
-    room.join = function(uid,sid,param,cb) {
+    room.handle.join = function(uid,sid,param,cb) {
       log("serverId"+sid)
       //房间未创建不可加入
       if(room.state == true){
@@ -316,7 +316,7 @@ var MING_CARD_NUM = 3               //明牌数量
       //console.log(room.channel)
       cb(true)
     }
-    room.ready = function(uid,sid,param,cb) {
+    room.handle.ready = function(uid,sid,param,cb) {
        //游戏状态为空闲时才能准备
       if(gameState !== conf.GS_FREE){
         cb(false)
@@ -530,7 +530,7 @@ var MING_CARD_NUM = 3               //明牌数量
           clearTimeout(timer)
     }
     //发送聊天
-    room.say = function(uid,sid,param,cb) {
+    room.handle.say = function(uid,sid,param,cb) {
       //判断是否在椅子上
       var chair = room.chairMap[uid]
       if(chair == undefined){
@@ -548,7 +548,7 @@ var MING_CARD_NUM = 3               //明牌数量
       cb(true)
     }
     //玩家操作
-    room.useCmd = function(uid,sid,param,cb) {
+    room.handle.useCmd = function(uid,sid,param,cb) {
       if(gameState !== conf.GS_GAMEING){
         cb(false)
         return

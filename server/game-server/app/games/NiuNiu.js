@@ -37,6 +37,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.roomType = "niuniu"
   room.channel = channelService.getChannel(roomId,true)
   room.isRecord = true
+  room.handle = {} //玩家操作
   //房间初始化
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
@@ -65,7 +66,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var bonusPool = 40
   var robState,betList
   //代开房间
-  room.agency = function(uid,sid,param,cb) {
+  room.handle.agency = function(uid,sid,param,cb) {
     log("agency"+uid)
     //无效条件判断
     if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 4 || param.gameMode < 0){
@@ -139,7 +140,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }    
   }
   //创建房间
-  room.newRoom = function(uid,sid,param,cb) {
+  room.handle.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
       //无效条件判断
     if(!param.gameMode || typeof(param.gameMode) !== "number" || param.gameMode > 4 || param.gameMode < 0){
@@ -208,13 +209,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       if(room.gameMode == MODE_GAME_BULL){
         banker = roomHost
       }
-      room.join(uid,sid,{ip : param.ip, playerInfo : param.playerInfo},cb)
+      room.handle.join(uid,sid,{ip : param.ip, playerInfo : param.playerInfo},cb)
     }else{
       cb(false)
     }
   }
   //玩家加入
-  room.join = function(uid,sid,param,cb) {
+  room.handle.join = function(uid,sid,param,cb) {
     log("serverId"+sid)
     //房间未创建不可加入
     if(room.state == true){
@@ -363,7 +364,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
   }
   //玩家准备
-  room.ready = function(uid,sid,param,cb) {
+  room.handle.ready = function(uid,sid,param,cb) {
     //游戏状态为空闲时才能准备
     if(gameState !== GS_FREE){
       cb(false)
@@ -401,7 +402,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     cb(true)
   }
   //玩家抢庄
-  room.robBanker = function(uid,sid,param,cb) {
+  room.handle.robBanker = function(uid,sid,param,cb) {
     if(gameState !== GS_ROB_BANKER){
       cb(false)
       return
@@ -423,7 +424,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     cb(true)
   }
   //发送聊天
-  room.say = function(uid,sid,param,cb) {
+  room.handle.say = function(uid,sid,param,cb) {
     //判断是否在椅子上
     var chair = room.chairMap[uid]
     if(chair == undefined){
@@ -441,7 +442,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     cb(true)
   }
   //玩家下注
-  room.bet = function(uid,sid,param,cb){
+  room.handle.bet = function(uid,sid,param,cb){
     //游戏状态为BETTING
     if(gameState !== GS_BETTING){
       cb(false)
@@ -494,7 +495,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }      
     }
   }
-  room.showCard = function(uid,sid,param,cb) {
+  room.handle.showCard = function(uid,sid,param,cb) {
     //游戏状态为GS_DEAL
     if(gameState !== GS_DEAL){
       cb(false)

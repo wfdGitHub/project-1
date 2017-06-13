@@ -209,7 +209,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					//加入房间
 					var roomId = params.roomId
 					var ip = params.ip;
-					GameRemote.niuniuService.roomList[roomId].join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag) {
+					GameRemote.niuniuService.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 						}
@@ -285,7 +285,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				params.playerInfo = playerInfo
 				var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
 				if(roomId !== false){		
-					GameRemote.niuniuService.roomList[roomId].newRoom(uid,sid,params,function (flag) {
+					GameRemote.niuniuService.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 							GameRemote.niuniuService.roomState[roomId] = false;
@@ -351,7 +351,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function() {
 	    		//代开房
 	    		var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
-				GameRemote.niuniuService.roomList[roomId].agency(uid,sid,params,function (flag) {
+				GameRemote.niuniuService.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
 					if(flag === true){
 						GameRemote.niuniuService.roomState[roomId] = false;
 						cb(true,{"roomId" : roomId})
@@ -371,8 +371,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		console.log("room id : " + GameRemote.niuniuService.userMap[uid])
 		if(GameRemote.niuniuService.userMap[uid] !== undefined){
 			var roomId = GameRemote.niuniuService.userMap[uid];
-			if(roomId != undefined && GameRemote.niuniuService.roomList[roomId][code] != undefined){
-			    GameRemote.niuniuService.roomList[roomId][code](uid,sid,params,cb)
+			if(roomId != undefined && GameRemote.niuniuService.roomList[roomId].handle[code] != undefined){
+			    GameRemote.niuniuService.roomList[roomId].handle[code](uid,sid,params,cb)
 			    cb(true)
 			}else{
 			    cb(false)
