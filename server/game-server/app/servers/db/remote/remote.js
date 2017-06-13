@@ -20,7 +20,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"uid",uid)
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 		var history = {}
-		history.nowIndex = 0
+		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
 		cb(true)
@@ -90,8 +90,13 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 	DBRemote.dbService.getHistory(uid,function(data) {
 		console.log("data : ")
 		console.log(data)
-		data.nowIndex = (data.nowIndex + 1)%10
-		data.List[data.nowIndex] = record
+		data.allGames += 1
+		for(var i = 9;i > 0;i--){
+			if(data.List[i - 1]){
+				data.List[i] = data.List[i - 1]
+			}
+		}
+		data.List[0] = record
 		DBRemote.dbService.setHistory(uid,data)
 		if(cb){
 			cb()
