@@ -36,6 +36,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.roomId = roomId
   room.roomType = "niuniu"
   room.channel = channelService.getChannel(roomId,true)
+  room.isRecord = true
   //房间初始化
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
@@ -1039,6 +1040,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
       room.needDiamond = 0
+      room.isRecord = false
     }
     room.gameNumber = 0
     local.settlement()

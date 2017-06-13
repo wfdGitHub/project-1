@@ -17,6 +17,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var room = {}
     room.roomId = roomId
     room.roomType = "zhajinniu"
+    room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
 
     //房间初始化
@@ -939,6 +940,7 @@ var MING_CARD_NUM = 3               //明牌数量
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
       room.needDiamond = 0
+      room.isRecord = false
     }
     room.gameNumber = 0
     local.settlement()

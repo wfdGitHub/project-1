@@ -178,23 +178,13 @@ dbService.getNotify = function(cb) {
 		cb(JSON.parse(data))
 	})
 }
-//record 当局游戏总分数
-dbService.setHistory = function(uid,record) {
-	dbService.getPlayerObject(uid,"history",function(data) {
-		console.log(data)
-		data.allGameCount += 1
-		if(record >= 0){
-			data.winGameCount += 1
-		}
-		if(record > data.maxScore){
-			data.maxScore = record
-		}
-		dbService.setPlayerObject(uid,"history",data)
-	})
+
+dbService.setHistory = function(uid,history) {
+	dbService.setPlayerObject(uid,"history",history)
 }
 
 dbService.getHistory = function(uid,cb) {
-	dbService.getPlayer(uid,"history",function(data) {
+	dbService.getPlayerObject(uid,"history",function(data) {
 		if(cb){
 			cb(data)
 		}

@@ -61,17 +61,41 @@ var roomCallback = function(roomId,players,cb) {
 				break;		
 		}		
 	}
-	//记录战绩
-	for(var index in players){
-		if(players.hasOwnProperty(index)){
-			if(players[index].isActive){
-				var record = players[index].score
-				//console.log(NiuNiuService.app.rpc.db.remote)
-				NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)			
-			}
-		
+	if(NiuNiuService.roomList[roomId].isRecord == true){
+		//记录战绩 
+		var date = new Date()
+		var record = {}
+		record.roomId = roomId
+		record.date = {
+			"year" : date.getFullYear(),
+			"month" : date.getMonth(),
+			"day" : date.getDay(),
+			"hours" : date.getHours(),
+			"minute" : date.getMinutes(),
+			"second" : date.getSeconds()
+		}
+		record.player = {}
+		var nowIndex = 0
+		for(var index in players){
+			if(players.hasOwnProperty(index)){
+				if(players[index].isActive){
+					record.player[nowIndex++] = {
+						"name" : players[index].playerInfo.nickname,
+						"score" : players[index].score
+					}
+				}
+			
+			}	
 		}	
-	}	
+		for(var index in players){
+			if(players.hasOwnProperty(index)){
+				if(players[index].isActive){
+					NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)
+				}
+			
+			}	
+		}
+	}
 	cb()
 }
 //房间列表
