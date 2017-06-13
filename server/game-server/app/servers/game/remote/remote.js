@@ -88,26 +88,40 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 local.responseFinish = function(roomId,chair,flag) {
 	//记录响应状态
 	GameRemote.niuniuService.lockState[roomId][chair] = flag
+	//console.log(GameRemote.niuniuService.lockState[roomId])
+	var notify = {
+		"cmd" : "responseFinish",
+		"chair" : chair,
+		"result" : flag
+	}
+	GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
 	//同意人数大于等于一半   或者拒绝人数大于一半结束请求
 	var roomPlayer = GameRemote.niuniuService.roomList[roomId].getPlayerCount()
 	var agreeCount = 0
 	var refuseCount = 0
 	for(var index in GameRemote.niuniuService.lockState[roomId]){
 		if(GameRemote.niuniuService.lockState[roomId].hasOwnProperty(index)){
-			if(GameRemote.niuniuService.lockState[roomId][chair] == true){
+			//console.log("chair : "+chair +"    "+GameRemote.niuniuService.lockState[roomId][chair])
+			if(GameRemote.niuniuService.lockState[roomId][index] == true){
 				agreeCount++
 			}else{
 				refuseCount++
 			}
 		}
 	}
+	// console.log("roomPlayer : "+roomPlayer)
+	// console.log("agreeCount : "+agreeCount)
+	// console.log("refuseCount : "+refuseCount)
 	if(agreeCount >= roomPlayer/2){
+		//console.log("enfFinish true")
 		local.endFinish(roomId)
-	}else if(refuseCount > roomId/2){
+	}else if(refuseCount > roomPlayer/2){
+		//console.log("enfFinish flase")
 		local.endFinish(roomId)
 	}
 }
 local.endFinish = function(roomId) {
+	//console.log("endFinish")
 	//结束响应请求
 	var roomPlayer = GameRemote.niuniuService.roomList[roomId].getPlayerCount()
 	var agreeCount = 0
@@ -122,16 +136,16 @@ local.endFinish = function(roomId) {
 		}
 	}
 	if(agreeCount >= roomPlayer/2){
-		//解散房间
-		if(GameRemote.niuniuService.roomList[roomId].finishGame){
-			GameRemote.niuniuService.roomList[roomId].finishGame()
-		}
 		var notify = {
 			"cmd" : "endFinish",
 			"result" : true
 		}
 		GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
-	}else if(refuseCount > roomId/2){
+		//解散房间
+		if(GameRemote.niuniuService.roomList[roomId].finishGame){
+			GameRemote.niuniuService.roomList[roomId].finishGame()
+		}
+	}else if(refuseCount > roomPlayer/2){
 		//不解散房间
 		var notify = {
 			"cmd" : "endFinish",
