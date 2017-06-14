@@ -250,7 +250,9 @@ var MING_CARD_NUM = 3               //明牌数量
         }
       }
 
-      room.channel.add(uid,sid)
+      if(!room.channel.getMember(uid)){
+        room.channel.add(uid,sid)
+      }
       notify = {
         cmd : "roomPlayer",
         player:newPlayer,

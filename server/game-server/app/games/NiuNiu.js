@@ -212,7 +212,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     //console.log("param.maxGameNumber : "+param.maxGameNumber)
     //console.log("room.gameNumber : "+room.gameNumber)
-    room.channel.add(uid,sid)
+    if(!room.channel.getMember(uid)){
+      room.channel.add(uid,sid)
+    }
+
     notify = {
       cmd : "roomPlayer",
       player:newPlayer,
