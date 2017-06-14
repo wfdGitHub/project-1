@@ -55,7 +55,7 @@ var MING_CARD_NUM = 3               //明牌数量
     //斗公牛模式积分池
     var bonusPool = 40
     var robState,betList
-
+    room.runCount = 0
    //房间初始化
     local.init = function() {
       //console.log("enter init=====================================")
@@ -68,6 +68,7 @@ var MING_CARD_NUM = 3               //明牌数量
       //房间属性
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
+      room.halfwayEnter = true             //允许中途加入
       readyCount = 0                   //游戏准备人数
       gameState = conf.GS_FREE              //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
@@ -119,56 +120,7 @@ var MING_CARD_NUM = 3               //明牌数量
         room.channel = channelService.getChannel(roomId,true)
         //console.log(room.channel)   
     }
-    room.handle.agency = function(uid,sid,param,cb) {
-      console.log("agency")
-      log("agency"+uid)
-        //无效条件判断
-      if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
-        log("agency error   param.consumeMode : "+param.consumeMode)
-        cb(false)
-        return
-      } 
-      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
-        log("agency error   param.gameNumber : "+param.gameNumber)
-        cb(false)
-        return
-      }    
-      if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
-        log("agency error   param.cardMode : "+param.cardMode)
-        cb(false)
-        return
-      } 
-      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
-        log("agency error   param.basic : "+param.basic)
-        cb(false)
-        return        
-      }
-      //房间初始化
-      local.init()  
-      basic = param.basic
-      if(room.state === true){
-        room.state = false
-        room.playerCount  = 0            //房间内玩家人数
-        readyCount = 0                   //游戏准备人数
-        gameState = conf.GS_FREE         //游戏状态
-        room.chairMap = {}               //玩家UID与椅子号映射表
-        roomHost = 0                     //房主椅子号
-        banker = roomHost                //庄家椅子号
-        room.gameMode = param.gameMode                     //游戏模式
-        room.gameNumber = param.gameNumber                 //游戏局数
-        room.maxGameNumber = param.gameNumber              //游戏最大局数
-        room.consumeMode = conf.MODE_DIAMOND_NONOE         //消耗模式
-        room.cardMode = param.cardMode                     //明牌模式
-        room.needDiamond = 0                               //本局每人消耗钻石
-        //设置下注上限
-        maxBet = 20
-        cb(true)
-      }else{
-        cb(false)
-      }    
-    }
-    //创建房间
-    room.handle.newRoom = function(uid,sid,param,cb) {
+    local.newRoom = function(uid,sid,param,cb) {
       console.log("newRoom")
       log("newRoom"+uid)
         //无效条件判断
@@ -192,30 +144,46 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return        
       }
+      if(param.halfwayEnter === false){
+        room.halfwayEnter = false
+      }
       //房间初始化
       local.init()
       basic = param.basic
-      if(room.state === true){
-        room.state = false
-        room.playerCount  = 0            //房间内玩家人数
-        readyCount = 0                   //游戏准备人数
-        gameState = conf.GS_FREE         //游戏状态
-        room.chairMap = {}               //玩家UID与椅子号映射表
-        roomHost = 0                     //房主椅子号
-        banker = roomHost                //庄家椅子号
-        room.gameMode = param.gameMode                     //游戏模式
-        room.gameNumber = param.gameNumber                 //游戏局数
-        room.maxGameNumber = param.gameNumber              //游戏最大局数
-        room.consumeMode = param.consumeMode               //消耗模式
-        room.cardMode = param.cardMode                     //明牌模式
-        room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
-        //设置下注上限
-        maxBet = 20
-        room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
-        cb(true)
-      }else{
-        cb(false)
-      }
+      room.state = false
+      room.playerCount  = 0            //房间内玩家人数
+      readyCount = 0                   //游戏准备人数
+      gameState = conf.GS_FREE         //游戏状态
+      room.chairMap = {}               //玩家UID与椅子号映射表
+      roomHost = 0                     //房主椅子号
+      banker = roomHost                //庄家椅子号
+      room.gameMode = param.gameMode                     //游戏模式
+      room.gameNumber = param.gameNumber                 //游戏局数
+      room.maxGameNumber = param.gameNumber              //游戏最大局数
+      room.consumeMode = param.consumeMode               //消耗模式
+      room.cardMode = param.cardMode                     //明牌模式
+      room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
+      //设置下注上限
+      maxBet = 20
+      cb(true)
+    }
+    room.handle.agency = function(uid,sid,param,cb) {
+      local.newRoom(uid,sid,param,function(flag) {
+          if(flag){
+            room.needDiamond = 0
+            roomHost = -1
+          }
+          cb(flag)
+      })  
+    }
+    //创建房间
+    room.handle.newRoom = function(uid,sid,param,cb) {
+      local.newRoom(uid,sid,param,function(flag) {
+          if(flag){
+            room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+          }
+          cb(flag)
+      })
     }
 
     //玩家加入
@@ -223,6 +191,11 @@ var MING_CARD_NUM = 3               //明牌数量
       log("serverId"+sid)
       //房间未创建不可加入
       if(room.state == true){
+        cb(false)
+        return
+      }
+      //是否允许中途加入
+      if(room.halfwayEnter == false && room.runCount > 0){
         cb(false)
         return
       }
@@ -715,6 +688,7 @@ var MING_CARD_NUM = 3               //明牌数量
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
+          room.runCount++
          clearTimeout(timer)
          gameState = conf.GS_SETTLEMENT
         console.log("settlemnt")
