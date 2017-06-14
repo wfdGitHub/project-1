@@ -171,7 +171,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	//加入房间需要用户不在房间内
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
-			//TODO  无效条件判断
+			//无效条件判断
 			if(typeof(params.roomId) != "number" || params.roomId < 0 || !GameRemote.niuniuService.roomList[params.roomId]){
 				console.log("params.roomId : "+params.roomId)
 				console.log("type : "+typeof(params.roomId))
@@ -203,7 +203,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond
 						break;
 						case conf.MODE_DIAMOND_WIN : 
-							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond * conf.GAME_PLAYER;
+							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond * 6;
 						break;
 					} 
 					if(diamond >= needMond){
@@ -244,12 +244,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			return
 		}		
 	}else if(code == "newRoom"){
-		//TODO  无效数据判断
-		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
-	      log("newRoom error   param.playerAmount : "+params.playerAmount)
-	      cb(false)
-	      return
-	    }
+		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
@@ -263,19 +258,19 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				})
 			}, 
 			function(data,next) {
-				console.log("a111111 : "+GameRemote.niuniuService.userMap[uid])
+				//console.log("a111111 : "+GameRemote.niuniuService.userMap[uid])
 				//判断是否满足准入数额
 				var diamond = data
 				var needMond = Math.ceil(params.gameNumber / 10)
 				switch(params.consumeMode){
 					case conf.MODE_DIAMOND_HOST : 
-						needMond = needMond * params.playerAmount
+						needMond = needMond * 6
 					break;
 					case conf.MODE_DIAMOND_EVERY :
 						needMond = needMond
 					break;
 					case conf.MODE_DIAMOND_WIN : 
-						needMond = needMond * params.playerAmount
+						needMond = needMond * 6
 					break;
 				}
 				if(diamond >= needMond && GameRemote.niuniuService.userMap[uid] === undefined){
@@ -286,7 +281,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				return
 			},
 			function(next) {
-				console.log("a222222")
+				//console.log("a222222")
 				//获取玩家信息
 				console.log(GameRemote.dbService)
 				self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
@@ -294,7 +289,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				})
 			},
 			function(playerInfo) {
-				console.log("a3333")
+				//console.log("a3333")
 				//找到空闲房间ID
 				params.playerInfo = playerInfo
 				var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
@@ -319,11 +314,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	}else if(code == "agency"){
 		//代开房
 		//TODO  无效数据判断
-		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
-		    console.log("agency error   param.playerAmount : "+params.playerAmount)
-		    cb(false)
-		    return
-	    }
 	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
 	    	cb(false)
 	    	return
@@ -342,12 +332,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	},
 	    	function(data,next) {
 	    		//检查钻石是否足够
-	    		if(!params.playerAmount || typeof(params.playerAmount) !== "number" || params.playerAmount < 2 || params.playerAmount > 6){
-					next(false)
-			      	return
-			    }  
 				var diamond = data
-				var needMond = Math.ceil(params.gameNumber / 10) * params.playerAmount
+				var needMond = Math.ceil(params.gameNumber / 10) * 6
 				if(diamond < needMond || GameRemote.niuniuService.userMap[uid] !== undefined){
 					next(false)
 					return

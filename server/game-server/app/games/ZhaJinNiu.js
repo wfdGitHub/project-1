@@ -28,7 +28,8 @@ var MING_CARD_NUM = 3               //明牌数量
     var banker = -1                      //庄家椅子号  庄家代表最先开始操作的玩家
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
-    room.GAME_PLAYER = GAME_PLAYER       //游戏人数
+    room.GAME_PLAYER = 6                 //游戏人数
+    GAME_PLAYER = 6
     var curPlayer = -1                   //当前操作玩家
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
@@ -137,19 +138,11 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       } 
-      if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
-        log("agency error   param.playerAmount : "+param.playerAmount)
-        cb(false)
-        return
-      }
       if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
         log("agency error   param.basic : "+param.basic)
         cb(false)
         return        
       }
-      //房间人数设置    
-      GAME_PLAYER = param.playerAmount
-      room.GAME_PLAYER = GAME_PLAYER
       //房间初始化
       local.init()  
       basic = param.basic
@@ -194,19 +187,11 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       } 
-      if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
-        log("newRoom error   param.playerAmount : "+param.playerAmount)
-        cb(false)
-        return
-      }
       if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return        
       }
-      //房间人数设置    
-      GAME_PLAYER = param.playerAmount
-      room.GAME_PLAYER = GAME_PLAYER
       //房间初始化
       local.init()
       basic = param.basic

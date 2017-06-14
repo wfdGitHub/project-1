@@ -24,14 +24,18 @@ var roomCallback = function(roomId,players,cb) {
 	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
 	NiuNiuService.roomState[roomId] = true
 	//将玩家从房间中解锁
+	var roomPlayerCount = 0
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
-			delete NiuNiuService.userMap[players[index].uid]
+			if(players[index].isActive){
+                roomPlayerCount++
+                delete NiuNiuService.userMap[players[index].uid]
+			}
 		}
 	}	
 	//扣除钻石
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
-	var GAME_PLAYER = NiuNiuService.roomList[roomId].GAME_PLAYER
+	var GAME_PLAYER = roomPlayerCount
 	console.log("diamond : "+diamond)
 	console.log("GAME_PLAYER : "+GAME_PLAYER)
 	if(diamond !== 0){
@@ -42,7 +46,9 @@ var roomCallback = function(roomId,players,cb) {
 			case MODE_DIAMOND_EVERY: 
 				for(var index in players){
 					if(players.hasOwnProperty(index)){
-						NiuNiuService.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+                        if(players[index].isActive){
+                            NiuNiuService.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+                        }
 					}
 				}			
 				break;
@@ -51,9 +57,11 @@ var roomCallback = function(roomId,players,cb) {
 				var winScore = 0
 				for(var index in players){
 					if(players.hasOwnProperty(index)){
-						if(players[index].score > winScore){
-							win = index
-							winScore = players[index].score
+                        if(players[index].isActive){
+                            if(players[index].score > winScore){
+                                win = index
+                                winScore = players[index].score
+                            }
 						}
 					}
 				}

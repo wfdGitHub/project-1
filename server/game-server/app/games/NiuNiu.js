@@ -47,7 +47,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var roomHost = -1                    //房主椅子号
   var beginPlayer = {}                 //当局游戏参与玩家
   var timer                            //定时器句柄
-  room.GAME_PLAYER = GAME_PLAYER       //游戏人数
+  room.GAME_PLAYER = 6                 //游戏人数
+  GAME_PLAYER = 6
   //游戏属性
   
   var cards = {}                       //牌组
@@ -94,14 +95,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     } 
-    if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
-      log("agency error   param.playerAmount : "+param.playerAmount)
-      cb(false)
-      return
-    }  
-    //房间人数设置    
-    GAME_PLAYER = param.playerAmount
-    room.GAME_PLAYER = GAME_PLAYER
     //房间初始化
     local.init()
     if(room.state === true){
@@ -168,14 +161,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     } 
-    if(!param.playerAmount || typeof(param.playerAmount) !== "number" || param.playerAmount < 2 || param.playerAmount > 6){
-      log("newRoom error   param.playerAmount : "+param.playerAmount)
-      cb(false)
-      return
-    }
-    //房间人数设置    
-    GAME_PLAYER = param.playerAmount
-    room.GAME_PLAYER = GAME_PLAYER
     //房间初始化
     local.init()
 
