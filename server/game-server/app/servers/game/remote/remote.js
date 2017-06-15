@@ -40,6 +40,19 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 			GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
 			//发起解散的玩家默认同意
 			local.responseFinish(roomId,chair,true)
+			//三分钟后默认同意
+			var timerCb = function(roomId) {
+				return function() {
+					var gamePlayer = GameRemote.niuniuService.roomList[roomId].GAME_PLAYER
+					for(var i = 0;i < gamePlayer;i++){
+						if(GameRemote.niuniuService.lockState[roomId][i] != false){
+							GameRemote.niuniuService.lockState[roomId][i] = true
+						}
+					}					
+					local.endFinish(roomId)
+				}
+			}(roomId)
+			GameRemote.niuniuService.lockTimer[roomId] = setTimeout(timerCb,180 * 1000)
 			cb(true)
 			break
 		case "agreeFinish" :
@@ -121,7 +134,9 @@ local.responseFinish = function(roomId,chair,flag) {
 	}
 }
 local.endFinish = function(roomId) {
-	//console.log("endFinish")
+	//清除定时器
+	clearTimeout(GameRemote.niuniuService.lockTimer[roomId])
+	delete GameRemote.niuniuService.lockTimer[roomId]
 	//结束响应请求
 	var roomPlayer = GameRemote.niuniuService.roomList[roomId].getPlayerCount()
 	var agreeCount = 0
@@ -135,7 +150,7 @@ local.endFinish = function(roomId) {
 			}
 		}
 	}
-	if(agreeCount >= roomPlayer/2){
+	if(agreeCount >= roomPlayer/2 || flag){
 		var notify = {
 			"cmd" : "endFinish",
 			"result" : true
@@ -298,6 +313,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 							GameRemote.niuniuService.roomState[roomId] = false;
+							//做个保护  创建房间后把
+							clearTimeout(GameRemote.niuniuService.lockTimer[roomId])
+							delete GameRemote.niuniuService.lockTimer[roomId]
 						}
 						cb(flag)
 					})

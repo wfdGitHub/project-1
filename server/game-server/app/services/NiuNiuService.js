@@ -116,6 +116,8 @@ NiuNiuService.userMap = {}
 NiuNiuService.roomLock = {}
 //玩家相应解散状态
 NiuNiuService.lockState = {}
+//解散请求计时器
+NiuNiuService.lockTimer = {}
 NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
