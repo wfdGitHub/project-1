@@ -4,12 +4,12 @@ module.exports = function(app) {
 
 var DBRemote = function(app) {
 	this.app = app
+	DBRemote.app = app
     DBRemote.dbService = this.app.get("dbService")
     if(DBRemote.dbService && DBRemote.dbService.db){
     	DBRemote.db = DBRemote.dbService.db
     }
-    
-}
+}	
 
 var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
@@ -77,6 +77,14 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			value = parseInt(data) + parseInt(value)
 			//console.log('value :'+value)
 			DBRemote.dbService.setPlayer(uid,name,value,cb)
+			if(name === "diamond"){
+				//通知钻石更新
+				var notify = {
+					"cmd" : "updateDiamond",
+					"data" : value
+				}
+				DBRemote.app.rpc.connector.remote.sendByUid(null,uid,notify,function(){})						
+			}
 		}else{
 			if(cb){
 				cb(false)
@@ -98,6 +106,12 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 		}
 		data.List[0] = record
 		DBRemote.dbService.setHistory(uid,data)
+		//通知战绩更新
+		var notify = {
+			"cmd" : "updateHistory",
+			"data" : data
+		}
+		DBRemote.app.rpc.connector.remote.sendByUid(null,uid,notify,function(){})
 		if(cb){
 			cb()
 		}
