@@ -77,7 +77,7 @@ var roomCallback = function(roomId,players,cb) {
 		record.date = {
 			"year" : date.getFullYear(),
 			"month" : date.getMonth(),
-			"day" : date.getDay(),
+			"day" : date.getDate(),
 			"hours" : date.getHours(),
 			"minute" : date.getMinutes(),
 			"second" : date.getSeconds()

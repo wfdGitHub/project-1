@@ -137,7 +137,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     local.newRoom(uid,sid,param,function(flag) {
         if(flag){
           room.needDiamond = 0
-          roomHost = -1
         }
         cb(flag)
     })
