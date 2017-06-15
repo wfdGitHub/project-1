@@ -137,6 +137,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     local.newRoom(uid,sid,param,function(flag) {
         if(flag){
           room.needDiamond = 0
+          roomHost = -1
         }
         cb(flag)
     })
@@ -281,7 +282,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
     }
   }
-  //玩家离开
+  //玩家离线
   room.leave = function(uid) {
     //判断是否在椅子上
     // console.log("leave11111 : "+room.chairMap[uid])
@@ -512,7 +513,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       case MODE_BANKER_HOST :
         //房主当庄
         banker = roomHost
-
+        if(roomHost === -1){
+          banker = 0
+        }
         local.gameBegin()
         break
       default:
@@ -945,19 +948,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){
-      player[i] = {}
-      player[i].chair = i                 //椅子号
-      player[i].uid = 0                   //uid
-      player[i].isActive = false          //当前椅子上是否有人
-      player[i].isOnline = false          //玩家是否在线
-      player[i].isReady = false           //准备状态
-      player[i].isBanker = false          //是否为庄家
-      player[i].isShowCard = false        //是否开牌
-      player[i].handCard = new Array(5)   //手牌
-      player[i].score = 0                 //当前积分
-      player[i].bankerCount = 0           //坐庄次数
-      player[i].cardsList  = {}           //总战绩列表
-      player[i].ip  = undefined           //玩家ip地址
+        local.initChairInfo(i)
     }    
        //console.log("enter init=====================================222")
       //channel清空
@@ -965,7 +956,30 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.channel = channelService.getChannel(roomId,true)
       //console.log(room.channel)   
   }
-  
+  //初始化椅子信息
+  local.initChairInfo = function(chiar) {
+      player[chiar] = {}
+      player[chiar].chair = chiar             //椅子号
+      player[chiar].uid = 0                   //uid
+      player[chiar].isActive = false          //当前椅子上是否有人
+      player[chiar].isOnline = false          //玩家是否在线
+      player[chiar].isReady = false           //准备状态
+      player[chiar].isBanker = false          //是否为庄家
+      player[chiar].isShowCard = false        //是否开牌
+      player[chiar].handCard = new Array(5)   //手牌
+      player[chiar].score = 0                 //当前积分
+      player[chiar].bankerCount = 0           //坐庄次数
+      player[chiar].cardsList  = {}           //总战绩列表
+      player[chiar].ip  = undefined           //玩家ip地址
+  }
+  //房间是否已开始游戏
+  room.isBegin = function() {
+    if(room.runCount === 0 && gameState === conf.GS_FREE){
+        return false
+    }else{
+        return true
+    }
+  }  
   //房间是否空闲
   room.isFree = function() {
     return gameState === conf.GS_FREE
@@ -981,7 +995,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     return count
   }
   //解散游戏
-  room.finishGame = function(argument) {
+  room.finishGame = function() {
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
       room.needDiamond = 0
@@ -990,6 +1004,35 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     room.gameNumber = 0
     local.settlement()
   }
+  //用户退出
+  room.userQuit = function(uid,cb) {
+    //再次确保游戏未开始
+    if(room.isBegin()){
+      return
+    }
+    var chair = room.chairMap[uid]
+    room.playerCount--
+    //房主退出解散房间
+    if(chair == roomHost){
+        room.finishGame()
+    }else{
+      //清除座位信息
+      local.initChairInfo(chair) 
+      var tsid =  room.channel.getMember(uid)['sid']
+      if(tsid){
+        room.channel.leave(uid,tsid)
+      }
+      delete room.chairMap[uid]
+      var notify = {
+        cmd: "userQuit",
+        uid: uid,
+        chair : chair
+      }
+      local.sendAll(notify)     
+      cb()     
+    }
+  }
+
   return room 
 }
 

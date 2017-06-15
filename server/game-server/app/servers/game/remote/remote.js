@@ -95,6 +95,23 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 			local.responseFinish(roomId,chair,false)
 			cb(true)
 			break
+		case "userQuit" :
+			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}		
+			var roomId = GameRemote.niuniuService.userMap[uid]
+			if(GameRemote.niuniuService.roomList[roomId].isBegin() == true){
+				cb(false)
+				return
+			}
+			if(GameRemote.niuniuService.roomList[roomId].userQuit){
+				GameRemote.niuniuService.roomList[roomId].userQuit(uid,function() {
+					delete GameRemote.niuniuService.userMap[uid]
+				})
+			}			
+			cb(true)
+			break
 	}
 }
 
