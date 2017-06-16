@@ -22,7 +22,6 @@ NiuNiuService.name = "NiuNiuService"
 var roomCallback = function(roomId,players,cb) {
 	console.log("room end : "+ roomId)
 	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
-	NiuNiuService.roomState[roomId] = true
 	//将玩家从房间中解锁
 	var roomPlayerCount = 0
 	for(var index in players){
@@ -105,6 +104,9 @@ var roomCallback = function(roomId,players,cb) {
 		}
 	}
 	cb()
+	//删除房间
+	NiuNiuService.roomState[roomId] = true
+	NiuNiuService.roomList[roomId] = false
 }
 //房间列表
 NiuNiuService.roomList = {};
@@ -124,7 +126,7 @@ NiuNiuService.prototype.start = function(cb) {
 
 	for(var i = 200200;i < ROOM_ALL_AMOUNT + 200200;i++){
 		NiuNiuService.roomState[i] = true
-		NiuNiuService.roomList[i] = {}
+		NiuNiuService.roomList[i] = false
 		NiuNiuService.roomLock[i] = true
 		NiuNiuService.lockState[i] = {}
 	}

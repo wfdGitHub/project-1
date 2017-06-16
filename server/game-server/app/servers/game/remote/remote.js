@@ -1,5 +1,6 @@
 //var gameHandle = require('../handler/handle');
 var conf = require("../../../conf/niuniuConf.js").niuConf
+var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 //console.log(conf)
 module.exports = function(app) {
@@ -15,6 +16,11 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	switch(code){
 		case "finish" : 
 			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}
+			//房间未开始不能发起解散
+			if(!room.isBegin()){
 				cb(false)
 				return
 			}
@@ -207,14 +213,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			if(typeof(params.roomId) != "number" || params.roomId < 0 || !GameRemote.niuniuService.roomList[params.roomId]){
 				console.log("params.roomId : "+params.roomId)
 				console.log("type : "+typeof(params.roomId))
-				console.log(GameRemote.niuniuService.roomList[roomId])
-				cb(false)
-				return
+                console.log(GameRemote.niuniuService.roomList[roomId])
+                cb(false,{"code" : tips.NO_ROOM})
+                return
 			}
 			var roomId = params.roomId
 			//不能进入锁定的房间
 			if(GameRemote.niuniuService.roomLock[roomId] == false){
-				cb(false)
+				cb(false,{"code" : tips.LOCK_ROOM})
 				return
 			}
 			async.waterfall([
@@ -241,7 +247,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					if(diamond >= needMond){
 						next()
 					}else{
-						cb(false)
+						cb(false,{"code" :tips.NO_DIAMOND})
 						return
 					}
 				},
@@ -308,7 +314,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				if(diamond >= needMond && GameRemote.niuniuService.userMap[uid] === undefined){
 					next(null)
 				}else{
-					cb(false)
+					cb(false,{"code" :tips.NO_DIAMOND})
 				}
 				return
 			},
@@ -337,7 +343,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						cb(flag)
 					})
 				}else{
-					cb(false)
+					cb(false,{"code" :tips.FULL_ROOM})
 				}
 			}
 	  	], function (err, result) {
@@ -358,7 +364,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }   
+	    var roomId = 0
+	    var needMond = 0
 	    async.waterfall([
+	    	function(next) {
+	    		//检查有没有空闲房间
+	    		roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
+	    		if(roomId !== false){
+	    			next()
+	    		}else{
+	    			cb(false,{"code" : tips.FULL_ROOM})
+	    		}
+	    	},
 	    	function(next) {
 				//获取玩家钻石
 				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
@@ -368,31 +385,38 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function(data,next) {
 	    		//检查钻石是否足够
 				var diamond = data
-				var needMond = Math.ceil(params.gameNumber / 10) * 6
-				if(diamond < needMond || GameRemote.niuniuService.userMap[uid] !== undefined){
-					next(false)
+				needMond = Math.ceil(params.gameNumber / 10) * 6
+				if(diamond < needMond){
+					cb(false,{"code" : tips.NO_DIAMOND})
 					return
-				}    	
-				//扣除钻石
-				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
-					if(flag){
-						next()
-					}else{
-						cb(false)
-						return						
-					}
-				})
+				} 
+				next()
+				return
 	    	},
-	    	function() {
+	    	function(next) {
 	    		//代开房
-	    		var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
 				GameRemote.niuniuService.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
 					if(flag === true){
 						GameRemote.niuniuService.roomState[roomId] = false;
-						cb(true,{"roomId" : roomId})
+						next(null,roomId)
 					}else{
+						//删除房间
+						NiuNiuService.roomState[roomId] = true
+						NiuNiuService.roomList[roomId] = false
 						cb(false)
 					}
+				})	    		
+	    	},function(roomId) {
+				//扣除钻石
+				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
+					if(!flag){
+						//删除房间
+						NiuNiuService.roomState[roomId] = true
+						NiuNiuService.roomList[roomId] = false
+						cb(false)
+						return
+					}
+					cb(true,{"roomId" : roomId})
 				})	    		
 	    	}	    		    	
 	    	], function (err, result) {

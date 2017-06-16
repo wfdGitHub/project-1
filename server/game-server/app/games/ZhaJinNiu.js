@@ -816,21 +816,21 @@ var MING_CARD_NUM = 3               //明牌数量
       cb(notify)
     }
   //初始化椅子信息
-  local.initChairInfo = function(chiar) {
-      player[chiar] = {}
-      player[chiar].chair = chair             //椅子号
-      player[chiar].uid = 0                   //uid
-      player[chiar].isActive = false          //当前椅子上是否有人
-      player[chiar].isOnline = false          //玩家是否在线
-      player[chiar].isReady = false           //准备状态
-      player[chiar].isBanker = false          //是否为庄家
-      player[chiar].isNoGiveUp = false        //是否未放弃游戏  true表示未放弃   false表示已放弃            
-      player[chiar].isShowCard = false        //是否开牌
-      player[chiar].handCard = new Array(5)   //手牌
-      player[chiar].score = 0                 //当前积分
-      player[chiar].bankerCount = 0           //坐庄次数
-      player[chiar].cardsList  = {}           //总战绩列表
-      player[chiar].ip  = undefined           //玩家ip地址
+  local.initChairInfo = function(chair) {
+      player[chair] = {}
+      player[chair].chair = chair             //椅子号
+      player[chair].uid = 0                   //uid
+      player[chair].isActive = false          //当前椅子上是否有人
+      player[chair].isOnline = false          //玩家是否在线
+      player[chair].isReady = false           //准备状态
+      player[chair].isBanker = false          //是否为庄家
+      player[chair].isNoGiveUp = false        //是否未放弃游戏  true表示未放弃   false表示已放弃            
+      player[chair].isShowCard = false        //是否开牌
+      player[chair].handCard = new Array(5)   //手牌
+      player[chair].score = 0                 //当前积分
+      player[chair].bankerCount = 0           //坐庄次数
+      player[chair].cardsList  = {}           //总战绩列表
+      player[chair].ip  = undefined           //玩家ip地址
   }
     //玩家离开
     room.leave = function(uid) {
