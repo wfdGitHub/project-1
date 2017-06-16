@@ -48,6 +48,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var roomHost = -1                    //房主椅子号
   var beginPlayer = {}                 //当局游戏参与玩家
   var timer                            //定时器句柄
+  var bankerTime = 0                   //连庄次数
   room.GAME_PLAYER = 6                 //游戏人数
   GAME_PLAYER = 6
   //游戏属性
@@ -345,6 +346,44 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }      
     }
     cb(true)
+  }
+  //玩家下庄
+  room.handle.downBanker = function(uid,sid,param,cb) {
+    if(gameState !== GS_FREE){
+      cb(false)
+      return
+    }
+    if(room.gameMode !== conf.MODE_GAME_BULL){
+      cb(false)
+      return      
+    }
+    var chair = room.chairMap[uid]
+    if(chair == undefined){
+      cb(false)
+      return
+    } 
+    if(chair !== banker){
+      cb(false)
+      return      
+    }
+    //连庄三局才能换庄
+    if(bankerTime < 2){
+      cb(false)
+      return    
+    }
+    //换庄
+    do{
+        banker = (banker + 1)%GAME_PLAYER
+    }while(player[banker].isActive == false)
+    bonusPool = 40
+    bankerTime = 0
+    log("banker change : "+banker)      
+    var notify = {
+      "cmd" : "downBanker",
+      "chair" : chair,
+      "banker" : banker
+    }
+    local.sendAll(notify)
   }
   //玩家抢庄
   room.handle.robBanker = function(uid,sid,param,cb) {
@@ -787,7 +826,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                     banker = (banker + 1)%GAME_PLAYER
                 }while(player[banker].isActive == false)
                 bonusPool = 40
+                bankerTime = 0
                 log("banker change : "+banker)
+            }else{
+              bankerTime++
             }
             //斗牛模式更新积分池
             if(room.gameMode == MODE_GAME_BULL){

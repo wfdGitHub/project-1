@@ -19,12 +19,12 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 				cb(false)
 				return
 			}
+			var roomId = GameRemote.niuniuService.userMap[uid]
 			//房间未开始不能发起解散
-			if(!room.isBegin()){
+			if(!GameRemote.niuniuService.roomList[roomId].isBegin()){
 				cb(false)
 				return
 			}
-			var roomId = GameRemote.niuniuService.userMap[uid]
 			//不能重复发送
 			if(GameRemote.niuniuService.roomLock[roomId] == false){
 				cb(false)
