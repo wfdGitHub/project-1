@@ -39,28 +39,7 @@ dbService.getPlayerInfo = function(uid,cb) {
 		if(!data){
 			cb(false)
 		}else{
-			uid = data
-			var cmd1 = "nn:acc:"+uid+":"+"diamond"
-			var cmd2 = "nn:acc:"+uid+":"+"uid"
-			var cmd3 = "nn:acc:"+uid+":"+"nickname"
-			var cmd4 = "nn:acc:"+uid+":"+"head"
-			var cmd5 = "nn:acc:"+uid+":"+"history"
-			var cmd6 = "nn:acc:"+uid+":"+"sex"
-			dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,function(err,data) {
-				if(!err){
-					var notify = {}
-					notify["diamond"] = data[0]
-					notify["uid"] = data[1]
-					notify["nickname"] = data[2]
-					notify["head"] = data[3]
-					notify["history"] = JSON.parse(data[4])
-					notify["sex"] = data[5]
-					notify["playerId"] = uid
-					cb(notify)
-				}else{
-					cb(false)
-				}
-			})
+			dbService.getPlayerInfoByUid(data,cb)
 		}
 	})	
 }
@@ -72,7 +51,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd4 = "nn:acc:"+uid+":"+"head"
 	var cmd5 = "nn:acc:"+uid+":"+"history"
 	var cmd6 = "nn:acc:"+uid+":"+"sex"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,function(err,data) {
+	var cmd7 = "nn:acc:"+uid+":"+"limits"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -81,6 +61,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["head"] = data[3]
 			notify["history"] = JSON.parse(data[4])
 			notify["sex"] = data[5]
+			notify["limits"] = data[6]
 			notify["playerId"] = uid
 			cb(notify)
 		}else{

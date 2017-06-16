@@ -210,7 +210,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	if(code == "join"){
 		if(!GameRemote.niuniuService.userMap[uid]){
 			//无效条件判断
-			if(typeof(params.roomId) != "number" || params.roomId < 0 || !GameRemote.niuniuService.roomList[params.roomId]){
+			if(typeof(params.roomId) != "number" || params.roomId < 0 
+				|| !GameRemote.niuniuService.roomList[params.roomId] || GameRemote.niuniuService.roomState[params.roomId]){
 				console.log("params.roomId : "+params.roomId)
 				console.log("type : "+typeof(params.roomId))
                 console.log(GameRemote.niuniuService.roomList[roomId])

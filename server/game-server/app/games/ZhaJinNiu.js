@@ -182,7 +182,7 @@ var MING_CARD_NUM = 3               //明牌数量
         return
       }
       //是否允许中途加入
-      if(room.halfwayEnter == false && room.runCount > 0){
+      if(room.halfwayEnter == false && room.isBegin()){
         cb(false)
         return
       }

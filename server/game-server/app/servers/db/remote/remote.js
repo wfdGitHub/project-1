@@ -19,6 +19,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
 		DBRemote.dbService.setPlayer(uid,"uid",uid)
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
+		DBRemote.dbService.setPlayer(uid,"limits",0)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -76,6 +77,10 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			//console.log('value :'+value)
 			value = parseInt(data) + parseInt(value)
 			//console.log('value :'+value)
+			if(value < 0){
+				cb(false)
+				return
+			}
 			DBRemote.dbService.setPlayer(uid,name,value,cb)
 			if(name === "diamond"){
 				//通知钻石更新

@@ -161,13 +161,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       return
     }
     //是否允许中途加入
-    if(room.halfwayEnter == false && room.runCount > 0){
+    if(room.halfwayEnter == false && room.isBegin()){
       cb(false)
       return
     }
     //不可重复加入
     for(var i = 0;i < GAME_PLAYER;i++){
-        if(player[i].uid === uid){
+        if(player[i] && player[i].uid === uid){
           cb(false)
           return
         }
@@ -231,7 +231,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_BETTING : conf.TID_BETTING,
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
       state : gameState,
-      roomType : room.roomType
+      roomType : room.roomType,
+      bankerTime : bankerTime
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -270,7 +271,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           TID_ROB_TIME : conf.TID_ROB_TIME, 
           TID_BETTING : conf.TID_BETTING,
           TID_SETTLEMENT : conf.TID_SETTLEMENT,
-          roomType : room.roomType
+          roomType : room.roomType,
+          bankerTime : bankerTime
         },
         betList : betList,
         state : gameState,
@@ -367,7 +369,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       return      
     }
     //连庄三局才能换庄
-    if(bankerTime < 2){
+    if(bankerTime < 3){
       cb(false)
       return    
     }
@@ -903,8 +905,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         "curScores" : curScores,
         "beginPlayer" : beginPlayer
       }
+      if(room.gameMode === conf.MODE_GAME_BULL){
+        notify.bankerTime = bankerTime
+      }
       local.sendAll(notify)
-
 
       if(room.gameNumber <= 0){
           local.gameOver()
