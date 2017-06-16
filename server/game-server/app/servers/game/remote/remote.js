@@ -148,10 +148,10 @@ local.responseFinish = function(roomId,chair,flag) {
 	// console.log("roomPlayer : "+roomPlayer)
 	// console.log("agreeCount : "+agreeCount)
 	// console.log("refuseCount : "+refuseCount)
-	if(agreeCount >= roomPlayer/2){
+	if(agreeCount > roomPlayer/2){
 		//console.log("enfFinish true")
 		local.endFinish(roomId)
-	}else if(refuseCount > roomPlayer/2){
+	}else if(refuseCount >= roomPlayer/2){
 		//console.log("enfFinish flase")
 		local.endFinish(roomId)
 	}
@@ -173,7 +173,7 @@ local.endFinish = function(roomId) {
 			}
 		}
 	}
-	if(agreeCount >= roomPlayer/2 || flag){
+	if(agreeCount > roomPlayer/2 || flag){
 		var notify = {
 			"cmd" : "endFinish",
 			"result" : true
@@ -183,7 +183,7 @@ local.endFinish = function(roomId) {
 		if(GameRemote.niuniuService.roomList[roomId].finishGame){
 			GameRemote.niuniuService.roomList[roomId].finishGame()
 		}
-	}else if(refuseCount > roomPlayer/2){
+	}else if(refuseCount >= roomPlayer/2){
 		//不解散房间
 		var notify = {
 			"cmd" : "endFinish",
