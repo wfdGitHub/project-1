@@ -146,6 +146,11 @@
           });
         }); 
       }
+      var giveDiamond = function(target,diamond) {
+          pomelo.request("monitor.handle.giveDiamond", {target : target,diamond : diamond}, function(data) {
+              console.log(data)
+          });        
+      }
     </script>
   </head>
   <body>

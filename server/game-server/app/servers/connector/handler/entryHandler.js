@@ -35,7 +35,6 @@ handler.getSelfData = function(msg,session,next) {
      }else{
       next(false)
      }
-
 }
 
 handler.test = function(msg,session,next) {
@@ -86,14 +85,16 @@ handler.visitorEnter = function(msg, session, next) {
           notify.data = data
           // console.log("===========")
           // console.log(data)
+          //判断账号是否冻结
+          if(data.freeze == 1){
+            next(null,{"flag" : false,"code" : 500})
+            return
+          }
           //保存session
           playerId = data.playerId
           if( !! sessionService.getByUid(playerId)) {
-            next(null, {
-              code: 500,
-              error: true
-            });
-            return;
+            next(null,{"flag" : false ,"code" : 501})
+            return
           }
           session.bind(playerId);
           session.set("uid", playerId);
@@ -128,13 +129,11 @@ handler.visitorEnter = function(msg, session, next) {
       console.log("enter error")
       console.log(err)
       console.log(result)
-      next(null,{code : -200})
+      next(null,{"flag" : false,code : -200})
       return
     }
   )
-  next(null, {
-      code: 100
-  });  
+  next(null,{"flag" : true})
 }
 //登录
 handler.enter = function(msg, session, next) {
@@ -188,13 +187,14 @@ handler.enter = function(msg, session, next) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
+          if(data.freeze == 1){
+            next(null,{"flag" : false ,"code" : 500})
+            return
+          }
           //保存session
           playerId = data.playerId
           if( !! sessionService.getByUid(playerId)) {
-            next(null, {
-              code: 500,
-              error: true
-            });
+            next(null,{"flag" : false ,"code" : 501})
             return;
           }
           session.bind(playerId);
@@ -230,13 +230,11 @@ handler.enter = function(msg, session, next) {
       console.log("enter error")
       console.log(err)
       console.log(result)
-      next(null,{code : -200})
+      next(null,{"flag" : false,code : -200})
       return
     }
   )
-  next(null, {
-      code: 100
-  });
+  next(null,{"flag" : true})
 };
 
 //接受客户端发送数据

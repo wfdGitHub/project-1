@@ -20,6 +20,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"uid",uid)
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 		DBRemote.dbService.setPlayer(uid,"limits",0)
+		DBRemote.dbService.setPlayer(uid,"freeze",0)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -96,6 +97,9 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			}
 		}
 	})
+}
+DBRemote.prototype.changeValue = function(uid,name,value,cb) {
+	DBRemote.dbService.setPlayer(uid,name,value,cb)
 }
 DBRemote.prototype.setHistory = function(uid,record,cb) {
 	console.log("uid : "+uid)

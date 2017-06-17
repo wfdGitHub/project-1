@@ -1,13 +1,21 @@
 var async = require("async")
 var http=require("http");
-var url = require("url")
-var qs = require('querystring')
-http.createServer(function(req,res){
-	//console.log(req)
-    res.writeHead(200,{
-        "content-type":"text/plain"
-    });    
-     if (req.method.toUpperCase() == 'POST') {
+
+
+module.exports = function(app) {
+	return new Handler(app);
+};
+
+var Handler = function(app) {
+	this.app = app
+	Handler.app = app
+	if(app.get("serverId") === "connector-server-1"){
+	http.createServer(function(req,res){
+		//console.log(req)
+	    res.writeHead(200,{
+	        "content-type":"text/plain"
+	    });    
+        if (req.method.toUpperCase() == 'POST') {
 			console.log("post")
             var postData = "";
 			//接收数据中
@@ -28,6 +36,33 @@ http.createServer(function(req,res){
 							}
 						})
 					return
+					case "queryUserInfo" : 
+						local.getUserInfo(data.uid,function(data) {
+							if(data == false){
+								local.write(res,{"flag" : false})
+							}else{
+								local.write(res,{"flag" : true,"userInfo" : data})
+							}
+						})
+					return
+					case "setAgency" : 
+						local.setAgency(data.uid,function(flag) {
+							if(flag){
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
+					case "setFreeze" : 
+						local.freezeAccount(data.uid,data.freeze,function(flag) {
+							if(flag){
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
 					default :
 						local.write(res,{"flag" : false})
 						break
@@ -37,18 +72,11 @@ http.createServer(function(req,res){
         else if (req.method.toUpperCase() == 'GET') {
 			console.log("get")
         }
-}).listen(20279, function () {
-    console.log("listen on port 20279");
-});
+	}).listen(20279, function () {
+	    console.log("listen on port 20279");
+	});			
+	}
 
-
-module.exports = function(app) {
-	return new Handler(app);
-};
-
-var Handler = function(app) {
-	this.app = app
-	Handler.app = app
 };
 
 var handler = Handler.prototype;
@@ -78,7 +106,74 @@ local.addDiamond = function(diamond,uid,cb) {
 		}
 	})	    		
 }
+//设置代理  开启赠送钻石权限
+local.setAgency = function(uid,cb){
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		cb(false)
+		return 
+	}
+	async.waterfall([
+		function(next) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					next()
+				}else{
+					//玩家不存在
+					cb(false)
+				}
+			})	
+		},
+		function() {
+			//设置代理权限
+			Handler.app.rpc.db.remote.changeValue(null,uid,"limits",1,function(flag){
+				cb(flag)
+			})	
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null)
+			return
+	})
 
+}
+//查询玩家信息
+local.getUserInfo = function(uid,cb) {
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		cb(false)
+		return 
+	}
+	async.waterfall([
+		function(next) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					next()
+				}else{
+					//玩家不存在
+					cb(false)
+				}
+			})	
+		},
+		function() {
+			//查询并返回用户信息
+			Handler.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+				cb(data)
+			})
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null)
+			return
+	})	
+
+}
 //查询钻石
 handler.queryDiamond = function(msg,session,next){
 	var uid = msg.uid
@@ -94,7 +189,7 @@ handler.queryNickName = function(msg,session,next) {
 		next(null,data)
 	})
 }
-//赠送钻石
+//赠送钻石接口 
 handler.giveDiamond = function(msg,session,next){
 	var target = msg.target
 	var diamond = msg.diamond
@@ -114,7 +209,7 @@ handler.giveDiamond = function(msg,session,next){
 	async.waterfall([
 		function(cb) {
 			//查询权限
-			this.app.rpc.db.remote.getValue(null,uid,"limits",function(data){
+			Handler.app.rpc.db.remote.getValue(null,uid,"limits",function(data){
 				if(data >= 1){
 					cb()
 				}else{
@@ -124,7 +219,7 @@ handler.giveDiamond = function(msg,session,next){
 		},
 		function(cb) {
 			//查询目标是否存在
-			this.app.rpc.db.remote.getValue(null,target,"uid",function(data) {
+			Handler.app.rpc.db.remote.getValue(null,target,"uid",function(data) {
 				if(target === data){
 					//玩家存在
 					cb()
@@ -136,7 +231,7 @@ handler.giveDiamond = function(msg,session,next){
 		},
 		function(cb) {
 			//扣除赠送人钻石
-			this.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
+			Handler.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
 				if(flag == true){
 					cb()
 				}else{
@@ -146,12 +241,12 @@ handler.giveDiamond = function(msg,session,next){
 		},
 		function(cb) {
 			//增加目标钻石
-			this.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
+			Handler.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
 				if(flag == true){
 					next(null,{"flag" : true})
 				}else{
 					//失败则把赠送人钻石加回来
-					this.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
+					Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
 						next(null,{"flag" : false})
 					})
 				}
@@ -166,14 +261,43 @@ handler.giveDiamond = function(msg,session,next){
 	})
 }
 
-//开启赠送钻石权限
-handler.unfreezeLimit = function(msg,session,next){
-	this.app.rpc.db.remote.setValue(null,uid,"limits",1,function(flag){
-		next(null,{"flag" : flag})
-	})	
-}
+
 
 //封号
-handler.freezeAccount = function(msg,session,next) {
-	
+local.freezeAccount = function(uid,freeze,cb) {
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		cb(false)
+		return 
+	}	
+	async.waterfall([
+		function(next) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					next()
+				}else{
+					//玩家不存在
+					cb(false)
+				}
+			})	
+		},
+		function() {
+			//设置冻结状态
+			if(freeze == 0 || freeze == 1){
+				//设置冻结状态
+				Handler.app.rpc.db.remote.changeValue(null,uid,"freeze",freeze,function(flag){
+					cb(flag)
+				})	
+			}else{
+				cb(false)
+			}
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null)
+			return
+	})	
 }
