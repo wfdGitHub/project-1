@@ -1,4 +1,5 @@
 var async = require('async');
+var http = require('http');  
 module.exports = function(app) {
   return new Handler(app);
 };
@@ -123,6 +124,7 @@ handler.visitorEnter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }]);
+        sendHttp(notify)
       }
       ],
     function(err,result) {
@@ -224,6 +226,7 @@ handler.enter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }]);
+        sendHttp(notify)
       }
       ],
     function(err,result) {
@@ -283,3 +286,32 @@ var onUserLeave = function(self, session) {
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
   self.app.rpc.game.remote.kick(session,session.uid,null);
 };
+
+
+//平台http地址
+var options = {  
+    hostname: '127.0.0.1',  
+    port:20279,  
+    method: 'POST'  
+};  
+var sendHttp = function(notify) {
+  notify.data["uid"] = notify.data["playerId"]
+  delete notify.data.playerId
+  var req=http.request(options,function(res){
+    res.on("data",function(chunk){
+        console.log(JSON.parse(chunk))
+    });
+    res.on("end",function(){
+        console.log("发送完毕！");
+    });
+    console.log(res.statusCode);
+  });
+
+  req.on("error",function(err){
+    console.log(err.message);
+  })
+
+  req.write(JSON.stringify(notify));
+  req.end();
+
+}

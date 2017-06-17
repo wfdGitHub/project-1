@@ -162,6 +162,8 @@ local.getUserInfo = function(uid,cb) {
 		function() {
 			//查询并返回用户信息
 			Handler.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+				data.uid = data.playerId
+				delete data.playerId
 				cb(data)
 			})
 		}
@@ -177,15 +179,46 @@ local.getUserInfo = function(uid,cb) {
 //查询钻石
 handler.queryDiamond = function(msg,session,next){
 	var uid = msg.uid
-	//获取玩家钻石
-	this.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
-		next(null,data)
-	})
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		next(false)
+		return 
+	}		
+	async.waterfall([
+		function(cb) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					cb()
+				}else{
+					//玩家不存在
+					next(false)
+				}
+			})	
+		},
+		function() {
+			//获取玩家钻石
+			this.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
+				next(null,data)
+			})
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null)
+			return
+	})		
+
 }
 //查询昵称
 handler.queryNickName = function(msg,session,next) {
 	var uid = msg.uid
-	this.app.rpc.db.remote.getPlayerString(null,uid,"nickname",function(data) {
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		cb(false)
+		return 
+	}	
+	Handler.app.rpc.db.remote.getPlayerNickName(null,uid,function(data) {
 		next(null,data)
 	})
 }

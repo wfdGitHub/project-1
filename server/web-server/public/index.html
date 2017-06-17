@@ -151,6 +151,11 @@
               console.log(data)
           });        
       }
+      var queryNickName = function(uid) {
+          pomelo.request("monitor.handle.queryNickName", {uid : uid}, function(data) {
+              console.log(data)
+          });   
+      }
     </script>
   </head>
   <body>

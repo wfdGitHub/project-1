@@ -53,6 +53,11 @@ DBRemote.prototype.check = function(result,cb) {
 		}
 	})
 }
+DBRemote.prototype.getPlayerNickName = function(uid,cb) {
+	DBRemote.dbService.getPlayerString(uid,"nickname",function(data){
+		cb(data)
+	})
+}
 //获取一个空闲ID
 DBRemote.prototype.getPlayerId = function(cb) {
 	DBRemote.dbService.db.get("nn:acc:lastid",function(err,data) {
