@@ -215,12 +215,42 @@ handler.queryDiamond = function(msg,session,next){
 handler.queryNickName = function(msg,session,next) {
 	var uid = msg.uid
 	if(!uid || typeof(uid) != "number" || uid < 0){
-		cb(false)
+		next(null,{"flag" : false})
 		return 
 	}	
-	Handler.app.rpc.db.remote.getPlayerNickName(null,uid,function(data) {
-		next(null,data)
-	})
+
+	async.waterfall([
+		function(cb) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					cb()
+				}else{
+					//玩家不存在
+					next(null,{"flag" : false})
+				}
+			})	
+		},
+		function() {
+			//查询玩家昵称
+			Handler.app.rpc.db.remote.getPlayerNickName(null,uid,function(data) {
+				if(data){
+					next(null,data)
+				}else{
+					next(null,{"flag" : false})
+				}
+				
+			})
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null,{"flag" : false})
+			return
+	})		
+
 }
 //赠送钻石接口 
 handler.giveDiamond = function(msg,session,next){
