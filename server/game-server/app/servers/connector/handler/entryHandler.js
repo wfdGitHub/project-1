@@ -38,14 +38,14 @@ handler.getSelfData = function(msg,session,next) {
      }
 }
 
-handler.test = function(msg,session,next) {
-  var notify = {
-    "cmd" : "broadcast",
-    "content" : "恭喜玩家47抽中了幸运大奖！价值499万美元法拉利一辆"
-  }
-  this.gameChanel.pushMessage('onNotify',notify)
-  next()
-}
+// handler.test = function(msg,session,next) {
+//   var notify = {
+//     "cmd" : "broadcast",
+//     "content" : "恭喜玩家47抽中了幸运大奖！价值499万美元法拉利一辆"
+//   }
+//   this.gameChanel.pushMessage('onNotify',notify)
+//   next()
+// }
 //游客登录
 handler.visitorEnter = function(msg, session, next) {
   var self = this;

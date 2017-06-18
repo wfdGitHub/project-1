@@ -259,6 +259,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					})
 				},
 				function(playerInfo) {
+					delete playerInfo["history"]
 					//加入房间
 					var roomId = params.roomId
 					var ip = params.ip;
@@ -330,6 +331,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			function(playerInfo) {
 				//console.log("a3333")
 				//找到空闲房间ID
+				delete playerInfo["history"]
 				params.playerInfo = playerInfo
 				var roomId = GameRemote.niuniuService.getUnusedRoom(params.gameType)
 				if(roomId !== false){		

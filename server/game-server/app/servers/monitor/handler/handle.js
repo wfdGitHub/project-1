@@ -98,13 +98,39 @@ local.addDiamond = function(diamond,uid,cb) {
 	if(!diamond || typeof(diamond) != "number"){
 		next(null,{"flag" : false})
 	}
-	Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
-		if(flag == true){
-			cb(true)
-		}else{
-			cb(false)
-		}
-	})	    		
+	async.waterfall([
+	function(next) {
+		//查询用户是否存在
+		Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+			if(uid === data){
+				//玩家存在
+				next()
+			}else{
+				//玩家不存在
+				cb(false)
+			}
+		})	
+	},
+	function() {
+		//添加钻石
+		Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
+			if(flag == true){
+				//记录充值 
+				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})	  	
+				cb(true)
+			}else{
+				cb(false)
+			}
+		})	
+	}
+	],
+	function(err,result) {
+		console.log(err)
+		console.log(result)
+		next(null)
+		return
+})
+ 
 }
 //设置代理  开启赠送钻石权限
 local.setAgency = function(uid,cb){
@@ -138,7 +164,6 @@ local.setAgency = function(uid,cb){
 			next(null)
 			return
 	})
-
 }
 //查询玩家信息
 local.getUserInfo = function(uid,cb) {

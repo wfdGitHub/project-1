@@ -23,6 +23,12 @@ dbService.prototype.start = function(cb){
 		        db.set("nn:acc:lastid",10000);
     		}
 		})
+		dbService.db.get("nn:acc:addDiamond",function(err,data) {
+			if(data === null){
+		        console.log("\033[33m[INFO] DataBase check - nn:acc:addDiamond\033[0m");
+		        db.set("nn:acc:addDiamond",0);
+    		}
+		})
 		dbService.db.get("nn:notifys",function(err,data) {
 			if(data === null){
 		        console.log("\033[33m[INFO] DataBase check - nn:notifys\033[0m");
@@ -33,7 +39,14 @@ dbService.prototype.start = function(cb){
 	})
 	cb()
 }
-
+dbService.updateDiamond = function(value) {
+	var cmd = "nn:acc:addDiamond"
+	dbService.db.get(cmd,function(err,data) {
+		console.log(cmd + "  data : "+data)
+		value = parseInt(value) + parseInt(data)
+		dbService.db.set(cmd,value)
+	})
+}
 dbService.getPlayerInfo = function(uid,cb) {
 	dbService.getPlayerString(uid,"uidMap",function(data) {
 		if(!data){

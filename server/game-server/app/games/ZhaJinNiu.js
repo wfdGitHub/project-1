@@ -408,7 +408,7 @@ var MING_CARD_NUM = 3               //明牌数量
           bankerFlag = true
         }
       }while(player[curPlayer].isActive == false || player[curPlayer].isNoGiveUp == false || player[curPlayer].isReady == false)
-
+      console.log("111111  curRound : "+curRound)
       //当操作权转移到初始操作玩家   进入下一轮
       if(bankerFlag){
           if(curRound == 3){
@@ -645,7 +645,7 @@ var MING_CARD_NUM = 3               //明牌数量
               notify2.winPlayer = chair
               lose = target
           }else{
-            player[chair].isNoGiveUp == false
+            player[chair].isNoGiveUp = false
             notify2.winPlayer = target
             lose = chair
           }
