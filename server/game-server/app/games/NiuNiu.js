@@ -232,7 +232,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       TID_SETTLEMENT : conf.TID_SETTLEMENT,
       state : gameState,
       roomType : room.roomType,
-      bankerTime : bankerTime
+      bankerTime : bankerTime,
+      betList : betList
     }
     //console.log(notify)
     local.sendUid(uid,notify)
