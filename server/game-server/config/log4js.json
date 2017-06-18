@@ -93,6 +93,16 @@
         }
       ,"backups": 5,
       "category":"pomelo-rpc"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/diamond.log",
+      "maxLogSize": 1048576,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"diamond-log"
     }
   ],
 

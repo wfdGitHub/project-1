@@ -156,6 +156,16 @@
               console.log(data)
           });   
       }
+      var getUsers = function() {
+          pomelo.request("connector.monitor.onlineUser",null, function(data) {
+              console.log(data)
+          });           
+      }
+      var getRooms = function() {
+          pomelo.request("connector.monitor.roomInfos",null, function(data) {
+              console.log(data)
+          });           
+      }
     </script>
   </head>
   <body>

@@ -5,8 +5,6 @@ var dbService = require("./app/services/dbService.js")
  * Init app for client.
  */
 var app = pomelo.createApp();
-app.set('name', 'test');
-
 // app configuration
 app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',

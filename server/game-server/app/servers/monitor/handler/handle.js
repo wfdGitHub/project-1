@@ -1,5 +1,6 @@
 var async = require("async")
 var http=require("http");
+var diamondLogger = require("pomelo-logger").getLogger("diamond-log");
 
 
 module.exports = function(app) {
@@ -116,7 +117,10 @@ local.addDiamond = function(diamond,uid,cb) {
 		Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
 			if(flag == true){
 				//记录充值 
-				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})	  	
+				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})	  
+				var info = "     uid : "+uid+"   diamond : "+diamond
+				//记录充值
+				diamondLogger.info(info);	
 				cb(true)
 			}else{
 				cb(false)

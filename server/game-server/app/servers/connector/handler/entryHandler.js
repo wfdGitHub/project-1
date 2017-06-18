@@ -1,22 +1,23 @@
-var async = require('async');
-var http = require('http');  
+var async = require('async')
+var http = require('http')
 module.exports = function(app) {
-  return new Handler(app);
-};
+  return new Handler(app)
+}
 
 var Handler = function(app) {
-  this.app = app;
-  this.sessionService = this.app.get('sessionService');
-  this.channelService = this.app.get('channelService');
+  this.app = app
+  this.sessionService = this.app.get('sessionService')
+  this.channelService = this.app.get('channelService')
   this.gameChanel = this.channelService.getChannel("GameChannel",true)
-  this.loginUser = {};
-};
+  this.loginUser = {}
+}
 
-var handler = Handler.prototype;
+var handler = Handler.prototype
+
 
 //获取公告
 handler.getNotify = function(msg,session,next) {
-  var self = this;
+  var self = this
   self.app.rpc.db.remote.getNotify(session,function(data) {
       next(null,data)
   })
@@ -24,7 +25,7 @@ handler.getNotify = function(msg,session,next) {
 
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {
-    var self = this;
+    var self = this
     if(session.get("uid")){
        self.app.rpc.db.remote.getPlayerInfo(session,session.get("uid"),function(data) {
           var notify = {
@@ -48,8 +49,8 @@ handler.getSelfData = function(msg,session,next) {
 // }
 //游客登录
 handler.visitorEnter = function(msg, session, next) {
-  var self = this;
-  var sessionService = self.app.get('sessionService');
+  var self = this
+  var sessionService = self.app.get('sessionService')
   var userId = msg.uid //微信ID
   var playerId = userId  //玩家ID
   var notify = {}
@@ -60,7 +61,7 @@ handler.visitorEnter = function(msg, session, next) {
           cb()
         }else{
           self.app.rpc.db.remote.getPlayerId(session,function(uid) {
-              console.log("uid : "+uid)
+              //console.log("uid : "+uid)
               playerId = parseInt(uid) + 1
               userId = parseInt(uid) + 1
               cb()
@@ -97,15 +98,22 @@ handler.visitorEnter = function(msg, session, next) {
             next(null,{"flag" : false ,"code" : 501})
             return
           }
-          session.bind(playerId);
-          session.set("uid", playerId);
+          session.bind(playerId)
+          session.set("uid", playerId)
+          session.set("nickname",data.nickname)
           session.push("uid", function(err) {
             if(err) {
-              console.error('set uid for session service failed! error is : %j', err.stack);
+              console.error('set uid for session service failed! error is : %j', err.stack)
             }
-          });
-          console.log("uid : "+session.get("uid"))
-          session.on('closed', onUserLeave.bind(null,self));
+          })
+          //console.log("uid : "+session.get("uid"))
+          session.push("nickname", function(err) {
+            if(err) {
+              console.error('set nickname for session service failed! error is : %j', err.stack)
+            }
+          })
+          //console.log("nickname : "+session.get("nickname"))
+          session.on('closed', onUserLeave.bind(null,self))
 
           cb(null)        
         })
@@ -123,7 +131,7 @@ handler.visitorEnter = function(msg, session, next) {
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
           sid: "connector-server-1"
-        }]);
+        }])
         sendHttp(notify)
       }
       ],
@@ -139,10 +147,10 @@ handler.visitorEnter = function(msg, session, next) {
 }
 //登录
 handler.enter = function(msg, session, next) {
-  var self = this;
+  var self = this
   var openId = msg.openId
   var token = msg.token
-  var sessionService = self.app.get('sessionService');
+  var sessionService = self.app.get('sessionService')
   if(!openId || !token){
     next(null,{code: -100})
     return
@@ -179,7 +187,7 @@ handler.enter = function(msg, session, next) {
         })        
       },
       function(result,cb){
-        console.log(result)
+        //console.log(result)
         userId = result.unionid
         self.app.rpc.db.remote.check(session,result,function(flag){
             cb(null)
@@ -197,17 +205,24 @@ handler.enter = function(msg, session, next) {
           playerId = data.playerId
           if( !! sessionService.getByUid(playerId)) {
             next(null,{"flag" : false ,"code" : 501})
-            return;
+            return
           }
-          session.bind(playerId);
-          session.set("uid", playerId);
+          session.bind(playerId)
+          session.set("uid", playerId)
+          session.set("nickname",data.nickname)
           session.push("uid", function(err) {
             if(err) {
-              console.error('set uid for session service failed! error is : %j', err.stack);
+              console.error('set uid for session service failed! error is : %j', err.stack)
             }
-          });
-          console.log("uid : "+session.get("uid"))
-          session.on('closed', onUserLeave.bind(null,self));
+          })
+          session.push("nickname", function(err) {
+            if(err) {
+              console.error('set nickname for session service failed! error is : %j', err.stack)
+            }
+          })
+          // console.log("uid : "+session.get("uid"))
+          // console.log("nickname : "+session.get("nickname"))
+          session.on('closed', onUserLeave.bind(null,self))
 
           cb(null)        
         })
@@ -225,7 +240,7 @@ handler.enter = function(msg, session, next) {
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
           sid: "connector-server-1"
-        }]);
+        }])
         sendHttp(notify)
       }
       ],
@@ -238,15 +253,15 @@ handler.enter = function(msg, session, next) {
     }
   )
   next(null,{"flag" : true})
-};
+}
 
 //接受客户端发送数据
 handler.sendData = function(msg, session, next){
-    console.log("code : "+msg.code)
-    var self = this;
+    //console.log("code : "+msg.code)
+    var self = this
     //判断登录
     var uid = session.get("uid")
-    console.log("uid : "+uid)  
+    //console.log("uid : "+uid)  
     if(!!uid){
         if(msg.code == "join" || msg.code == "newRoom"){
           if(msg.params){
@@ -254,23 +269,23 @@ handler.sendData = function(msg, session, next){
           }
         }
         self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-            next(null,{flag : flag,msg : msg});
-        });   
+            next(null,{flag : flag,msg : msg})
+        }) 
     }else{
         next(null,{flag : false})
     }
 }
 
 handler.sendFrame = function(msg, session, next) {
-    console.log("code : "+msg.code)
-    var self = this;
+    //console.log("code : "+msg.code)
+    var self = this
     //判断登录
     var uid = session.get("uid")
-    console.log("uid : "+uid)  
+    //console.log("uid : "+uid)  
     if(!!uid){
         self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-            next(null,{flag : flag,msg : msg});
-        });   
+            next(null,{flag : flag,msg : msg})
+        })   
     }else{
         next(null,{flag : false})
     }
@@ -281,11 +296,11 @@ var onUserLeave = function(self, session) {
   //console.log(session.uid)
   //console.log(session)
   if(!session || !session.uid) {
-    return;
+    return
   }
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
-  self.app.rpc.game.remote.kick(session,session.uid,null);
-};
+  self.app.rpc.game.remote.kick(session,session.uid,null)
+}
 
 
 //平台http地址
@@ -293,25 +308,25 @@ var options = {  
     hostname: '127.0.0.1',  
     port:20279,  
     method: 'POST'  
-};  
+} 
 var sendHttp = function(notify) {
   notify.data["uid"] = notify.data["playerId"]
   delete notify.data.playerId
   var req=http.request(options,function(res){
     res.on("data",function(chunk){
-        console.log(JSON.parse(chunk))
-    });
+        //console.log(JSON.parse(chunk))
+    })
     res.on("end",function(){
-        console.log("发送完毕！");
-    });
-    console.log(res.statusCode);
-  });
-
-  req.on("error",function(err){
-    console.log(err.message);
+        //console.log("发送完毕！")
+    })
+    //console.log(res.statusCode)
   })
 
-  req.write(JSON.stringify(notify));
-  req.end();
+  req.on("error",function(err){
+    //console.log(err.message)
+  })
+
+  req.write(JSON.stringify(notify))
+  req.end()
 
 }
