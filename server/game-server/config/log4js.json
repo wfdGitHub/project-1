@@ -96,13 +96,43 @@
     },
     {
       "type": "file",
-      "filename": "${opts:base}/logs/monitor/diamond.log",
+      "filename": "${opts:base}/logs/monitor/addDiamond.log",
       "maxLogSize": 1048576,
       "layout": {
           "type": "basic"
         }
       ,"backups": 5,
       "category":"diamond-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/userLogin.log",
+      "maxLogSize": 1048576,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"userLogin-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/openRoom.log",
+      "maxLogSize": 1048576,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"openRoom-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/giveDiamond.log",
+      "maxLogSize": 1048576,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"giveDiamond-log"
     }
   ],
 

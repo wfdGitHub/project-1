@@ -2,6 +2,7 @@
 var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
+var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -339,7 +340,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 							GameRemote.niuniuService.roomState[roomId] = false;
-							//做个保护  创建房间后把
+							var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
+							openRoomLogger.info(info)
+							//做个保护  创建房间后把定时器取消
 							clearTimeout(GameRemote.niuniuService.lockTimer[roomId])
 							delete GameRemote.niuniuService.lockTimer[roomId]
 						}
@@ -402,6 +405,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					if(flag === true){
 						GameRemote.niuniuService.roomState[roomId] = false;
 						next(null,roomId)
+						var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
+						openRoomLogger.info(info)
 					}else{
 						//删除房间
 						NiuNiuService.roomState[roomId] = true

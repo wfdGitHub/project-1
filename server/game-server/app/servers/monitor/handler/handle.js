@@ -1,7 +1,7 @@
 var async = require("async")
 var http=require("http");
 var diamondLogger = require("pomelo-logger").getLogger("diamond-log");
-
+var giveDiamondLogger = require("pomelo-logger").getLogger("giveDiamond-log");
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -17,7 +17,7 @@ var Handler = function(app) {
 	        "content-type":"text/plain"
 	    });    
         if (req.method.toUpperCase() == 'POST') {
-			console.log("post")
+			//console.log("post")
             var postData = "";
 			//接收数据中
             req.addListener("data", function (data) {
@@ -26,7 +26,7 @@ var Handler = function(app) {
 			//接收数据完毕
 			req.addListener("end", function () {
 				var data=JSON.parse(postData);
-                console.log(data)
+                //console.log(data)
 				switch(data.cmd){
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,function(flag) {
@@ -336,6 +336,8 @@ handler.giveDiamond = function(msg,session,next){
 			Handler.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
 				if(flag == true){
 					next(null,{"flag" : true})
+					var info = "  giveDiamond    uid : "+uid+"    target : "+target+"  diamond : "+diamond + "    time : "+new Date().toString()
+					giveDiamondLogger.info(info)
 				}else{
 					//失败则把赠送人钻石加回来
 					Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {

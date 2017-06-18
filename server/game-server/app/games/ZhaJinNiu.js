@@ -126,7 +126,7 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       } 
-      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 5 || param.basic > 20){
+      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 1 || param.basic > 3){
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return        

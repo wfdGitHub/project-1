@@ -428,6 +428,16 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     local.sendAll(notify)
     cb(true)
   }
+  //下注通知
+  local.betMessege = function(chair,bet) {
+    var notify = {
+      "cmd" : "bet",
+      "chair" : chair,
+      "bet" : bet,
+      "betAmount" : betAmount
+    }
+    local.sendAll(notify)     
+  }
   //玩家下注
   room.handle.bet = function(uid,sid,param,cb){
     //游戏状态为BETTING
@@ -450,14 +460,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     if(room.gameMode == MODE_GAME_BULL){
       if(param.bet && typeof(param.bet) == "number" && param.bet > 0 && (param.bet + betList[chair]) <= 30 && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) && (param.bet + betAmount) <= bonusPool ){
         betList[chair] += param.bet
-        betAmount += param.bet
-        var notify = {
-          "cmd" : "bet",
-          "chair" : chair,
-          "bet" : param.bet,
-          "betAmount" : betAmount
-        }
-        local.sendAll(notify)        
+        betAmount += param.bet 
+        local.betMessege(chair,param.bet)     
         cb(true)
         return
       }else{
@@ -469,13 +473,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
         betList[chair] += param.bet
         betAmount += param.bet
-        var notify = {
-          "cmd" : "bet",
-          "chair" : chair,
-          "bet" : param.bet,
-          "betAmount" : betAmount
-        }
-        local.sendAll(notify)
+        local.betMessege(chair,param.bet)     
         cb(true)
       }else{
         cb(false)
@@ -676,18 +674,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     log("betting")
     //状态改变
     gameState = GS_BETTING
-    //默认底分
-    for(var i = 0; i < GAME_PLAYER;i++){
-        if(beginPlayer[i] && player[i].isActive && i != banker){
-          betList[i] = 1
-          betAmount += 1
-        }
-    }
     //通知客户端
     var notify = {
       cmd : "beginBetting",
-      banker : banker,
-      betList : betList
+      banker : banker
     }
     local.sendAll(notify)
     //定时器启动下一阶段
@@ -698,6 +688,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   local.deal = function(){
       log("deal")
       gameState = GS_DEAL
+      //若玩家未下注默认下一分
+      //默认底分
+      for(var i = 0; i < GAME_PLAYER;i++){
+          if(beginPlayer[i] && player[i].isActive && i != banker && betList[i] == 0){
+            betList[i] = 1
+            betAmount += 1
+            local.betMessege(i,1)
+          }
+      }
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){

@@ -1,5 +1,6 @@
 var async = require('async')
 var http = require('http')
+var userLoginLogger = require("pomelo-logger").getLogger("userLogin-log");
 module.exports = function(app) {
   return new Handler(app)
 }
@@ -127,12 +128,16 @@ handler.visitorEnter = function(msg, session, next) {
         })
       },
       function() {
-        self.gameChanel.add(playerId,self.app.get('serverId'))
+        if(!self.gameChanel.getMember(playerId)){
+          self.gameChanel.add(playerId,self.app.get('serverId'))
+        }
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
           sid: "connector-server-1"
         }])
         sendHttp(notify)
+        var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
+        userLoginLogger.info(info)        
       }
       ],
     function(err,result) {
@@ -236,12 +241,16 @@ handler.enter = function(msg, session, next) {
         })
       },
       function() {
-        self.gameChanel.add(playerId,self.app.get('serverId'))
+        if(!self.gameChanel.getMember(playerId)){
+          self.gameChanel.add(playerId,self.app.get('serverId'))
+        }
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
           sid: "connector-server-1"
         }])
         sendHttp(notify)
+        var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
+        userLoginLogger.info(info)
       }
       ],
     function(err,result) {
