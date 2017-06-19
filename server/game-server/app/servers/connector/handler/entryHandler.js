@@ -1,6 +1,8 @@
 var async = require('async')
 var http = require('http')
 var userLoginLogger = require("pomelo-logger").getLogger("userLogin-log");
+var crypto = require('crypto');
+var url = require("url")
 module.exports = function(app) {
   return new Handler(app)
 }
@@ -201,6 +203,8 @@ handler.enter = function(msg, session, next) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
+          notify.openId = openId
+          notify.unionid = userId
           if(data.freeze == 1){
             next(null,{"flag" : false ,"code" : 500})
             return
@@ -247,7 +251,6 @@ handler.enter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }])
-        notify.openId = openId
         sendHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
         userLoginLogger.info(info)
@@ -312,30 +315,51 @@ var onUserLeave = function(self, session) {
 }
 
 
-//平台http地址
-var options = {  
-    hostname: '127.0.0.1',  
-    port:20279,  
-    method: 'POST'  
-} 
 var sendHttp = function(notify) {
   notify.data["uid"] = notify.data["playerId"]
-  delete notify.data.playerId
-  var req=http.request(options,function(res){
-    res.on("data",function(chunk){
-        //console.log(JSON.parse(chunk))
-    })
-    res.on("end",function(){
-        //console.log("发送完毕！")
-    })
-    //console.log(res.statusCode)
-  })
+  var data = {}
 
+  data.game_uid = notify.data.uid
+  data.open_id = notify.openId
+  data.union_id = notify.unionid
+  data.nickname = notify.data.nickname
+  data.head_img = notify.data.head
+  data.sum_play = 0
+  data.coin = notify.data.diamond
+  data.used_coin = 0
+
+  var keys = Object.keys(data).sort()
+  var string = ""
+  for(var i = 0;i < keys.length;i++){
+    string += ("" + keys[i] +"="+ notify.data[keys[i]]+ "&")
+  }
+  string += "key=niuniuyiyousecretkey"
+  data.sign = md5(string)
+  //console.log('http://pay.5d8d.com/niu_admin.php/Api/userLogin?data='+require('querystring').stringify(data))
+  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?data='+require('querystring').stringify(data),function(res){
+      // var temp = ""
+      // res.on("data",function(chunk){
+      //   temp += chunk
+      // })
+      // res.on("end",function(){
+      //   console.log(temp)
+      //   console.log("发送完毕！")
+      // })
+      // console.log(res.statusCode)
+  })
   req.on("error",function(err){
-    //console.log(err.message)
+    console.log(err.message)
   })
-
-  req.write(JSON.stringify(notify))
+  //req.method = "POST"
+  //req._headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  //req._headers['Content-Length'] = 'params.length'
+  // console.log(JSON.stringify(data))
+  // req.write()
+  // console.log(req)
   req.end()
 
 }
+
+function md5 (text) {
+  return crypto.createHash('md5').update(text).digest('hex');
+};

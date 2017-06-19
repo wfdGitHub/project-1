@@ -26,7 +26,7 @@ var Handler = function(app) {
 			//接收数据完毕
 			req.addListener("end", function () {
 				var data=JSON.parse(postData);
-                //console.log(data)
+                console.log(data)
 				switch(data.cmd){
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,function(flag) {
