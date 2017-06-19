@@ -16,51 +16,63 @@ var GameRemote = function(app) {
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	switch(code){
 		case "finish" : 
-			if(!GameRemote.niuniuService.userMap[uid]){
-				cb(false)
-				return
-			}
-			var roomId = GameRemote.niuniuService.userMap[uid]
-			//房间未开始不能发起解散
-			if(!GameRemote.niuniuService.roomList[roomId].isBegin()){
-				cb(false)
-				return
-			}
-			//不能重复发送
-			if(GameRemote.niuniuService.roomLock[roomId] == false){
-				cb(false)
-				return
-			}
-			//只有空闲时间能解散
-			if(!GameRemote.niuniuService.roomList[roomId].isFree()){
-				cb(false)
-				return
-			}
-			//锁定房间
-			GameRemote.niuniuService.roomLock[roomId] = false
-			//通知其他玩家
-			var chair = GameRemote.niuniuService.roomList[roomId].chairMap[uid]
-			var notify = {
-				"cmd" : "finishGame",
-				"chair" : chair
-			}
-			GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
-			//发起解散的玩家默认同意
-			local.responseFinish(roomId,chair,true)
-			//三分钟后默认同意
-			var timerCb = function(roomId) {
-				return function() {
-					var gamePlayer = GameRemote.niuniuService.roomList[roomId].GAME_PLAYER
-					for(var i = 0;i < gamePlayer;i++){
-						if(GameRemote.niuniuService.lockState[roomId][i] != false){
-							GameRemote.niuniuService.lockState[roomId][i] = true
-						}
-					}					
-					local.endFinish(roomId)
+		case "userQuit" :
+			if(GameRemote.niuniuService.roomList[roomId].isBegin()){
+				//游戏已开始为解散
+				if(!GameRemote.niuniuService.userMap[uid]){
+					cb(false)
+					return
 				}
-			}(roomId)
-			GameRemote.niuniuService.lockTimer[roomId] = setTimeout(timerCb,180 * 1000)
-			cb(true)
+				var roomId = GameRemote.niuniuService.userMap[uid]
+				//不能重复发送
+				if(GameRemote.niuniuService.roomLock[roomId] == false){
+					cb(false)
+					return
+				}
+				//只有空闲时间能解散
+				if(!GameRemote.niuniuService.roomList[roomId].isFree()){
+					cb(false)
+					return
+				}
+				//锁定房间
+				GameRemote.niuniuService.roomLock[roomId] = false
+				//通知其他玩家
+				var chair = GameRemote.niuniuService.roomList[roomId].chairMap[uid]
+				var notify = {
+					"cmd" : "finishGame",
+					"chair" : chair
+				}
+				GameRemote.niuniuService.roomList[roomId].channel.pushMessage('onMessage',notify)
+				//发起解散的玩家默认同意
+				local.responseFinish(roomId,chair,true)
+				//三分钟后默认同意
+				var timerCb = function(roomId) {
+					return function() {
+						var gamePlayer = GameRemote.niuniuService.roomList[roomId].GAME_PLAYER
+						for(var i = 0;i < gamePlayer;i++){
+							if(GameRemote.niuniuService.lockState[roomId][i] != false){
+								GameRemote.niuniuService.lockState[roomId][i] = true
+							}
+						}					
+						local.endFinish(roomId)
+					}
+				}(roomId)
+				GameRemote.niuniuService.lockTimer[roomId] = setTimeout(timerCb,180 * 1000)
+				cb(true)
+			}else{
+				//游戏未开始则为退出
+				if(!GameRemote.niuniuService.userMap[uid]){
+					cb(false)
+					return
+				}		
+				var roomId = GameRemote.niuniuService.userMap[uid]
+				if(GameRemote.niuniuService.roomList[roomId].userQuit){
+					GameRemote.niuniuService.roomList[roomId].userQuit(uid,function() {
+						delete GameRemote.niuniuService.userMap[uid]
+					})
+				}			
+				cb(true)				
+			}
 			break
 		case "agreeFinish" :
 			if(!GameRemote.niuniuService.userMap[uid]){
@@ -100,23 +112,6 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 				return
 			}
 			local.responseFinish(roomId,chair,false)
-			cb(true)
-			break
-		case "userQuit" :
-			if(!GameRemote.niuniuService.userMap[uid]){
-				cb(false)
-				return
-			}		
-			var roomId = GameRemote.niuniuService.userMap[uid]
-			if(GameRemote.niuniuService.roomList[roomId].isBegin() == true){
-				cb(false)
-				return
-			}
-			if(GameRemote.niuniuService.roomList[roomId].userQuit){
-				GameRemote.niuniuService.roomList[roomId].userQuit(uid,function() {
-					delete GameRemote.niuniuService.userMap[uid]
-				})
-			}			
 			cb(true)
 			break
 	}
