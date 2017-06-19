@@ -331,12 +331,11 @@ var sendHttp = function(notify) {
   var keys = Object.keys(data).sort()
   var string = ""
   for(var i = 0;i < keys.length;i++){
-    string += ("" + keys[i] +"="+ notify.data[keys[i]]+ "&")
+    string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
   }
   string += "key=niuniuyiyousecretkey"
   data.sign = md5(string)
-  //console.log('http://pay.5d8d.com/niu_admin.php/Api/userLogin?data='+require('querystring').stringify(data))
-  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?data='+require('querystring').stringify(data),function(res){
+  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
       // var temp = ""
       // res.on("data",function(chunk){
       //   temp += chunk
