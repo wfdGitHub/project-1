@@ -248,7 +248,15 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       var chair = room.chairMap[uid]
       player[chair].isOnline = true
       player[chair].uid = uid
-      room.channel.add(uid,sid)
+      var notify = {
+        cmd: "userReconnection",
+        uid: uid,
+        chair : chair
+      }
+      local.sendAll(notify)
+      if(!room.channel.getMember(uid)){
+        room.channel.add(uid,sid)
+      }
       var newPlayer = deepCopy(player)
       //deal阶段之前不返回牌
       if(gameState < conf.GS_DEAL){
@@ -280,7 +288,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         bonusPool : bonusPool,
         surplusGameNumber : room.maxGameNumber - room.gameNumber
       }
-    //local.sendUid(uid,notify)
     cb(notify)
     }else{
       cb(false)
@@ -305,7 +312,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       // console.log(room.channel)
       var notify = {
-        cmd: "userLeave",
+        cmd: "userDisconne",
         uid: uid,
         chair : chair
       }

@@ -759,7 +759,15 @@ var MING_CARD_NUM = 3               //明牌数量
         return
       }
       player[chair].isOnline = true
-      room.channel.add(uid,sid)
+      var notify = {
+        cmd: "userReconnection",
+        uid: uid,
+        chair : chair
+      }
+      local.sendAll(notify)
+      if(!room.channel.getMember(uid)){
+        room.channel.add(uid,sid)
+      }
       var newPlayer = deepCopy(player)
 
       if(room.cardMode == conf.MODE_CARD_SHOW){
@@ -851,7 +859,7 @@ var MING_CARD_NUM = 3               //明牌数量
         }
         // console.log(room.channel)
         var notify = {
-          cmd: "userLeave",
+          cmd: "userDisconne",
           uid: uid,
           chair : chair
         }
