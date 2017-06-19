@@ -25,7 +25,7 @@ conf.TID_ROB_TIME = 5000            //抢庄时间
 conf.TID_BETTING = 10000              //下注时间
 conf.TID_SETTLEMENT = 10000           //结算时间
 
-conf.TID_ZHAJINNIU = 30000			 //诈金牛模式玩家操作时间
+conf.TID_ZHAJINNIU = 80000			 //诈金牛模式玩家操作时间
 conf.TID_ZHAJINNIU_SETTLEMENT = 3000 //炸金牛结算时间
 
 conf.MING_CARD_NUM = 4               //明牌数量

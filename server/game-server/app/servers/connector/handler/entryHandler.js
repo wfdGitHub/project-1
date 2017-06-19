@@ -135,8 +135,7 @@ handler.visitorEnter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }])
-        sendHttp(notify)
-        var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
+        var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
         userLoginLogger.info(info)        
       }
       ],
@@ -248,6 +247,7 @@ handler.enter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }])
+        notify.openId = openId
         sendHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
         userLoginLogger.info(info)
