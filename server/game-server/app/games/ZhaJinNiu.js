@@ -923,7 +923,7 @@ var MING_CARD_NUM = 3               //明牌数量
       room.isRecord = false
     }
     room.gameNumber = 0
-    local.settlement()
+    local.gameOver()
   }
   //用户退出
   room.userQuit = function(uid,cb) {

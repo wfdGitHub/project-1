@@ -2,7 +2,8 @@
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
-var ROOM_ALL_AMOUNT = 20			   //总房间数量
+var ROOM_ALL_AMOUNT = 2000			   //总房间数量
+var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
 var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
 var ROOM_FACTORY = {
@@ -124,7 +125,7 @@ NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
 
-	for(var i = 200200;i < ROOM_ALL_AMOUNT + 200200;i++){
+	for(var i = ROOM_BEGIN_INDEX;i < ROOM_ALL_AMOUNT + ROOM_BEGIN_INDEX;i++){
 		NiuNiuService.roomState[i] = true
 		NiuNiuService.roomList[i] = false
 		NiuNiuService.roomLock[i] = true
@@ -140,10 +141,13 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 	if(!ROOM_FACTORY[roomType]){
 		return false
 	}
-	for(var i = 200200;i < ROOM_ALL_AMOUNT + 200200;i++){
-		if(NiuNiuService.roomState[i] == true){
-			NiuNiuService.roomList[i] = ROOM_FACTORY[roomType].createRoom(i,NiuNiuService.channelService,roomCallback)
-			return i
+	//随机分配房间号
+	var roomId = Math.floor((Math.random() * ROOM_ALL_AMOUNT))
+	for(var i = roomId;i < ROOM_ALL_AMOUNT + roomId;i++){
+		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
+		if(NiuNiuService.roomState[index] == true){
+			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
+			return index
 		}
 	}
 	return false

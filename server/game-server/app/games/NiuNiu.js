@@ -1055,7 +1055,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.isRecord = false
     }
     room.gameNumber = 0
-    local.settlement()
+    local.gameOver()
   }
   //用户退出
   room.userQuit = function(uid,cb) {

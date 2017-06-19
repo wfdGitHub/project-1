@@ -17,18 +17,18 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	switch(code){
 		case "finish" : 
 		case "userQuit" :
+			if(!GameRemote.niuniuService.userMap[uid]){
+				cb(false)
+				return
+			}	
+			var roomId = GameRemote.niuniuService.userMap[uid]
+			//不能重复发送
+			if(GameRemote.niuniuService.roomLock[roomId] == false){
+				cb(false)
+				return
+			}
 			if(GameRemote.niuniuService.roomList[roomId].isBegin()){
 				//游戏已开始为解散
-				if(!GameRemote.niuniuService.userMap[uid]){
-					cb(false)
-					return
-				}
-				var roomId = GameRemote.niuniuService.userMap[uid]
-				//不能重复发送
-				if(GameRemote.niuniuService.roomLock[roomId] == false){
-					cb(false)
-					return
-				}
 				//只有空闲时间能解散
 				if(!GameRemote.niuniuService.roomList[roomId].isFree()){
 					cb(false)
@@ -61,11 +61,6 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 				cb(true)
 			}else{
 				//游戏未开始则为退出
-				if(!GameRemote.niuniuService.userMap[uid]){
-					cb(false)
-					return
-				}		
-				var roomId = GameRemote.niuniuService.userMap[uid]
 				if(GameRemote.niuniuService.roomList[roomId].userQuit){
 					GameRemote.niuniuService.roomList[roomId].userQuit(uid,function() {
 						delete GameRemote.niuniuService.userMap[uid]
