@@ -334,7 +334,7 @@ var MING_CARD_NUM = 3               //明牌数量
         var tmpTypeCount = 0    //牌型权重 
         var typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,200]
         for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && beginPlayer[i]){
+            if(player[i].isActive && player[i].isReady){
               for(var j = 0;j < 5;j++){
                 player[i].handCard[j] = cards[index++];
               }
@@ -345,12 +345,12 @@ var MING_CARD_NUM = 3               //明牌数量
         }
         var dealFlag = false
         //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < 20){
+        if((tmpTypeCount / tmpAllCount) < 30){
             dealFlag = true
         }
-      }while(dealFlag && randTimes < 100)
+      }while(dealFlag && randTimes < 1000)
 
-      
+
       //记录参与游戏人数
       curPlayerCount = 0
       for(var i = 0;i < GAME_PLAYER;i++){

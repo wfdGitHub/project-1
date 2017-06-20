@@ -21,6 +21,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 		DBRemote.dbService.setPlayer(uid,"limits",0)
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
+		DBRemote.dbService.setPlayerObject(uid,"agencyRoom",{})
 		var history = {}
 		history.allGames = 0
 		history.List = {}
