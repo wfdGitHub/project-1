@@ -17,13 +17,17 @@ var Handler = function(app) {
 
 var handler = Handler.prototype
 
-
+var version = "0.9.0"
 //获取公告
 handler.getNotify = function(msg,session,next) {
   var self = this
   self.app.rpc.db.remote.getNotify(session,function(data) {
       next(null,data)
   })
+}
+//获取版本号
+handler.getVersion = function(msg,session,next) {
+      next(null,version)
 }
 
 //获取自身数据
@@ -159,6 +163,10 @@ handler.enter = function(msg, session, next) {
   var sessionService = self.app.get('sessionService')
   if(!openId || !token){
     next(null,{code: -100})
+    return
+  }
+  if(!msg.version || msg.version !== version){
+    next(null,{code : -120})
     return
   }
   //duplicate log in
@@ -336,25 +344,11 @@ var sendHttp = function(notify) {
   string += "key=niuniuyiyousecretkey"
   data.sign = md5(string)
   var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
-      // var temp = ""
-      // res.on("data",function(chunk){
-      //   temp += chunk
-      // })
-      // res.on("end",function(){
-      //   console.log(temp)
-      //   console.log("发送完毕！")
-      // })
-      // console.log(res.statusCode)
+
   })
   req.on("error",function(err){
     console.log(err.message)
   })
-  //req.method = "POST"
-  //req._headers['Content-Type'] = 'application/x-www-form-urlencoded'
-  //req._headers['Content-Length'] = 'params.length'
-  // console.log(JSON.stringify(data))
-  // req.write()
-  // console.log(req)
   req.end()
 
 }

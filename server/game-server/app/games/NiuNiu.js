@@ -149,7 +149,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         if(flag){
           room.handle.join(uid,sid,{ip : param.ip, playerInfo : param.playerInfo},cb)
         }
-        cb(flag)
     })
   }
   //玩家加入
@@ -305,7 +304,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     // console.log("leave222222")
     if(player[chair].isOnline == true){
       player[chair].isOnline = false
-      //playerCount--
       var tsid =  room.channel.getMember(uid)['sid']
       if(tsid){
         room.channel.leave(uid,tsid)
@@ -385,7 +383,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     do{
         banker = (banker + 1)%GAME_PLAYER
     }while(player[banker].isActive == false)
-    bonusPool = 40
+    bonusPool = room.playerCount * 8
     bankerTime = 0
     log("banker change : "+banker)      
     var notify = {
@@ -465,7 +463,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     //斗公牛模式使用特殊下注限制
     if(room.gameMode == MODE_GAME_BULL){
-      if(param.bet && typeof(param.bet) == "number" && param.bet > 0 && (param.bet + betList[chair]) <= 30 && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) && (param.bet + betAmount) <= bonusPool ){
+      if(param.bet && typeof(param.bet) == "number" && param.bet > 0 && (param.bet + betList[chair]) <= 40 && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) && (param.bet + betAmount) <= bonusPool ){
         betList[chair] += param.bet
         betAmount += param.bet 
         local.betMessege(chair,param.bet)     
@@ -521,7 +519,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
     if(flag){
       clearTimeout(timer)
-      timer = setTimeout(local.settlement,3000) 
+      local.settlement()
     }
 
   }
@@ -723,7 +721,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       
       timer = setTimeout(function(){
         gameState = GS_FREE
-        timer = setTimeout(local.settlement,3000) 
+        local.settlement()
       },TID_SETTLEMENT)
   }
 
@@ -834,7 +832,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                 do{
                     banker = (banker + 1)%GAME_PLAYER
                 }while(player[banker].isActive == false)
-                bonusPool = 40
+                bonusPool = room.playerCount * 8
                 bankerTime = 0
                 log("banker change : "+banker)
             }else{
@@ -997,7 +995,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //下注上限
     maxBet = 0
     //斗公牛模式积分池
-    bonusPool = 40
+    bonusPool = room.playerCount * 8
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){

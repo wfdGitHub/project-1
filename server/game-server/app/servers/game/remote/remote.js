@@ -330,7 +330,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 							GameRemote.niuniuService.roomState[roomId] = false;
-							var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
+							var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
 							openRoomLogger.info(info)
 							//做个保护  创建房间后把定时器取消
 							clearTimeout(GameRemote.niuniuService.lockTimer[roomId])
