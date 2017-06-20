@@ -62,4 +62,7 @@ conf.GAME_TYPE = {
 	"zhajinniu" : true
 }
 
+//大牌控制
+conf.ROUND_TIMES = 1000 					//最大洗牌1000次
+conf.TYPE_WEIGHT = 30 						//低于此权重洗牌
 module.exports.niuConf = conf

@@ -345,10 +345,10 @@ var MING_CARD_NUM = 3               //明牌数量
         }
         var dealFlag = false
         //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < 30){
+        if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
             dealFlag = true
         }
-      }while(dealFlag && randTimes < 1000)
+      }while(dealFlag && randTimes < conf.ROUND_TIMES)
 
 
       //记录参与游戏人数

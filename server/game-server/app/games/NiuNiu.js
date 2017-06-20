@@ -673,10 +673,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         var dealFlag = false
         //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < 20){
+        if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
             dealFlag = true
         }
-      }while(dealFlag && randTimes < 100)
+      }while(dealFlag && randTimes < conf.ROUND_TIMES)
 
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
