@@ -17,7 +17,7 @@ var Handler = function(app) {
 
 var handler = Handler.prototype
 
-var version = "0.9.0"
+var version = "0.9.0&lakjdshajdhsakjsdjkakdadakjsd"
 //获取公告
 handler.getNotify = function(msg,session,next) {
   var self = this
@@ -141,7 +141,7 @@ handler.visitorEnter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }])
-        var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
+        var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)        
       }
       ],
@@ -260,7 +260,7 @@ handler.enter = function(msg, session, next) {
           sid: "connector-server-1"
         }])
         sendHttp(notify)
-        var info = "    uid : "+playerId+"    name ： "+session.get("nickname")+"    "+new Date().toString()
+        var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
       }
       ],

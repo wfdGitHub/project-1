@@ -232,7 +232,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       state : gameState,
       roomType : room.roomType,
       bankerTime : bankerTime,
-      betList : betList
+      betList : betList,
+      bonusPool : bonusPool
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -280,7 +281,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           TID_BETTING : conf.TID_BETTING,
           TID_SETTLEMENT : conf.TID_SETTLEMENT,
           roomType : room.roomType,
-          bankerTime : bankerTime
+          bankerTime : bankerTime,
+          bonusPool : bonusPool
         },
         betList : betList,
         state : gameState,
@@ -389,7 +391,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     var notify = {
       "cmd" : "downBanker",
       "chair" : chair,
-      "banker" : banker
+      "banker" : banker,
+      "bonusPool" : bonusPool
     }
     local.sendAll(notify)
   }
@@ -631,6 +634,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //斗牛模式更新积分池
       if(room.gameMode == MODE_GAME_BULL){
+        if(bonusPool == 0){
+          bonusPool = room.playerCount * 8
+        }
         var notify = {
           "cmd" : "bonusPool",
           "bonusPool" : bonusPool

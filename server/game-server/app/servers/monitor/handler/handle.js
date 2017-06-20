@@ -158,6 +158,8 @@ local.setAgency = function(uid,cb){
 		function() {
 			//设置代理权限
 			Handler.app.rpc.db.remote.changeValue(null,uid,"limits",1,function(flag){
+				var info = "  setAgency    uid : "+uid
+				giveDiamondLogger.info(info)
 				cb(flag)
 			})	
 		}
@@ -336,7 +338,7 @@ handler.giveDiamond = function(msg,session,next){
 			Handler.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
 				if(flag == true){
 					next(null,{"flag" : true})
-					var info = "  giveDiamond    uid : "+uid+"    target : "+target+"  diamond : "+diamond + "    time : "+new Date().toString()
+					var info = "  giveDiamond    uid : "+uid+"    target : "+target+"  diamond : "+diamond
 					giveDiamondLogger.info(info)
 				}else{
 					//失败则把赠送人钻石加回来
@@ -381,6 +383,8 @@ local.freezeAccount = function(uid,freeze,cb) {
 			if(freeze == 0 || freeze == 1){
 				//设置冻结状态
 				Handler.app.rpc.db.remote.changeValue(null,uid,"freeze",freeze,function(flag){
+					var info = "    freezeAccount   uid : "+uid+"    freeze : "+freeze
+					giveDiamondLogger.info(info)
 					cb(flag)
 				})	
 			}else{
