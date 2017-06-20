@@ -219,10 +219,10 @@ handler.enter = function(msg, session, next) {
           }
           //保存session
           playerId = data.playerId
-          if( !! sessionService.getByUid(playerId)) {
-            next(null,{"flag" : false ,"code" : 501})
-            return
-          }
+          // if( !! sessionService.getByUid(playerId)) {
+          //   next(null,{"flag" : false ,"code" : 501})
+          //   return
+          // }
           session.bind(playerId)
           session.set("uid", playerId)
           session.set("nickname",data.nickname)
