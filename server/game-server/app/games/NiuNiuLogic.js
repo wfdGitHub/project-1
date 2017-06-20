@@ -9,9 +9,11 @@ var COMB_TYPE_OX7   =    7           // 牛7
 var COMB_TYPE_OX8   =    8           // 牛8   x2
 var COMB_TYPE_OX9   =    9           // 牛9   x3
 var COMB_TYPE_OX10  =    10          // 牛牛  x4
-var COMB_TYPE_DELUX =    11          // 五花  x5
-var COMB_TYPE_MICRO =    12          // 五小  x6
+var COMB_TYPE_YIN_DELUX =    11      // 银花牛x5
+var COMB_TYPE_JIN_DELUX =    12      // 金花牛x6
 var COMB_TYPE_BOMB  =    13          // 炸弹  x7
+var COMB_TYPE_MICRO =    14          // 五小  x8
+
 
 module.exports.getType = function(handCard) {
       //type 特殊类型  0:无;  1 : 牛牛; : 2 : 五花; 3 : 五小;4 : 炸弹;
@@ -31,7 +33,7 @@ module.exports.getType = function(handCard) {
       //五小牛
       if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
           result.type = COMB_TYPE_MICRO
-          result.award = 6
+          result.award = 8
           return result
       }
 
@@ -51,7 +53,7 @@ module.exports.getType = function(handCard) {
           return result
         }
       }
-      //五花牛
+      //银花牛
       var flag = true
       for(var i = 0;i < 5;i++){
         if(handCard[i].num < 10){
@@ -59,8 +61,20 @@ module.exports.getType = function(handCard) {
         }
       }
       if(flag === true){
-          result.type = COMB_TYPE_DELUX
+          result.type = COMB_TYPE_YIN_DELUX
           result.award = 5
+          return result 
+      }
+      //五花牛
+      flag = true
+      for(var i = 0;i < 5;i++){
+        if(handCard[i].num < 11){
+          flag = false
+        }
+      }
+      if(flag === true){
+          result.type = COMB_TYPE_JIN_DELUX
+          result.award = 6
           return result 
       }
       var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10]
