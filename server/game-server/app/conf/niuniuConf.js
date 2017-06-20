@@ -64,5 +64,6 @@ conf.GAME_TYPE = {
 
 //大牌控制
 conf.ROUND_TIMES = 1000 					//最大洗牌1000次
-conf.TYPE_WEIGHT = 30 						//低于此权重洗牌
+conf.TYPE_WEIGHT = 32 						//低于此权重洗牌
+conf.typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,100,200]
 module.exports.niuConf = conf

@@ -659,7 +659,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         var index = 0;
         var tmpAllCount = 0     //总玩家数
         var tmpTypeCount = 0    //牌型权重 
-        var typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,200]
+        
         for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && beginPlayer[i]){
               for(var j = 0;j < 5;j++){
@@ -668,7 +668,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               tmpAllCount++
               result[i] = logic.getType(player[i].handCard)
               //console.log("type : "+result[i].type)
-              tmpTypeCount += typeWeight[result[i].type]
+              tmpTypeCount += conf.typeWeight[result[i].type]
             }
         }
         var dealFlag = false

@@ -332,7 +332,7 @@ var MING_CARD_NUM = 3               //明牌数量
         var index = 0;
         var tmpAllCount = 0     //总玩家数
         var tmpTypeCount = 0    //牌型权重 
-        var typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,200]
+
         for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
               for(var j = 0;j < 5;j++){
@@ -340,7 +340,7 @@ var MING_CARD_NUM = 3               //明牌数量
               }
               tmpAllCount++
               tmpResult[i] = logic.getType(player[i].handCard)
-              tmpTypeCount += typeWeight[tmpResult[i].type]
+              tmpTypeCount += conf.typeWeight[tmpResult[i].type]
             }
         }
         var dealFlag = false
