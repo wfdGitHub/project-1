@@ -31,7 +31,7 @@ module.exports.getType = function(handCard) {
       //五小牛
       if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
           result.type = COMB_TYPE_MICRO
-          result.award = 8
+          result.award = 6
           return result
       }
 
@@ -60,7 +60,7 @@ module.exports.getType = function(handCard) {
       }
       if(flag === true){
           result.type = COMB_TYPE_DELUX
-          result.award = 6
+          result.award = 5
           return result 
       }
       var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10]
