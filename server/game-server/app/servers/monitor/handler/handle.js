@@ -97,7 +97,7 @@ local.write = function(res,notidy) {
 //添加钻石
 local.addDiamond = function(diamond,uid,cb) {
 	if(!diamond || typeof(diamond) != "number"){
-		next(null,{"flag" : false})
+		cb(null,{"flag" : false})
 	}
 	async.waterfall([
 	function(next) {
@@ -131,7 +131,7 @@ local.addDiamond = function(diamond,uid,cb) {
 	function(err,result) {
 		console.log(err)
 		console.log(result)
-		next(null)
+		cb(null)
 		return
 })
  
