@@ -5,13 +5,13 @@ var COMB_TYPE_OX3   =    3           // 牛3
 var COMB_TYPE_OX4   =    4           // 牛4
 var COMB_TYPE_OX5   =    5           // 牛5
 var COMB_TYPE_OX6   =    6           // 牛6
-var COMB_TYPE_OX7   =    7           // 牛7   x2
-var COMB_TYPE_OX8   =    8           // 牛8   x3
-var COMB_TYPE_OX9   =    9           // 牛9   x4
-var COMB_TYPE_OX10  =    10          // 牛牛  x5
-var COMB_TYPE_DELUX =    11          // 五花  x6
-var COMB_TYPE_MICRO =    12          // 五小  x7
-var COMB_TYPE_BOMB  =    13          // 炸弹  x8
+var COMB_TYPE_OX7   =    7           // 牛7   
+var COMB_TYPE_OX8   =    8           // 牛8   x2
+var COMB_TYPE_OX9   =    9           // 牛9   x3
+var COMB_TYPE_OX10  =    10          // 牛牛  x4
+var COMB_TYPE_DELUX =    11          // 五花  x5
+var COMB_TYPE_MICRO =    12          // 五小  x6
+var COMB_TYPE_BOMB  =    13          // 炸弹  x7
 
 module.exports.getType = function(handCard) {
       //type 特殊类型  0:无;  1 : 牛牛; : 2 : 五花; 3 : 五小;4 : 炸弹;

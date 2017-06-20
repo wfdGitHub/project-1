@@ -643,23 +643,41 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         local.sendAll(notify)          
       }
-      //提前发牌
-      //洗牌
-      for(var i = 0;i < cardCount;i++){
-        var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-        var tmpCard = cards[i]
-        cards[i] = cards[tmpIndex]
-        cards[tmpIndex] = tmpCard
-      }
-      //发牌
-      var index = 0;
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && beginPlayer[i]){
-            for(var j = 0;j < 5;j++){
-              player[i].handCard[j] = cards[index++];
+      //增加大牌概率，当牌型权重较低时重新洗牌
+      var randTimes = 0
+      do{
+        randTimes++
+        //洗牌
+        for(var i = 0;i < cardCount;i++){
+          var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+          var tmpCard = cards[i]
+          cards[i] = cards[tmpIndex]
+          cards[tmpIndex] = tmpCard
+        }
+        //发牌
+        var result = {}
+        var index = 0;
+        var tmpAllCount = 0     //总玩家数
+        var tmpTypeCount = 0    //牌型权重 
+        var typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,200]
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isActive && beginPlayer[i]){
+              for(var j = 0;j < 5;j++){
+                player[i].handCard[j] = cards[index++];
+              }
+              tmpAllCount++
+              result[i] = logic.getType(player[i].handCard)
+              //console.log("type : "+result[i].type)
+              tmpTypeCount += typeWeight[result[i].type]
             }
-          }
-      }
+        }
+        var dealFlag = false
+        //判断是否重新洗牌
+        if((tmpTypeCount / tmpAllCount) < 20){
+            dealFlag = true
+        }
+      }while(dealFlag && randTimes < 100)
+
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
         var notify = {
