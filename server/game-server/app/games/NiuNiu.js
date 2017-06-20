@@ -7,7 +7,7 @@ var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
 var TID_BETTING = conf.TID_BETTING      //下注时间
 var TID_SETTLEMENT = conf.TID_SETTLEMENT//结算时间
 
-var MING_CARD_NUM = 4               //明牌数量
+var MING_CARD_NUM = 3               //明牌数量
 //游戏状态
 var GS_FREE         = 1001              //空闲阶段
 var GS_BETTING      = 1002              //下注阶段

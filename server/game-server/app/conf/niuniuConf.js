@@ -10,13 +10,14 @@ conf.COMB_TYPE_OX3   =    3           // 牛3
 conf.COMB_TYPE_OX4   =    4           // 牛4
 conf.COMB_TYPE_OX5   =    5           // 牛5
 conf.COMB_TYPE_OX6   =    6           // 牛6
-conf.COMB_TYPE_OX7   =    7           // 牛7   x2
-conf.COMB_TYPE_OX8   =    8           // 牛8   x3
-conf.COMB_TYPE_OX9   =    9           // 牛9   x4
-conf.COMB_TYPE_OX10  =    10          // 牛牛  x5
-conf.COMB_TYPE_DELUX =    11          // 五花  x6
-conf.COMB_TYPE_MICRO =    12          // 五小  x7
-conf.COMB_TYPE_BOMB  =    13          // 炸弹  x8
+conf.COMB_TYPE_OX7   =    7           // 牛7   
+conf.COMB_TYPE_OX8   =    8           // 牛8   x2
+conf.COMB_TYPE_OX9   =    9           // 牛9   x3
+conf.COMB_TYPE_OX10  =    10          // 牛牛  x4
+conf.COMB_TYPE_YIN_DELUX =    11      // 银花牛 x5
+conf.COMB_TYPE_JIN_DELUX =    12      // 金花牛 x6
+conf.COMB_TYPE_BOMB  =    13          // 炸弹   x7
+conf.COMB_TYPE_MICRO =    14          // 五小   x8
 
 
 
