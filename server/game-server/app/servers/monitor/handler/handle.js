@@ -296,7 +296,7 @@ handler.giveDiamond = function(msg,session,next){
 		next(null,"钻石数量错误")
 		return
 	}
-	if(!uid || uid === target){
+	if(!uid || uid == target){
 		next(null)
 		return
 	}
@@ -330,7 +330,7 @@ handler.giveDiamond = function(msg,session,next){
 				cb()
 			}else{
 				//只能赠送给代理旗下用户
-			  	var req=http.request('http://pay.5d8d.com/niu_admin.php/api/userBelongAgent?game_uid=10118&agent_uid=10002',function(res){
+			  	var req=http.request("http://pay.5d8d.com/niu_admin.php/api/userBelongAgent?game_uid="+target+"&agent_uid="+uid,function(res){
 					var temp = ""
 					res.on("data",function(chunk){
 					temp += chunk
