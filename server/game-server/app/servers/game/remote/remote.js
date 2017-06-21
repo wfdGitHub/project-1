@@ -254,11 +254,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					//加入房间
 					var roomId = params.roomId
 					var ip = params.ip;
-					GameRemote.niuniuService.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag) {
+					GameRemote.niuniuService.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag,code) {
 						if(flag === true){
 							GameRemote.niuniuService.userMap[uid] = roomId;
 						}
-						cb(flag)
+						cb(flag,{"code" : code})
 					})
 				}
 			],function(err,result) {

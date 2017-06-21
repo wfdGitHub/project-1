@@ -1,6 +1,6 @@
 var logic = require("./NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
-
+var tips = require("../conf/tips.js").tipsConf
 //常量定义
 var GAME_PLAYER = conf.GAME_PLAYER      //游戏人数
 var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
@@ -182,7 +182,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       //是否允许中途加入
       if(room.halfwayEnter == false && room.isBegin()){
-        cb(false)
+        cb(false,tips.CANT_HALF_JOIN)
         return
       }
       //不可重复加入
@@ -202,7 +202,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       log("chair : "+chair)
       if(chair == -1 || !player[chair]){
-        cb(false)
+        cb(false,tips.ROOM_FULL)
         return
       }
       //初始化玩家属性

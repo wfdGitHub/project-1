@@ -321,7 +321,7 @@ handler.giveDiamond = function(msg,session,next){
 					cb()
 				}else{
 					//玩家不存在
-					next(null,"玩家不存在")
+					next(null,"该玩家不存在")
 				}
 			})
 		},
@@ -340,7 +340,7 @@ handler.giveDiamond = function(msg,session,next){
 						if(temp.flag === true ){
 							cb()
 						}else{
-							next(null,"只能赠送给旗下用户")
+							next(null,"该用户非您发展，不能赠送")
 						}
 					})
 		  		})
