@@ -155,7 +155,7 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
 		if(NiuNiuService.roomState[index] == true){
 			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 1000)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 60 * 1000)
 			return index
 		}
 	}
@@ -172,7 +172,7 @@ var finishGameOfTimer = function(index) {
 			NiuNiuService.roomList[index].finishGame()
 		}else{
 			//正在游戏中则过一段时间后再次发起再次解散
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 1000)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
 		}
 	}
 }
