@@ -102,8 +102,7 @@ handler.visitorEnter = function(msg, session, next) {
           //保存session
           playerId = data.playerId
           if( !! sessionService.getByUid(playerId)) {
-            next(null,{"flag" : false ,"code" : 501})
-            return
+            sessionService.kickBySessionId(sessionService.getByUid(playerId)[0].id)
           }
           session.bind(playerId)
           session.set("uid", playerId)
@@ -219,10 +218,10 @@ handler.enter = function(msg, session, next) {
           }
           //保存session
           playerId = data.playerId
-          // if( !! sessionService.getByUid(playerId)) {
-          //   next(null,{"flag" : false ,"code" : 501})
-          //   return
-          // }
+          //踢出之前用户
+          if( !! sessionService.getByUid(playerId)) {
+            sessionService.kickBySessionId(sessionService.getByUid(playerId)[0].id)
+          }
           session.bind(playerId)
           session.set("uid", playerId)
           session.set("nickname",data.nickname)

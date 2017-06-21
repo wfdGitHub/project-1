@@ -169,7 +169,6 @@ var MING_CARD_NUM = 3               //明牌数量
           if(flag){
             room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
           }
-          cb(flag)
       })
     }
 
