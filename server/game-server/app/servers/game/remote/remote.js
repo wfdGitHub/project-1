@@ -164,7 +164,7 @@ local.endFinish = function(roomId) {
 			}
 		}
 	}
-	if(agreeCount > roomPlayer/2 || flag){
+	if(agreeCount > roomPlayer/2){
 		var notify = {
 			"cmd" : "endFinish",
 			"result" : true
