@@ -300,10 +300,12 @@ handler.giveDiamond = function(msg,session,next){
 		next(null)
 		return
 	}
+	var limits = 0
 	async.waterfall([
 		function(cb) {
 			//查询权限
 			Handler.app.rpc.db.remote.getValue(null,uid,"limits",function(data){
+				limits = data
 				if(data >= 1){
 					cb()
 				}else{
@@ -322,6 +324,28 @@ handler.giveDiamond = function(msg,session,next){
 					next(null,"玩家不存在")
 				}
 			})
+		},
+		function(cb){
+			if(limits > 1){
+				cb()
+			}else{
+				//只能赠送给代理旗下用户
+			  	var req=http.request('http://pay.5d8d.com/niu_admin.php/api/userBelongAgent?game_uid=10118&agent_uid=10002',function(res){
+					var temp = ""
+					res.on("data",function(chunk){
+					temp += chunk
+					})
+					res.on("end",function(){
+						temp = JSON.parse(temp)
+						if(temp.flag === true ){
+							cb()
+						}else{
+							next(null,"只能赠送给旗下用户")
+						}
+					})
+		  		})
+	  			req.end()				
+			}
 		},
 		function(cb) {
 			//扣除赠送人钻石

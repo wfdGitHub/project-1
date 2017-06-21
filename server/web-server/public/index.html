@@ -173,6 +173,14 @@
               console.log(data)
           });           
       }
+      var init = function(argument) {
+        pomelo.init({
+          host: host,
+          port: port,
+          log: true
+        }, function() {
+        }); 
+      }
     </script>
   </head>
   <body>
