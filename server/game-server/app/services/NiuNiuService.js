@@ -6,6 +6,7 @@ var ROOM_ALL_AMOUNT = 2000			   //总房间数量
 var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
 var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
+var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
 	"zhajinniu" : ZhaJinNiu
@@ -23,6 +24,8 @@ NiuNiuService.name = "NiuNiuService"
 var roomCallback = function(roomId,players,cb) {
 	console.log("room end : "+ roomId)
 	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
+	//取消房间生存定时器
+	clearTimeout(NiuNiuService.liveTimer[roomId])
 	//将玩家从房间中解锁
 	var roomPlayerCount = 0
 	for(var index in players){
@@ -108,6 +111,9 @@ var roomCallback = function(roomId,players,cb) {
 	//删除房间
 	NiuNiuService.roomState[roomId] = true
 	NiuNiuService.roomList[roomId] = false
+	//记录日志
+	var info = "   Room finish   roomId  : "+ roomId
+	openRoomLogger.info(info)
 }
 //房间列表
 NiuNiuService.roomList = {};
@@ -121,6 +127,8 @@ NiuNiuService.roomLock = {}
 NiuNiuService.lockState = {}
 //解散请求计时器
 NiuNiuService.lockTimer = {}
+//房间生存计时器(时间到后自动解散房间)
+NiuNiuService.liveTimer = {}
 NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
@@ -147,8 +155,24 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
 		if(NiuNiuService.roomState[index] == true){
 			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 1000)
 			return index
 		}
 	}
 	return false
+}
+
+var finishGameOfTimer = function(index) {
+	return function() {
+		if(NiuNiuService.roomList[index].isFree()){
+			//房间空闲则解散
+			//记录日志
+			var info = "finishGameOfTimer   Room finish   roomId  : "+ index
+			openRoomLogger.info(info)
+			NiuNiuService.roomList[index].finishGame()
+		}else{
+			//正在游戏中则过一段时间后再次发起再次解散
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 1000)
+		}
+	}
 }
