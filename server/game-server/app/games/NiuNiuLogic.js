@@ -55,12 +55,15 @@ module.exports.getType = function(handCard) {
       }
       //银花牛
       var flag = true
+      var yinniuCount = 0
       for(var i = 0;i < 5;i++){
         if(handCard[i].num < 10){
           flag = false
+        }else if(handCard[i].num === 10){
+          yinniuCount++
         }
       }
-      if(flag === true){
+      if(flag === true && yinniuCount === 1){
           result.type = COMB_TYPE_YIN_DELUX
           result.award = 5
           return result 
