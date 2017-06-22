@@ -187,6 +187,18 @@ dbService.getHistory = function(uid,cb) {
 	})
 }
 
+dbService.setAgencyRoom = function(uid,agencyRoom) {
+	dbService.setPlayerObject(uid,"agencyRoom",agencyRoom)
+}
+
+dbService.getAgencyRoom = function(uid,cb) {
+	dbService.getPlayerObject(uid,"agencyRoom",function(data) {
+		if(cb){
+			cb(data)
+		}
+	})
+}
+
 dbService.setUserId = function(uid,cb) {
 	dbService.db.get("nn:acc:lastid",function(err,data) {
 		console.log("nn:acc:lastid : "+data)

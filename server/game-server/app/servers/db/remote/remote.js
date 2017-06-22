@@ -21,7 +21,9 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 		DBRemote.dbService.setPlayer(uid,"limits",0)
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
-		DBRemote.dbService.setPlayerObject(uid,"agencyRoom",{})
+		var agencyRoom = {}
+		agencyRoom.List = {}
+		DBRemote.dbService.setPlayerObject(uid,"agencyRoom",agencyRoom)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -41,10 +43,10 @@ DBRemote.prototype.check = function(result,cb) {
 	//console.log("=================")
 	//console.log("result.unionid : "+result.unionid)
 	DBRemote.dbService.getPlayerString(result.unionid,"uidMap",function(data) {
-		console.log("data : "+data)
+		//console.log("data : "+data)
 		if(!data){
 			createAccount(result,cb)
-			console.log("create ok!!")
+			//console.log("create ok!!")
 		}else{
 			result.playerId = parseInt(data)
 			updateAccount(result)
@@ -81,7 +83,7 @@ DBRemote.prototype.updateDiamond = function(value,cb) {
 	cb()
 }
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
-	console.log("uid : "+uid+" name : "+name+ " value : "+value)
+	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	DBRemote.dbService.getPlayer(uid,name,function(data) {
 		if(data != null){
 			//console.log("data : "+data)
@@ -108,15 +110,17 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 		}
 	})
 }
+
 DBRemote.prototype.changeValue = function(uid,name,value,cb) {
 	DBRemote.dbService.setPlayer(uid,name,value,cb)
 }
+//设置战绩
 DBRemote.prototype.setHistory = function(uid,record,cb) {
-	console.log("uid : "+uid)
-	console.log(record)
+	// console.log("uid : "+uid)
+	// console.log(record)
 	DBRemote.dbService.getHistory(uid,function(data) {
-		console.log("data : ")
-		console.log(data)
+		// console.log("data : ")
+		// console.log(data)
 		data.allGames += 1
 		for(var i = 9;i > 0;i--){
 			if(data.List[i - 1]){
@@ -136,6 +140,50 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 		}
 	})
 }
+//设置代开房记录
+DBRemote.prototype.setAgencyRoom = function(uid,agencyRoom,cb) {
+	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+		for(var i = 9;i > 0;i--){
+			if(data.List[i - 1]){
+				data.List[i] = data.List[i - 1]
+			}
+		}
+		data.List[0] = agencyRoom
+		DBRemote.dbService.setAgencyRoom(uid,data)
+		if(cb){
+			cb()
+		}
+	})
+}
+
+//更新代开房记录
+DBRemote.prototype.updateAgencyRoom = function(uid,agencyRoom,cb) {
+	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+		for(var i = 9;i >= 0;i--){
+			if(data.List[i]){
+				//找到并修改代开房记录
+				if(data.List[i].roomId === agencyRoom.roomId){
+					data.List[i] = agencyRoom
+					DBRemote.dbService.setAgencyRoom(uid,data)
+					if(cb){
+						cb()
+					}
+					return
+				}
+			}
+		}
+		if(cb){
+			cb()
+		}
+	})
+}
+//获取代开房信息记录
+DBRemote.prototype.getAgencyRoom = function(uid,cb) {
+	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+		cb(data)
+	})
+}
+
 
 DBRemote.prototype.getValue = function(uid,name,cb) {
 	DBRemote.dbService.getPlayer(uid,name,cb)

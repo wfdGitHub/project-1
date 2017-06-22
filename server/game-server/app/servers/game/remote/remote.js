@@ -395,12 +395,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					if(flag === true){
 						GameRemote.niuniuService.roomState[roomId] = false;
 						next(null,roomId)
+						//保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
+						var agencyRoomInfo = {
+							"roomId" : roomId,
+							"state" : 0
+						}
+						self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
 						var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
 						openRoomLogger.info(info)
 					}else{
 						//删除房间
-						NiuNiuService.roomState[roomId] = true
-						NiuNiuService.roomList[roomId] = false
+						GameRemote.niuniuService.roomState[roomId] = true
+						GameRemote.niuniuService.roomList[roomId] = false
 						cb(false)
 					}
 				})	    		
@@ -409,8 +415,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
 					if(!flag){
 						//删除房间
-						NiuNiuService.roomState[roomId] = true
-						NiuNiuService.roomList[roomId] = false
+						GameRemote.niuniuService.roomState[roomId] = true
+						GameRemote.niuniuService.roomList[roomId] = false
 						cb(false)
 						return
 					}

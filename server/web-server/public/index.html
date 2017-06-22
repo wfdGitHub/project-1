@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      //host = "192.168.1.65";
+      host = "192.168.1.65";
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -87,7 +87,7 @@
       }
       var agency = function(argument) {
           pomelo.request("connector.entryHandler.sendData", {"code" : "agency","params" : {gameMode : 4,
-            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,basic : 5 ,gameType : "zhajinniu"}}, function(data,msg) {
+            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,basic : 1 ,gameType : "zhajinniu"}}, function(data,msg) {
               console.log("flag is : "+data.flag)
               console.log(data.msg)
             }
@@ -173,13 +173,19 @@
               console.log(data)
           });           
       }
-      var init = function(argument) {
+      var init = function() {
         pomelo.init({
           host: host,
           port: port,
           log: true
         }, function() {
         }); 
+      }
+
+      var getAgencyRoom = function() {
+          pomelo.request("connector.entryHandler.getAgencyRoom",null, function(data) {
+              console.log(data)
+          }); 
       }
     </script>
   </head>

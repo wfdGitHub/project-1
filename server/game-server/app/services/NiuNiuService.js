@@ -20,8 +20,8 @@ var NiuNiuService = function(app) {
 	NiuNiuService.app = app
 }
 NiuNiuService.name = "NiuNiuService"
-//房间回调
-var roomCallback = function(roomId,players,cb) {
+//房间回调 flag为true代表房间自动解散、否则为正常结束
+var roomCallback = function(roomId,players,flag,cb) {
 	console.log("room end : "+ roomId)
 	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
 	//取消房间生存定时器
@@ -107,13 +107,41 @@ var roomCallback = function(roomId,players,cb) {
 			}	
 		}
 	}
-	cb()
-	//删除房间
-	NiuNiuService.roomState[roomId] = true
-	NiuNiuService.roomList[roomId] = false
 	//记录日志
 	var info = "   Room finish   roomId  : "+ roomId
 	openRoomLogger.info(info)
+	//更新代开房记录   state : 0 未结束   1 正在游戏中 2 已结束   3 已失效 
+	if(NiuNiuService.roomList[roomId].agencyId){
+		var agencyRoomInfo = {
+			"roomId" : roomId,
+			"state" : 2
+		}
+		if(flag == true){
+			agencyRoomInfo.state = 3
+		}else{
+			var agencyPlayer = {}
+			var nowIndex = 0
+			for(var index in players){
+				if(players.hasOwnProperty(index)){
+					if(players[index].isActive){
+						agencyPlayer[nowIndex++] = {
+							"name" : players[index].playerInfo.nickname,
+							"score" : players[index].score
+						}
+					}
+				
+				}	
+			}
+			agencyRoomInfo.player = agencyPlayer
+		}
+		NiuNiuService.app.rpc.db.remote.updateAgencyRoom(null,NiuNiuService.roomList[roomId].agencyId,agencyRoomInfo,function() {})
+	}
+
+	//删除房间
+	NiuNiuService.roomState[roomId] = true
+	NiuNiuService.roomList[roomId] = false
+
+	cb()
 }
 //房间列表
 NiuNiuService.roomList = {};
@@ -155,7 +183,7 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
 		if(NiuNiuService.roomState[index] == true){
 			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 60 * 1000)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1000)
 			return index
 		}
 	}
@@ -169,7 +197,7 @@ var finishGameOfTimer = function(index) {
 			//记录日志
 			var info = "finishGameOfTimer   Room finish   roomId  : "+ index
 			openRoomLogger.info(info)
-			NiuNiuService.roomList[index].finishGame()
+			NiuNiuService.roomList[index].finishGame(true)
 		}else{
 			//正在游戏中则过一段时间后再次发起再次解散
 			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)

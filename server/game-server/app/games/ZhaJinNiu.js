@@ -20,6 +20,8 @@ var MING_CARD_NUM = 3               //明牌数量
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}   //玩家操作
+    room.halfwayEnter = true             //允许中途加入
+    room.agencyId = 0                    //代开房玩家ID
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -68,7 +70,6 @@ var MING_CARD_NUM = 3               //明牌数量
       //房间属性
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
-      room.halfwayEnter = true             //允许中途加入
       readyCount = 0                   //游戏准备人数
       gameState = conf.GS_FREE              //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
@@ -159,6 +160,7 @@ var MING_CARD_NUM = 3               //明牌数量
           if(flag){
             room.needDiamond = 0
             roomHost = -1
+            room.agencyId = uid
           }
           cb(flag)
       })  
@@ -762,7 +764,7 @@ var MING_CARD_NUM = 3               //明牌数量
         },conf.TID_ZHAJINNIU_SETTLEMENT)       
       }
     }
-    local.gameOver = function() {
+    local.gameOver = function(flag) {
       //总结算
       room.state = true
       var notify = {
@@ -771,7 +773,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       local.sendAll(notify)
       //结束游戏
-      roomCallBack(room.roomId,player,local.init)
+      roomCallBack(room.roomId,player,flag,local.init)
     }
     //玩家重连
     room.reconnection = function(uid,sid,param,cb) {
@@ -939,14 +941,14 @@ var MING_CARD_NUM = 3               //明牌数量
     return count
   }
   //解散游戏
-  room.finishGame = function(argument) {
+  room.finishGame = function(flag) {
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
       room.needDiamond = 0
       room.isRecord = false
     }
     room.gameNumber = 0
-    local.gameOver()
+    local.gameOver(flag)
   }
   //用户退出
   room.userQuit = function(uid,cb) {

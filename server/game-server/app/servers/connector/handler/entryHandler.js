@@ -25,11 +25,18 @@ handler.getNotify = function(msg,session,next) {
       next(null,data)
   })
 }
-//获取版本号
-handler.getVersion = function(msg,session,next) {
-      next(null,version)
-}
 
+//获取代开房记录
+handler.getAgencyRoom = function(msg,session,next) {
+    var uid = session.get("uid")
+    if(!uid){
+      next(null,{"flag" : false})
+    }else{
+      this.app.rpc.db.remote.getAgencyRoom(session,uid,function(data) {
+        next(null,data)
+      })      
+    }
+}
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {
     var self = this

@@ -59,6 +59,7 @@ module.exports.getType = function(handCard) {
       for(var i = 0;i < 5;i++){
         if(handCard[i].num < 10){
           flag = false
+          break
         }else if(handCard[i].num === 10){
           yinniuCount++
         }

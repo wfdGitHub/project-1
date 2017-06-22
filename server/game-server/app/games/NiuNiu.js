@@ -39,6 +39,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   room.isRecord = true
   room.handle = {} //玩家操作
   room.halfwayEnter = true             //允许中途加入
+  room.agencyId = 0                    //代开房玩家ID
   //房间初始化
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
@@ -138,6 +139,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     local.newRoom(uid,sid,param,function(flag) {
         if(flag){
           room.needDiamond = 0
+          room.agencyId = uid
           roomHost = -1
         }
         cb(flag)
@@ -944,7 +946,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
   }
   //总结算
-  local.gameOver = function() {
+  local.gameOver = function(flag) {
     //总结算
     room.state = true
     var notify = {
@@ -954,7 +956,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
     local.sendAll(notify)
     //结束游戏
-    roomCallBack(room.roomId,player,local.init)
+    roomCallBack(room.roomId,player,flag,local.init)
   }
   //积分改变
   local.changeScore = function(chair,score) {
@@ -1070,14 +1072,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     return count
   }
   //解散游戏
-  room.finishGame = function() {
+  room.finishGame = function(flag) {
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
       room.needDiamond = 0
       room.isRecord = false
     }
     room.gameNumber = 0
-    local.gameOver()
+    local.gameOver(flag)
   }
   //用户退出
   room.userQuit = function(uid,cb) {
