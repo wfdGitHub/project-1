@@ -182,6 +182,18 @@
         }); 
       }
 
+      var finishRoom = function(roomId) {
+          pomelo.request("connector.monitor.finishRoom",{"roomId" : roomId}, function(data) {
+              console.log(data)
+          });   
+      }
+
+      var finishAllRoom = function() {
+          pomelo.request("connector.monitor.finishAllRoom",null, function(data) {
+              console.log(data)
+          }); 
+      }
+
       var getAgencyRoom = function() {
           pomelo.request("connector.entryHandler.getAgencyRoom",null, function(data) {
               console.log(data)

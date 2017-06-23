@@ -183,7 +183,7 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
 		if(NiuNiuService.roomState[index] == true){
 			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1000)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 60 * 1000)
 			return index
 		}
 	}

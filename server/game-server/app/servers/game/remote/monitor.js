@@ -25,3 +25,29 @@ remote.roomInfos = function(cb) {
 	cb(roomList)
 }
 
+remote.finishRoom = function(roomId,cb) {
+	if(Remote.niuniuService.roomState[roomId] === false){
+		if(Remote.niuniuService.roomList[roomId].finishGame){
+			Remote.niuniuService.roomList[roomId].finishGame(true)
+		}
+	}
+	cb(true)
+}
+
+remote.finishAllRoom = function(cb) {
+	var roomList = new Array()
+	for(var index in Remote.niuniuService.roomState){
+		if(Remote.niuniuService.roomState.hasOwnProperty(index)){
+			if(Remote.niuniuService.roomState[index] === false){
+				var roomInfo = {
+					"roomId" : index,
+					"roomType" : Remote.niuniuService.roomList[index].roomType,
+					"roomPlayer" : Remote.niuniuService.roomList[index].chairMap
+				}
+				roomList.push(roomInfo)
+				Remote.niuniuService.roomList[index].finishGame(true)
+			}
+		}
+	}
+	cb(roomList)
+}

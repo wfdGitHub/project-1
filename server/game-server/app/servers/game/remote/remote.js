@@ -186,7 +186,7 @@ local.endFinish = function(roomId) {
 	GameRemote.niuniuService.lockState[roomId] = {}
 }
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
-	console.log("uid : "+uid+"code : "+code)
+	//console.log("uid : "+uid+"code : "+code)
 	//房间已锁定则拒绝操作
 	if(GameRemote.niuniuService.userMap[uid]){
 		var roomId = GameRemote.niuniuService.userMap[uid]
@@ -203,9 +203,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			//无效条件判断
 			if(typeof(params.roomId) != "number" || params.roomId < 0 
 				|| !GameRemote.niuniuService.roomList[params.roomId] || GameRemote.niuniuService.roomState[params.roomId]){
-				console.log("params.roomId : "+params.roomId)
-				console.log("type : "+typeof(params.roomId))
-                console.log(GameRemote.niuniuService.roomList[roomId])
+				//console.log("params.roomId : "+params.roomId)
+				//console.log("type : "+typeof(params.roomId))
+                //console.log(GameRemote.niuniuService.roomList[roomId])
                 cb(false,{"code" : tips.NO_ROOM})
                 return
 			}
@@ -262,8 +262,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					})
 				}
 			],function(err,result) {
-				console.log(err)
-				console.log(result)
+				//console.log(err)
+				//console.log(result)
 				cb(false)
 				return
 			})
@@ -277,7 +277,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	}else if(code == "newRoom"){
 		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
-	      console.log("agency error   param.gameNumber : "+params.gameNumber)
+	      //console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
 	    }  
@@ -314,7 +314,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			function(next) {
 				//console.log("a222222")
 				//获取玩家信息
-				console.log(GameRemote.dbService)
+				//console.log(GameRemote.dbService)
 				self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 					next(null,data)
 				})
@@ -431,7 +431,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	  })		
 	}else{
 		//用户存在房间内时才执行
-		console.log("room id : " + GameRemote.niuniuService.userMap[uid])
+		//console.log("room id : " + GameRemote.niuniuService.userMap[uid])
 		if(GameRemote.niuniuService.userMap[uid] !== undefined){
 			var roomId = GameRemote.niuniuService.userMap[uid];
 			if(roomId != undefined && GameRemote.niuniuService.roomList[roomId].handle[code] != undefined){

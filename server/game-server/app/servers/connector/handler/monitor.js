@@ -41,3 +41,17 @@ handler.roomInfos = function(msg,session,next) {
 		next(null,data)
 	})
 }
+
+//结束单个房间
+handler.finishRoom = function(msg,session,next) {
+	this.app.rpc.game.monitor.finishRoom(session,msg.roomId,function() {
+		next(null)
+	})	
+}
+
+//结束全部房间
+handler.finishAllRoom = function(msg,session,next) {
+	this.app.rpc.game.monitor.finishAllRoom(session,function(data) {
+		next(null,data)
+	})	
+}

@@ -109,7 +109,7 @@ var MING_CARD_NUM = 3               //明牌数量
         //console.log(room.channel)   
     }
     local.newRoom = function(uid,sid,param,cb) {
-      console.log("newRoom")
+      //console.log("newRoom")
       log("newRoom"+uid)
         //无效条件判断
       if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
@@ -287,7 +287,7 @@ var MING_CARD_NUM = 3               //明牌数量
         local.sendAll(notify)
         //房间内玩家全部准备且人数大于2时开始游戏
         if(readyCount == room.playerCount && room.playerCount >= 2){
-            console.log("beginGame")
+            //console.log("beginGame")
             //发送游戏开始消息
             notify = {
               "cmd" : "gameStart"
@@ -433,7 +433,7 @@ var MING_CARD_NUM = 3               //明牌数量
           bankerFlag = true
         }
       }while(player[curPlayer].isActive == false || player[curPlayer].isNoGiveUp == false || player[curPlayer].isReady == false)
-      console.log("111111  curRound : "+curRound)
+      //console.log("111111  curRound : "+curRound)
       //当操作权转移到初始操作玩家   进入下一轮
       if(bankerFlag){
           if(curRound == 3){
@@ -471,7 +471,7 @@ var MING_CARD_NUM = 3               //明牌数量
       local.sendAll(notify)
       //设定时器到下一位玩家
       actionFlag = false
-      console.log("now Player : "+curPlayer)
+      //console.log("now Player : "+curPlayer)
       timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINNIU)
     }
     local.playerGiveUp = function(chair) {
@@ -705,7 +705,7 @@ var MING_CARD_NUM = 3               //明牌数量
           room.runCount++
          clearTimeout(timer)
          gameState = conf.GS_SETTLEMENT
-        console.log("settlemnt")
+        //console.log("settlemnt")
         readyCount = 0
 
         //找出第一个在座位上且参与游戏的玩家
@@ -713,17 +713,17 @@ var MING_CARD_NUM = 3               //明牌数量
         while(maxIndex < GAME_PLAYER && (player[maxIndex].isActive == false || player[maxIndex].isReady == false || player[maxIndex].isNoGiveUp == false)){
           maxIndex++
         }
-        console.log("chair : "+maxIndex)
+        //console.log("chair : "+maxIndex)
         for(var i = maxIndex+1;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady && player[i].isNoGiveUp && maxIndex != i){
-            console.log("change")
+            //console.log("change")
             if(logic.compare(result[maxIndex],result[i]) == false){
                 maxIndex = i
             }
           }
         }
-        console.log("chair : "+maxIndex)
-        console.log(result)
+        //console.log("chair : "+maxIndex)
+        //console.log(result)
         var curScores = new Array(GAME_PLAYER)
         for(var i = 0;i < GAME_PLAYER;i++){
           curScores[i] = 0
@@ -777,7 +777,7 @@ var MING_CARD_NUM = 3               //明牌数量
     }
     //玩家重连
     room.reconnection = function(uid,sid,param,cb) {
-      console.log("uid : "+uid + "  reconnection")
+      // console.log("uid : "+uid + "  reconnection")
       var chair = room.chairMap[uid]
       if(chair === undefined){
         cb(false)
@@ -983,7 +983,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
 
 var log = function(str) {
-    console.log("LOG NiuNiu : "+str)
+    // console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {

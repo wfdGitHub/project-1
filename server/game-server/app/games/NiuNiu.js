@@ -203,7 +203,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       chair : chair,
       player : player[chair]
     }
-    console.log(notify)
+    //console.log(notify)
     local.sendAll(notify)
     var newPlayer = deepCopy(player)
     //deal阶段之前不返回牌
@@ -245,7 +245,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
   //玩家重连
   room.reconnection = function(uid,sid,param,cb) {
-    console.log("uid : "+uid + "  reconnection")
+    //console.log("uid : "+uid + "  reconnection")
     if(room.chairMap[uid] !== undefined){
       var chair = room.chairMap[uid]
       player[chair].isOnline = true
@@ -348,7 +348,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //console.log("room.playerCount : "+room.playerCount)
       if(readyCount == room.playerCount && room.playerCount >= 2){
           //进入定庄阶段
-          console.log("beginGame")
+          //console.log("beginGame")
           //发送游戏开始消息
           notify = {
             "cmd" : "gameStart"
@@ -383,18 +383,21 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return    
     }
+    player[banker].score += bonusPool
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
     }while(player[banker].isActive == false)
     bonusPool = room.playerCount * 8
+    player[banker].score -= bonusPool
     bankerTime = 0
     log("banker change : "+banker)      
     var notify = {
       "cmd" : "downBanker",
       "chair" : chair,
       "banker" : banker,
-      "bonusPool" : bonusPool
+      "bonusPool" : bonusPool,
+      "bankerScore" : player[banker].score
     }
     local.sendAll(notify)
   }
@@ -624,7 +627,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             betList[i] = 0;
             player[i].isBanker = false
         }
-        console.log("banker : "+banker)
+        //console.log("banker : "+banker)
         player[banker].isBanker = true    
         player[banker].bankerCount++
         //广播庄家信息
@@ -638,10 +641,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       if(room.gameMode == MODE_GAME_BULL){
         if(bonusPool == 0){
           bonusPool = room.playerCount * 8
+          player[banker].score -= bonusPool
         }
         var notify = {
           "cmd" : "bonusPool",
-          "bonusPool" : bonusPool
+          "bonusPool" : bonusPool,
+          "bankerScore" : player[banker].score
         }
         local.sendAll(notify)          
       }
@@ -805,19 +810,19 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         case conf.MODE_GAME_BULL : 
           //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
           //结算庄家赢
-            console.log(betList)
+            //console.log(betList)
             for(var i = 0;i < GAME_PLAYER;i++){
               if(i === banker || beginPlayer[i] != true) continue
               if(!logic.compare(result[i],result[banker])){
                   //庄家赢
                   var tmpScore = betList[i] * result[banker].award
-                  console.log("uid : "+player[i].uid+"  chair : "+i+"  lose tmpScore : "+tmpScore)
+                  //console.log("uid : "+player[i].uid+"  chair : "+i+"  lose tmpScore : "+tmpScore)
                   curScores[i] -= tmpScore
-                  curScores[banker] += tmpScore
+                  //curScores[banker] += tmpScore
                   bonusPool += tmpScore
               }
             }
-            console.log("bonusPool : "+bonusPool)
+            //console.log("bonusPool : "+bonusPool)
             //结算庄家输
             //牌型按大小排序
             var tmpUidList = new Array(GAME_PLAYER)
@@ -847,9 +852,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   if(tmpScore > bonusPool){
                       tmpScore = bonusPool
                   }
-                  console.log("uid : "+player[tmpUidList[i]].uid+"  chair : "+tmpUidList[i]+"  win tmpScore : "+tmpScore)
+                  //console.log("uid : "+player[tmpUidList[i]].uid+"  chair : "+tmpUidList[i]+"  win tmpScore : "+tmpScore)
                   curScores[tmpUidList[i]] += tmpScore
-                  curScores[banker] -= tmpScore
+                  //curScores[banker] -= tmpScore
                   bonusPool -= tmpScore
               }
             } 
@@ -859,6 +864,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                     banker = (banker + 1)%GAME_PLAYER
                 }while(player[banker].isActive == false)
                 bonusPool = room.playerCount * 8
+                player[banker].score -= bonusPool
                 bankerTime = 0
                 log("banker change : "+banker)
             }else{
@@ -868,17 +874,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             if(room.gameMode == MODE_GAME_BULL){
               var notify = {
                 "cmd" : "bonusPool",
-                "bonusPool" : bonusPool
+                "bonusPool" : bonusPool,
+                "bankerScore" : player[banker].score
               }
               local.sendAll(notify)          
             }
-            console.log("bonusPool : "+bonusPool)           
+            //console.log("bonusPool : "+bonusPool)           
           break
         case MODE_GAME_SHIP : 
           //开船模式先收集所有人的下注，再按从大到小赔付
           //先减去下注额
           var tmpAllBet = 0
-          console.log(betList)
+          //console.log(betList)
           for(var i = 0;i < GAME_PLAYER;i++){
             if(betList[i] && typeof(betList[i]) == "number" && beginPlayer[i]){
               curScores[i] -= betList[i]
@@ -947,6 +954,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   }
   //总结算
   local.gameOver = function(flag) {
+    //斗公牛模式庄家积分需加上积分池
+    if(room.gameMode === conf.MODE_GAME_BULL){
+      player[banker].score += bonusPool
+      bonusPool = 0
+    }
     //总结算
     room.state = true
     var notify = {
@@ -1115,7 +1127,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
 
 var log = function(str) {
-    console.log("LOG NiuNiu : "+str)
+    //console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {
