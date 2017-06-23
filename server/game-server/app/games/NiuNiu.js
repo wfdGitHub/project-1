@@ -958,7 +958,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         "result" : trueResult,
         "curScores" : curScores,
         "realScores" : realScores,
-        "beginPlayer" : beginPlayer
+        "beginPlayer" : beginPlayer,
+        "bankerTime" : bankerTime
       }
       local.sendAll(notify)
       if(room.gameNumber <= 0){
