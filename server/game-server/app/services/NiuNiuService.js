@@ -22,8 +22,8 @@ var NiuNiuService = function(app) {
 NiuNiuService.name = "NiuNiuService"
 //房间回调 flag为true代表房间自动解散、否则为正常结束
 var roomCallback = function(roomId,players,flag,cb) {
-	console.log("room end : "+ roomId)
-	console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
+	//console.log("room end : "+ roomId)
+	//console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
 	//取消房间生存定时器
 	clearTimeout(NiuNiuService.liveTimer[roomId])
 	//将玩家从房间中解锁
@@ -39,8 +39,8 @@ var roomCallback = function(roomId,players,flag,cb) {
 	//扣除钻石
 	var diamond = NiuNiuService.roomList[roomId].needDiamond
 	var GAME_PLAYER = roomPlayerCount
-	console.log("diamond : "+diamond)
-	console.log("GAME_PLAYER : "+GAME_PLAYER)
+	//console.log("diamond : "+diamond)
+	//console.log("GAME_PLAYER : "+GAME_PLAYER)
 	if(diamond !== 0){
 		switch(NiuNiuService.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 

@@ -42,7 +42,7 @@ dbService.prototype.start = function(cb){
 dbService.updateDiamond = function(value) {
 	var cmd = "nn:acc:addDiamond"
 	dbService.db.get(cmd,function(err,data) {
-		console.log(cmd + "  data : "+data)
+		//console.log(cmd + "  data : "+data)
 		value = parseInt(value) + parseInt(data)
 		dbService.db.set(cmd,value)
 	})
@@ -87,7 +87,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	console.log(cmd + "  data : "+value)	
+	//console.log(cmd + "  data : "+value)	
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
 			if(!flag){
@@ -101,7 +101,7 @@ dbService.setPlayer = function(uid,name,value,cb) {
 dbService.getPlayerString = function(uid,name,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
 	dbService.db.get(cmd,function(err,data) {
-		console.log(cmd + "  data : "+data)
+		//console.log(cmd + "  data : "+data)
 		if(err){
 			if(cb){
 				cb(false)
@@ -116,7 +116,7 @@ dbService.getPlayerString = function(uid,name,cb) {
 dbService.getPlayer = function(uid,name,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
 	dbService.db.get(cmd,function(err,data) {
-		console.log(cmd + "  data : "+data)
+		//console.log(cmd + "  data : "+data)
 		if(err){
 			if(cb){
 				cb(false)
@@ -130,8 +130,8 @@ dbService.getPlayer = function(uid,name,cb) {
 }
 dbService.setPlayerObject = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	console.log(cmd)
-	console.log(value)
+	//console.log(cmd)
+	//console.log(value)
 	value = JSON.stringify(value)
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
@@ -142,7 +142,7 @@ dbService.setPlayerObject = function(uid,name,value,cb) {
 dbService.getPlayerObject = function(uid,name,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
 	dbService.db.get(cmd,function(err,data) {
-		console.log(cmd + "  data : "+data)
+		//console.log(cmd + "  data : "+data)
 		if(err){
 			if(cb){
 				cb(false)
@@ -201,7 +201,7 @@ dbService.getAgencyRoom = function(uid,cb) {
 
 dbService.setUserId = function(uid,cb) {
 	dbService.db.get("nn:acc:lastid",function(err,data) {
-		console.log("nn:acc:lastid : "+data)
+		//console.log("nn:acc:lastid : "+data)
 		if(data){
 	        var playerId = parseInt(data) + 1
 	        dbService.db.set("nn:acc:lastid",playerId);
