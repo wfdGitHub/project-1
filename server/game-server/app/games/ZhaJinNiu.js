@@ -741,12 +741,18 @@ var MING_CARD_NUM = 3               //明牌数量
               local.changeScore(i,curScores[i])
             }
         }
+        var realScores = {}
+        //返回玩家实际分数
+        for(var i = 0;i < GAME_PLAYER;i++){
+            realScores[i] = player[i].score
+        }
         setTimeout(function(){
           //发送当局结算消息
           var notify = {
             "cmd" : "settlement",
             "result" : result,
             "curScores" : curScores,
+            "realScores" : realScores,
             "player" : player
           }
           local.sendAll(notify)

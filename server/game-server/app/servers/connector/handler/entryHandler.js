@@ -17,7 +17,7 @@ var Handler = function(app) {
 
 var handler = Handler.prototype
 
-var version = "0.9.3&ELSKAJASDNAKJFASLKJHD"
+var version = "1.0.0.4&ASKLDJFKSDHAASDJSAJ"
 //获取公告
 handler.getNotify = function(msg,session,next) {
   var self = this

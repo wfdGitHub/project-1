@@ -639,14 +639,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //斗牛模式更新积分池
       if(room.gameMode == MODE_GAME_BULL){
-        if(bonusPool == 0){
-          bonusPool = room.playerCount * 8
-          player[banker].score -= bonusPool
-        }
         var notify = {
           "cmd" : "bonusPool",
           "bonusPool" : bonusPool,
-          "bankerScore" : player[banker].score
+          "bankerScore" : player[banker].score,
+          "change" : false
+        }
+        if(bonusPool == 0){
+          bonusPool = room.playerCount * 8
+          player[banker].score -= bonusPool
+          notify.change = true
+          notify.bonusPool = bonusPool
+          notify.bankerScore = player[banker].score
         }
         local.sendAll(notify)          
       }
@@ -783,6 +787,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       for(var i = 0;i < GAME_PLAYER;i++){
         curScores[i] = 0
       }
+      var bankerScoreChange = 0
+      var oldBanker = banker
       switch(room.gameMode){
         case conf.MODE_GAME_NORMAL : 
           //常规模式和明牌模式结算
@@ -818,7 +824,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   var tmpScore = betList[i] * result[banker].award
                   //console.log("uid : "+player[i].uid+"  chair : "+i+"  lose tmpScore : "+tmpScore)
                   curScores[i] -= tmpScore
-                  //curScores[banker] += tmpScore
+                  bankerScoreChange += tmpScore
                   bonusPool += tmpScore
               }
             }
@@ -854,7 +860,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   }
                   //console.log("uid : "+player[tmpUidList[i]].uid+"  chair : "+tmpUidList[i]+"  win tmpScore : "+tmpScore)
                   curScores[tmpUidList[i]] += tmpScore
-                  //curScores[banker] -= tmpScore
+                  bankerScoreChange -= tmpScore
                   bonusPool -= tmpScore
               }
             } 
@@ -875,7 +881,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
               var notify = {
                 "cmd" : "bonusPool",
                 "bonusPool" : bonusPool,
-                "bankerScore" : player[banker].score
+                "bankerScore" : player[banker].score,
+                "change" : oldBanker !== banker
               }
               local.sendAll(notify)          
             }
@@ -936,18 +943,24 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             local.changeScore(i,curScores[i])
           }
       }
+      if(room.gameMode === conf.MODE_GAME_BULL){
+        notify.bankerTime = bankerTime
+        curScores[oldBanker] = bankerScoreChange
+      }
+      var realScores = {}
+      //返回玩家实际分数
+      for(var i = 0;i < GAME_PLAYER;i++){
+          realScores[i] = player[i].score
+      }
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
         "result" : trueResult,
         "curScores" : curScores,
+        "realScores" : realScores,
         "beginPlayer" : beginPlayer
       }
-      if(room.gameMode === conf.MODE_GAME_BULL){
-        notify.bankerTime = bankerTime
-      }
       local.sendAll(notify)
-
       if(room.gameNumber <= 0){
           local.gameOver()
       }

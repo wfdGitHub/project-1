@@ -32,7 +32,7 @@ dbService.prototype.start = function(cb){
 		dbService.db.get("nn:notifys",function(err,data) {
 			if(data === null){
 		        console.log("\033[33m[INFO] DataBase check - nn:notifys\033[0m");
-		        var notify = {"1" : {"name" : "新服开启","content" : "新服火爆开启"} , "2" : {"name" : "首冲双倍","content" : "首次充值双倍返还"}}
+		        var notify = {"1" : {"name" : "","content" : ""}}
 		        db.set("nn:notifys",JSON.stringify(notify));
     		}
 		})
