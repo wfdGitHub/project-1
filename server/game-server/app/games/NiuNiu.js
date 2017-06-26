@@ -496,7 +496,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }
     //斗公牛模式使用特殊下注限制
     if(room.gameMode == MODE_GAME_BULL){
-      if(param.bet && typeof(param.bet) == "number" && param.bet > 0 && (param.bet + betList[chair]) <= 40 && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) && (param.bet + betAmount) <= bonusPool ){
+      if(param.bet && typeof(param.bet) == "number" && param.bet > Math.floor(bonusPool / room.playerCount / 5) && (param.bet + betList[chair]) <= 40 
+        && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) 
+        && (param.bet + betAmount) <= bonusPool ){
         betList[chair] += param.bet
         betAmount += param.bet 
         local.betMessege(chair,param.bet)     
