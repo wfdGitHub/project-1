@@ -44,7 +44,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 	if(diamond !== 0){
 		switch(NiuNiuService.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 
-				NiuNiuService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * GAME_PLAYER),null)
+				NiuNiuService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * 3),null)
 				break;
 			case MODE_DIAMOND_EVERY: 
 				for(var index in players){
@@ -68,7 +68,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 						}
 					}
 				}
-				NiuNiuService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * GAME_PLAYER),null)
+				NiuNiuService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
 				break;		
 		}		
 	}

@@ -415,13 +415,38 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     }    
     log("robBanker")
     //判断是否已抢庄
-    if(robState[chair] == true){
+    if(robState[chair] != 0){
       cb(false)
       return
     }
     //记录抢庄
-    robState[chair] = true
+    if(param && param.flag == true){
+      robState[chair] = 1
+    }else{
+      robState[chair] = 2
+    }
+    var notify = {
+      "cmd" : "robBanker",
+      "chair" : chair,
+      "flag" : robState[chair]
+    }
+    local.sendAll(notify)
     cb(true)
+    //判断所有人都已操作进入下个阶段
+    var flag = true
+    for(var index in robState){
+      if(robState.hasOwnProperty(index)){
+        if(player[index].isActive){
+          if(robState[index] == 0){
+            flag = false
+          }
+        }
+      }
+    }
+    if(flag){
+      clearTimeout(timer)
+      local.endRob()
+    }
   }
   //发送聊天
   room.handle.say = function(uid,sid,param,cb) {
@@ -475,10 +500,9 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         betList[chair] += param.bet
         betAmount += param.bet 
         local.betMessege(chair,param.bet)     
-        cb(true)
-        return
       }else{
         cb(false)
+        return
       }
     }else{
       //其他模式
@@ -487,10 +511,27 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         betList[chair] += param.bet
         betAmount += param.bet
         local.betMessege(chair,param.bet)     
-        cb(true)
       }else{
         cb(false)
+        return
       }      
+    }
+    cb(true)
+    //判断所有人都下注进入发牌阶段
+    var flag = true
+    for(var index in betList){
+      if(betList.hasOwnProperty(index)){
+        if(player[index].isActive && index != banker){
+            if(betList[index] === 0){
+              flag = false
+            }
+        }
+      }
+    }
+    if(flag){
+      //取消倒计时  进入发牌
+      clearTimeout(timer)
+      local.deal()
     }
   }
   room.handle.showCard = function(uid,sid,param,cb) {
@@ -546,14 +587,14 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       case MODE_BANKER_ROB :
         //初始化抢庄状态为false
         for(var i = 0; i < GAME_PLAYER;i++){
-          robState[i] = false
+          robState[i] = 0
         }
         //抢庄
         var notify = {
           "cmd" : "beginRob"
         }
         local.sendAll(notify)
-        setTimeout(local.endRob,TID_ROB_TIME)    
+        timer = setTimeout(local.endRob,TID_ROB_TIME)    
         break
       case MODE_BANKER_ORDER :
         //轮庄
@@ -584,11 +625,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     var num = 0
     var robList = {}
     for(var i = 0; i < GAME_PLAYER;i++){
-      if(robState[i] == true){
+      if(robState[i] == 1){
         robList[num++] = i
       }
     }
-    //console.log("endRob num : "+num)
+    console.log("endRob num : "+num)
     //无人抢庄将所有参与游戏的玩家加入抢庄列表
     if(num == 0){
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -1141,7 +1182,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
 
 
 var log = function(str) {
-    //console.log("LOG NiuNiu : "+str)
+    console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {
