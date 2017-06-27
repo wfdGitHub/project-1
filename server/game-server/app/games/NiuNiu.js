@@ -497,7 +497,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //斗公牛模式使用特殊下注限制
     if(room.gameMode == MODE_GAME_BULL){
       if(param.bet && typeof(param.bet) == "number" 
-        && (param.bet > Math.floor(bonusPool / room.playerCount / 5) || param.bet >= 10)
+        && (param.bet > Math.floor(bonusPool / room.playerCount / 5)) && param.bet > 0
         && (param.bet + betList[chair]) <= 40 
         && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) 
         && (param.bet + betAmount) <= bonusPool ){
@@ -777,11 +777,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(beginPlayer[i] && player[i].isActive && i != banker && betList[i] == 0){
-            betList[i] = 1
-            betAmount += 1
-            local.betMessege(i,1)
+            var tmpBet = 1
+            if(room.gameMode === conf.MODE_GAME_BULL){
+              tmpBet = Math.floor(bonusPool / room.playerCount / 5)
+              if(tmpBet === 0){
+                tmpBet = 1
+              }
+            }
+            betList[i] = tmpBet
+            betAmount += tmpBet
+            local.betMessege(i,tmpBet)  
           }
-      }
+      }  
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
