@@ -1039,13 +1039,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //积分改变
   local.changeScore = function(chair,score) {
         player[chair].score += score;
-        var notify = {
-          "cmd" : "changeScore",
-          "chair" : chair,
-          "difference" : score,
-          "score" : player[chair].score
-        }      
-        local.sendAll(notify)        
+        // var notify = {
+        //   "cmd" : "changeScore",
+        //   "chair" : chair,
+        //   "difference" : score,
+        //   "score" : player[chair].score
+        // }      
+        // local.sendAll(notify)        
   }
 
   //广播消息
