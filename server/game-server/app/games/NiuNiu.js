@@ -46,6 +46,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   var readyCount = 0                   //游戏准备人数
   var gameState = GS_FREE              //游戏状态
   var banker = -1                      //庄家椅子号
+  var oldBanker = banker               //上一局庄家
   var roomHost = -1                    //房主椅子号
   var beginPlayer = {}                 //当局游戏参与玩家
   var timer                            //定时器句柄
@@ -497,7 +498,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //斗公牛模式使用特殊下注限制
     if(room.gameMode == MODE_GAME_BULL){
       if(param.bet && typeof(param.bet) == "number" 
-        && (param.bet > Math.floor(bonusPool / room.playerCount / 5)) && param.bet > 0
+        && (param.bet >= Math.floor(bonusPool / room.playerCount / 5)) && param.bet > 0
         && (param.bet + betList[chair]) <= 40 
         && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) 
         && (param.bet + betAmount) <= bonusPool ){
@@ -688,7 +689,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           "cmd" : "bonusPool",
           "bonusPool" : bonusPool,
           "bankerScore" : player[banker].score,
-          "change" : false
+          "change" : oldBanker !== banker
         }
         if(bonusPool == 0){
           bonusPool = room.playerCount * 8
@@ -823,7 +824,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           player[i].isReady = false;
       }
       readyCount = 0
-
+      oldBanker = banker
       //计算牌型
       var result = {}
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -840,7 +841,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         curScores[i] = 0
       }
       var bankerScoreChange = 0
-      var oldBanker = banker
+      
       switch(room.gameMode){
         case conf.MODE_GAME_NORMAL : 
           //常规模式和明牌模式结算
@@ -934,7 +935,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                 "cmd" : "bonusPool",
                 "bonusPool" : bonusPool,
                 "bankerScore" : player[banker].score,
-                "change" : oldBanker !== banker
+                "change" : false
               }
               local.sendAll(notify)          
             }
