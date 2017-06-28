@@ -394,6 +394,8 @@ var strReplace = function(str) {
           }
           // 将代理对替换为 "口"
           result += "口";
+      }else{
+        result += val
       }
   }
   return result
