@@ -62,7 +62,8 @@ conf.MODE_CARD_SHOW  = 2 				//明牌
 
 conf.GAME_TYPE = {
 	"niuniu" : true,
-	"zhajinniu" : true
+	"zhajinniu" : true,
+	"mingpaiqz" : true
 }
 
 //大牌控制

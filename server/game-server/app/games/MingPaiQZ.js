@@ -11,12 +11,12 @@ var MING_CARD_NUM = 4               //明牌数量
     var roomCallBack = cb
     var room = {}
     room.roomId = roomId
-    room.roomType = "zhajinniu"
+    room.roomType = "mingpaiqz"
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}   //玩家操作
     room.halfwayEnter = true             //允许中途加入
-    room.agencyId = 0                    //代开房玩家ID
+    room.agencyId = 0                    //代开房玩家ID 
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -271,15 +271,10 @@ var MING_CARD_NUM = 4               //明牌数量
         //重置下注信息
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
-              betList[i] = basic;
+              betList[i] = 0
               player[i].isShowCard = false    
             }
         }
-        var notify = {
-          "cmd" : "gameBegin",
-          "betList" : betList
-        }
-        local.sendAll(notify)
 
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
@@ -331,6 +326,29 @@ var MING_CARD_NUM = 4               //明牌数量
             player[i].cardsList[room.runCount] = result[i]           
           }
       }
+      for(var index = 0;index < GAME_PLAYER;index++){
+        var newPlayer = deepCopy(player)
+        //明牌模式所有人四张牌可见  暗牌自己四张牌可见
+        if(room.cardMode == conf.MODE_CARD_SHOW){
+          for(var i = 0; i < GAME_PLAYER;i++){
+              delete newPlayer[i].handCard[4]
+          }
+        }else if(room.cardMode == conf.MODE_CARD_HIDE){
+          for(var i = 0; i < GAME_PLAYER;i++){
+              if(i == index){
+                delete newPlayer[index].handCard[4]
+              }else{
+                delete newPlayer[i].handCard
+              }
+          }
+        }
+        var notify = {
+          "cmd" : "gameBegin",
+          "player" : newPlayer
+        }
+        local.sendUid(player[index].uid,notify)        
+      }
+
       //TODO 下个阶段
       local.chooseBanker()
     }
@@ -339,7 +357,7 @@ var MING_CARD_NUM = 4               //明牌数量
       gameState = conf.GS_ROB_BANKER
       //初始化抢庄状态为-1
       for(var i = 0; i < GAME_PLAYER;i++){
-        robState[i] = 0
+        robState[i] = -1
       }
       //抢庄
       var notify = {
@@ -353,9 +371,9 @@ var MING_CARD_NUM = 4               //明牌数量
       //统计抢庄人数
       var num = 0
       var robList = {}
-      var maxRob = 0
+      var maxRob = 1
       for(var i = 0; i < GAME_PLAYER;i++){
-        if(maxRob > robState[i]){
+        if(robState[i] > maxRob){
             maxRob = robState[i]
         }
       }
@@ -378,7 +396,7 @@ var MING_CARD_NUM = 4               //明牌数量
       var index = Math.floor(Math.random() * num)%num
       //console.log("index : "+index)
       num = robList[index]
-      room.maxRob = maxRob > 0 ? maxRob : 1
+      room.maxRob = maxRob
       banker = num
 
       local.betting()
@@ -505,7 +523,7 @@ var MING_CARD_NUM = 4               //明牌数量
             return
           case "bet" : 
             //游戏状态为BETTING
-            if(gameState !== GS_BETTING){
+            if(gameState !== conf.GS_BETTING){
               cb(false)
               return
             }
@@ -520,7 +538,7 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             //下注只能下底分或底分两倍
-            if(!param || typeof(param.num) !== "number" || (param.num !== basic && param.num !== 2 * basic)){
+            if(!param || typeof(param.bet) !== "number" || (param.bet !== basic && param.bet !== 2 * basic)){
               cb(false)
               return
             }
@@ -531,7 +549,7 @@ var MING_CARD_NUM = 4               //明牌数量
             return
         case "allIn" :
             //推注
-            if(gameState !== GS_BETTING){
+            if(gameState !== conf.GS_BETTING){
               cb(false)
               return
             }
@@ -615,8 +633,7 @@ var MING_CARD_NUM = 4               //明牌数量
       if(gameState !== conf.GS_SETTLEMENT){
          room.runCount++
          clearTimeout(timer)
-         gameState = conf.GS_SETTLEMENT
-        //console.log("settlemnt")
+        console.log("settlemnt")
 
         var curScores = new Array(GAME_PLAYER)
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -629,12 +646,12 @@ var MING_CARD_NUM = 4               //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  curScores[i] += betList[i] * result[i].award * maxRob
-                  curScores[banker] -= betList[i] * result[i].award * maxRob
+                  curScores[i] += betList[i] * result[i].award * room.maxRob
+                  curScores[banker] -= betList[i] * result[i].award * room.maxRob
               }else{
                   //庄家赢
-                  curScores[i] -= betList[i] * result[banker].award * maxRob
-                  curScores[banker] += betList[i] * result[banker].award * maxRob
+                  curScores[i] -= betList[i] * result[banker].award * room.maxRob
+                  curScores[banker] += betList[i] * result[banker].award * room.maxRob
               }              
           }
 
@@ -820,7 +837,10 @@ var MING_CARD_NUM = 4               //明牌数量
         roomType : room.roomType,
         basic : basic,
         maxRob : room.maxRob,
-        lastScore : lastScore
+        lastScore : lastScore,
+        TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
+        TID_BETTING : conf.TID_BETTING,
+        TID_SETTLEMENT : conf.TID_SETTLEMENT
       }
       return notify
     }

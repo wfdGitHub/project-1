@@ -398,7 +398,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						//保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
 						var agencyRoomInfo = {
 							"roomId" : roomId,
-							"state" : 0
+							"state" : 0,
+							"gameType" : params.gameType,
+							"gameNumber" : params.gameNumber
 						}
 						self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
 						var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber

@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      //host = "192.168.1.65";
+      host = "192.168.1.65";
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -53,6 +53,25 @@
             }
           );
       }
+
+      var robBanker = function(num) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "robBanker","num" : num}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      } 
+      var mbet = function(bet) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "bet","bet" : bet}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }    
+      var allIn = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "allIn"}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
+      }  
       var sendGiveUp = function(bet) {
           pomelo.request("connector.entryHandler.sendData", {"code" : "useCmd","params" : {"cmd" : "giveUp"}}, function(data) {
               console.log("flag is : "+data.flag)
@@ -198,6 +217,14 @@
           pomelo.request("connector.entryHandler.getAgencyRoom",null, function(data) {
               console.log(data)
           }); 
+      }
+
+      var mroom = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "newRoom","params" : {
+            consumeMode: 1,gameNumber: 10,cardMode : 1,basic : 1,gameType : "mingpaiqz"}}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );
       }
     </script>
   </head>

@@ -99,6 +99,8 @@ handler.visitorEnter = function(msg, session, next) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
+          notify.data.nickname = "A房卡充值中心，探宝"
+          notify.data.nickname = strReplace(notify.data.nickname)
           // console.log("===========")
           // console.log(data)
           //判断账号是否冻结
@@ -331,32 +333,32 @@ var onUserLeave = function(self, session) {
 
 
 var sendHttp = function(notify) {
-  notify.data["uid"] = notify.data["playerId"]
-  var data = {}
+  // notify.data["uid"] = notify.data["playerId"]
+  // var data = {}
 
-  data.game_uid = notify.data.uid
-  data.open_id = notify.openId
-  data.union_id = notify.unionid
-  data.nickname = notify.data.nickname
-  data.head_img = notify.data.head
-  data.sum_play = 0
-  data.coin = notify.data.diamond
-  data.used_coin = 0
+  // data.game_uid = notify.data.uid
+  // data.open_id = notify.openId
+  // data.union_id = notify.unionid
+  // data.nickname = notify.data.nickname
+  // data.head_img = notify.data.head
+  // data.sum_play = 0
+  // data.coin = notify.data.diamond
+  // data.used_coin = 0
 
-  var keys = Object.keys(data).sort()
-  var string = ""
-  for(var i = 0;i < keys.length;i++){
-    string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
-  }
-  string += "key=niuniuyiyousecretkey"
-  data.sign = md5(string)
-  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
+  // var keys = Object.keys(data).sort()
+  // var string = ""
+  // for(var i = 0;i < keys.length;i++){
+  //   string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
+  // }
+  // string += "key=niuniuyiyousecretkey"
+  // data.sign = md5(string)
+  // var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
 
-  })
-  req.on("error",function(err){
-    console.log(err.message)
-  })
-  req.end()
+  // })
+  // req.on("error",function(err){
+  //   console.log(err.message)
+  // })
+  // req.end()
 
 }
 

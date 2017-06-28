@@ -662,6 +662,18 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("gameBegin")      
       room.gameNumber--
       betAmount = 0
+      if(room.gameMode == MODE_GAME_BULL){
+        //积分池空则换庄
+        if(bonusPool <= GAME_PLAYER){
+            do{
+                banker = (banker + 1)%GAME_PLAYER
+            }while(player[banker].isActive == false)
+            bonusPool = room.playerCount * 8
+            player[banker].score -= bonusPool
+            bankerTime = 0
+            log("banker change : "+banker)
+        }        
+      }
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
             betList[i] = 0;
@@ -691,7 +703,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           "bankerScore" : player[banker].score,
           "change" : oldBanker !== banker
         }
-        if(bonusPool == 0){
+        if(bonusPool == 0 && room.runCount == 0){
           bonusPool = room.playerCount * 8
           player[banker].score -= bonusPool
           notify.change = true
@@ -917,18 +929,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
                   bonusPool -= tmpScore
               }
             } 
-            //积分池空则换庄
-            if(bonusPool <= GAME_PLAYER){
-                do{
-                    banker = (banker + 1)%GAME_PLAYER
-                }while(player[banker].isActive == false)
-                bonusPool = room.playerCount * 8
-                player[banker].score -= bonusPool
-                bankerTime = 0
-                log("banker change : "+banker)
-            }else{
-              bankerTime++
-            }
+            bankerTime++
             //斗牛模式更新积分池
             if(room.gameMode == MODE_GAME_BULL){
               var notify = {

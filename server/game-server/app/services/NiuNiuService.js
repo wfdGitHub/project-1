@@ -6,10 +6,12 @@ var ROOM_ALL_AMOUNT = 2000			   //总房间数量
 var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
 var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
+var MingPaiQZ = require("../games/MingPaiQZ.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
-	"zhajinniu" : ZhaJinNiu
+	"zhajinniu" : ZhaJinNiu,
+	"mingpaiqz" : MingPaiQZ
 }
 module.exports = function(app) {
   return new NiuNiuService(app);
