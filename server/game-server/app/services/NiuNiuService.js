@@ -113,7 +113,8 @@ var roomCallback = function(roomId,players,flag,cb) {
 	var info = "   Room finish   roomId  : "+ roomId
 	openRoomLogger.info(info)
 	//更新代开房记录   state : 0 未结束   1 正在游戏中 2 已结束   3 已失效 
-	if(NiuNiuService.roomList[roomId].agencyId){
+	var agencyId = NiuNiuService.roomList[roomId].agencyId
+	if(agencyId){
 		var agencyRoomInfo = {
 			"roomId" : roomId,
 			"state" : 2
@@ -131,12 +132,17 @@ var roomCallback = function(roomId,players,flag,cb) {
 							"score" : players[index].score
 						}
 					}
-				
 				}	
 			}
 			agencyRoomInfo.player = agencyPlayer
 		}
-		NiuNiuService.app.rpc.db.remote.updateAgencyRoom(null,NiuNiuService.roomList[roomId].agencyId,agencyRoomInfo,function() {})
+		NiuNiuService.app.rpc.db.remote.updateAgencyRoom(null,agencyId,agencyRoomInfo,function() {})
+
+		//房间未开始游戏则返回钻石
+		if(!NiuNiuService.roomList[roomId].isBegin()){
+			var tmpDiamond = Math.ceil(NiuNiuService.roomList[roomId].maxGameNumber / 10) * 3
+			NiuNiuService.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
+		}
 	}
 
 	//删除房间
