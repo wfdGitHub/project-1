@@ -211,6 +211,7 @@ handler.enter = function(msg, session, next) {
       function(result,cb){
         //console.log(result)
         userId = result.unionid
+        result.nickname = strReplace(notify.data.nickname)
         self.app.rpc.db.remote.check(session,result,function(flag){
             cb(null)
         })
