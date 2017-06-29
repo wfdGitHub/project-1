@@ -117,7 +117,8 @@ var roomCallback = function(roomId,players,flag,cb) {
 	if(agencyId){
 		var agencyRoomInfo = {
 			"roomId" : roomId,
-			"state" : 2
+			"state" : 2,
+			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber
 		}
 		if(flag == true){
 			agencyRoomInfo.state = 3
@@ -136,7 +137,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 			}
 			agencyRoomInfo.player = agencyPlayer
 		}
-		NiuNiuService.app.rpc.db.remote.updateAgencyRoom(null,agencyId,agencyRoomInfo,function() {})
+		NiuNiuService.updateAgencyRoom(agencyId,agencyRoomInfo)
 
 		//房间未开始游戏则返回钻石
 		if(!NiuNiuService.roomList[roomId].isBegin()){
@@ -165,6 +166,9 @@ NiuNiuService.lockState = {}
 NiuNiuService.lockTimer = {}
 //房间生存计时器(时间到后自动解散房间)
 NiuNiuService.liveTimer = {}
+//代开房数据
+NiuNiuService.agencyList = {}
+
 NiuNiuService.prototype.start = function(cb) {
 	//初始化房间
 	NiuNiuService.channelService = this.app.get('channelService');
@@ -191,7 +195,7 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
 		if(NiuNiuService.roomState[index] == true){
 			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),4 * 60 * 60 * 1000)
+			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),8 * 60 * 60 * 1000)
 			return index
 		}
 	}
@@ -211,4 +215,39 @@ var finishGameOfTimer = function(index) {
 			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
 		}
 	}
+}
+
+
+NiuNiuService.setAgencyRoom = function(uid,agencyRoom) {
+	var  agencyInfo = NiuNiuService.agencyList[uid]
+	if(!agencyInfo){
+		agencyInfo = {}
+		agencyInfo.List = {}
+	}
+	for(var i = 9;i > 0;i--){
+		if(agencyInfo.List[i - 1]){
+			agencyInfo.List[i] = agencyInfo.List[i - 1]
+		}
+	}	
+	agencyInfo.List[0] = agencyRoom
+	NiuNiuService.agencyList[uid] = agencyInfo
+}
+
+NiuNiuService.updateAgencyRoom = function(agencyId,agencyRoom) {
+	var agencyInfo = NiuNiuService.agencyList[agencyId]
+		for(var i = 9;i >= 0;i--){
+			if(agencyInfo.List[i]){
+				//找到并修改代开房记录
+				if(agencyInfo.List[i].roomId === agencyRoom.roomId){
+					agencyInfo.List[i] = agencyRoom
+					NiuNiuService.agencyList[agencyId] = agencyInfo
+					return
+				}
+			}
+		}
+}
+
+NiuNiuService.getAgencyRoom = function(agencyId) {
+	var agencyInfo = NiuNiuService.agencyList[agencyId]
+	return agencyInfo
 }

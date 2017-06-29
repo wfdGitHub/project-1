@@ -373,6 +373,7 @@ var MING_CARD_NUM = 4               //明牌数量
       var robList = {}
       var maxRob = 1
       for(var i = 0; i < GAME_PLAYER;i++){
+        player[i].isBanker = false
         if(robState[i] > maxRob){
             maxRob = robState[i]
         }
@@ -382,7 +383,7 @@ var MING_CARD_NUM = 4               //明牌数量
           robList[num++] = i
         }
       }
-      console.log("endRob num : "+num)
+      //console.log("endRob num : "+num)
       //无人抢庄将所有参与游戏的玩家加入抢庄列表
       if(num == 0){
         for(var i = 0; i < GAME_PLAYER;i++){
@@ -398,8 +399,9 @@ var MING_CARD_NUM = 4               //明牌数量
       num = robList[index]
       room.maxRob = maxRob
       banker = num
-
-      local.betting()
+      player[banker].isBanker = true
+      gameState = conf.GS_NONE
+      setTimeout(local.betting,800)
     }
     //下注阶段
     local.betting = function() {
@@ -409,7 +411,8 @@ var MING_CARD_NUM = 4               //明牌数量
       //通知客户端
       var notify = {
         cmd : "beginBetting",
-        banker : banker
+        banker : banker,
+        lastScore : lastScore
       }
       local.sendAll(notify)
       //定时器启动下一阶段
@@ -569,6 +572,9 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             var tmpBet = basic + lastScore[chair]
+            if(tmpBet > 10){
+              tmpBet = 10
+            }
             betList[chair] += tmpBet
             local.betMessege(chair,tmpBet)
             local.isAllBet()
@@ -631,8 +637,9 @@ var MING_CARD_NUM = 4               //明牌数量
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
-         room.runCount++
-         clearTimeout(timer)
+        room.runCount++
+        readyCount = 0
+        clearTimeout(timer)
         console.log("settlemnt")
 
         var curScores = new Array(GAME_PLAYER)
@@ -823,6 +830,7 @@ var MING_CARD_NUM = 4               //明牌数量
             }
         }
       }
+      console.log(newPlayer[0])
       var notify = {
         cmd : "roomPlayer",
         player:newPlayer,
@@ -840,8 +848,10 @@ var MING_CARD_NUM = 4               //明牌数量
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
         TID_BETTING : conf.TID_BETTING,
-        TID_SETTLEMENT : conf.TID_SETTLEMENT
+        TID_SETTLEMENT : conf.TID_SETTLEMENT,
+        robState : robState
       }
+      
       return notify
     }
   //房间是否已开始游戏

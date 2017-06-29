@@ -21,9 +21,6 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 		DBRemote.dbService.setPlayer(uid,"limits",0)
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
-		var agencyRoom = {}
-		agencyRoom.List = {}
-		DBRemote.dbService.setPlayerObject(uid,"agencyRoom",agencyRoom)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -141,48 +138,48 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 	})
 }
 //设置代开房记录
-DBRemote.prototype.setAgencyRoom = function(uid,agencyRoom,cb) {
-	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-		for(var i = 9;i > 0;i--){
-			if(data.List[i - 1]){
-				data.List[i] = data.List[i - 1]
-			}
-		}
-		data.List[0] = agencyRoom
-		DBRemote.dbService.setAgencyRoom(uid,data)
-		if(cb){
-			cb()
-		}
-	})
-}
+// DBRemote.prototype.setAgencyRoom = function(uid,agencyRoom,cb) {
+// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+// 		for(var i = 9;i > 0;i--){
+// 			if(data.List[i - 1]){
+// 				data.List[i] = data.List[i - 1]
+// 			}
+// 		}
+// 		data.List[0] = agencyRoom
+// 		DBRemote.dbService.setAgencyRoom(uid,data)
+// 		if(cb){
+// 			cb()
+// 		}
+// 	})
+// }
 
 //更新代开房记录
-DBRemote.prototype.updateAgencyRoom = function(uid,agencyRoom,cb) {
-	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-		for(var i = 9;i >= 0;i--){
-			if(data.List[i]){
-				//找到并修改代开房记录
-				if(data.List[i].roomId === agencyRoom.roomId){
-					data.List[i] = agencyRoom
-					DBRemote.dbService.setAgencyRoom(uid,data)
-					if(cb){
-						cb()
-					}
-					return
-				}
-			}
-		}
-		if(cb){
-			cb()
-		}
-	})
-}
+// DBRemote.prototype.updateAgencyRoom = function(uid,agencyRoom,cb) {
+// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+// 		for(var i = 9;i >= 0;i--){
+// 			if(data.List[i]){
+// 				//找到并修改代开房记录
+// 				if(data.List[i].roomId === agencyRoom.roomId){
+// 					data.List[i] = agencyRoom
+// 					DBRemote.dbService.setAgencyRoom(uid,data)
+// 					if(cb){
+// 						cb()
+// 					}
+// 					return
+// 				}
+// 			}
+// 		}
+// 		if(cb){
+// 			cb()
+// 		}
+// 	})
+// }
 //获取代开房信息记录
-DBRemote.prototype.getAgencyRoom = function(uid,cb) {
-	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-		cb(data)
-	})
-}
+// DBRemote.prototype.getAgencyRoom = function(uid,cb) {
+// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
+// 		cb(data)
+// 	})
+// }
 
 
 DBRemote.prototype.getValue = function(uid,name,cb) {

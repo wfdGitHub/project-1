@@ -32,7 +32,13 @@ handler.onlineUser = function(msg,session,next) {
     }
   next(null,uidInfos)
 }
-
+//获取代开房数据
+handler.getAgencyList = function(msg,session,next) {
+	this.app.rpc.game.monitor.getAgencyList(session,function(data) {
+		//console.log(data)
+		next(null,data)
+	})	
+}
 
 //房间列表
 handler.roomInfos = function(msg,session,next) {

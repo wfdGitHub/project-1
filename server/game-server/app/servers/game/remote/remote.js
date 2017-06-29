@@ -13,6 +13,16 @@ var GameRemote = function(app) {
 	GameRemote.app = app
 	GameRemote.niuniuService = this.app.get("NiuNiuService")
 };
+
+
+//获取代开房数据
+GameRemote.prototype.getAgencyRoom = function(uid,cb) {
+	var data = GameRemote.niuniuService.getAgencyRoom(uid)
+	if(cb){
+		cb(data)
+	}
+}
+
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	switch(code){
 		case "finish" : 
@@ -233,7 +243,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond
 						break;
 						case conf.MODE_DIAMOND_WIN : 
-							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond * 6;
+							needMond = GameRemote.niuniuService.roomList[roomId].needDiamond * 3;
 						break;
 					} 
 					if(diamond >= needMond){
@@ -295,13 +305,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				var needMond = Math.ceil(params.gameNumber / 10)
 				switch(params.consumeMode){
 					case conf.MODE_DIAMOND_HOST : 
-						needMond = needMond * 6
+						needMond = needMond * 3
 					break;
 					case conf.MODE_DIAMOND_EVERY :
 						needMond = needMond
 					break;
 					case conf.MODE_DIAMOND_WIN : 
-						needMond = needMond * 6
+						needMond = needMond * 3
 					break;
 				}
 				if(diamond >= needMond && GameRemote.niuniuService.userMap[uid] === undefined){
@@ -381,7 +391,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function(data,next) {
 	    		//检查钻石是否足够
 				var diamond = data
-				needMond = Math.ceil(params.gameNumber / 10) * 6
+				needMond = Math.ceil(params.gameNumber / 10) * 3
 				if(diamond < needMond){
 					cb(false,{"code" : tips.NO_DIAMOND})
 					return
@@ -400,9 +410,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							"roomId" : roomId,
 							"state" : 0,
 							"gameType" : params.gameType,
-							"gameNumber" : params.gameNumber
+							"gameNumber" : params.gameNumber,
+							"gameMode" : params.gameMode,
+							"cardMode" : params.cardMode
 						}
-						self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
+						// self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
+						GameRemote.niuniuService.setAgencyRoom(uid,agencyRoomInfo)
 						var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
 						openRoomLogger.info(info)
 					}else{
@@ -470,3 +483,4 @@ GameRemote.prototype.reconnection = function(uid, sid,cb) {
 		cb()
 	}
 }
+

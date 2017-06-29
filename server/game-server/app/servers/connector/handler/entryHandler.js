@@ -32,7 +32,7 @@ handler.getAgencyRoom = function(msg,session,next) {
     if(!uid){
       next(null,{"flag" : false})
     }else{
-      this.app.rpc.db.remote.getAgencyRoom(session,uid,function(data) {
+      this.app.rpc.game.remote.getAgencyRoom(session,uid,function(data) {
         next(null,data)
       })      
     }
@@ -99,7 +99,6 @@ handler.visitorEnter = function(msg, session, next) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
           notify.cmd = "userInfo"
           notify.data = data
-          notify.data.nickname = "A房卡充值中心，探宝"
           notify.data.nickname = strReplace(notify.data.nickname)
           // console.log("===========")
           // console.log(data)

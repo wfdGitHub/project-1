@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      host = "192.168.1.65";
+      //host = "192.168.1.65";
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -161,17 +161,6 @@
             }
           );
       }        
-      var getOnlineUser = function(argument) {
-        pomelo.init({
-          host: host,
-          port: port,
-          log: true
-        }, function() {
-          pomelo.request("monitor.handle.getOnlineUser", {}, function(data) {
-              console.log(data)
-          });
-        }); 
-      }
       var giveDiamond = function(target,diamond) {
           pomelo.request("monitor.handle.giveDiamond", {target : target,diamond : diamond}, function(data) {
               console.log(data)
@@ -189,6 +178,11 @@
       }
       var getRooms = function() {
           pomelo.request("connector.monitor.roomInfos",null, function(data) {
+              console.log(data)
+          });           
+      }
+      var getAgencyList = function() {
+          pomelo.request("connector.monitor.getAgencyList",null, function(data) {
               console.log(data)
           });           
       }

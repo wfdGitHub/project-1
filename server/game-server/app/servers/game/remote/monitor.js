@@ -25,6 +25,13 @@ remote.roomInfos = function(cb) {
 	cb(roomList)
 }
 
+remote.getAgencyList = function(cb) {
+	var data = Remote.niuniuService.agencyList
+	if(cb){
+		cb(data)		
+	}
+}
+
 remote.finishRoom = function(roomId,cb) {
 	if(Remote.niuniuService.roomState[roomId] === false){
 		if(Remote.niuniuService.roomList[roomId].finishGame){
