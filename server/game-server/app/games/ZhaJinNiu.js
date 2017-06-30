@@ -702,7 +702,6 @@ var MING_CARD_NUM = 3               //明牌数量
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
         room.runCount++
-        player[banker].bankerCount
          clearTimeout(timer)
          gameState = conf.GS_SETTLEMENT
         //console.log("settlemnt")
