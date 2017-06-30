@@ -401,6 +401,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.maxRob = maxRob
       banker = num
       player[banker].isBanker = true
+      player[banker].bankerCount++
       gameState = conf.GS_NONE
       setTimeout(local.betting,1000)
     }
