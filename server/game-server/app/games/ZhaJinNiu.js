@@ -488,14 +488,13 @@ var MING_CARD_NUM = 3               //明牌数量
             }
           }
           //发送玩家手牌
-          var handCard = deepCopy(player[chair].handCard)
           if(curRound == 0){
-              delete handCard[4]
-              delete handCard[3]
+              delete player[chair].handCard[4]
+              delete player[chair].handCard[3]
           }else if(curRound == 1){
-              delete handCard[4]
+              delete player[chair].handCard[4]
           }               
-          notify.handCard = handCard
+          notify.handCard = player[chair].handCard
           local.sendUid(player[chair].uid,notify)
           actionFlag = true
           //清除计时器 
@@ -802,7 +801,7 @@ var MING_CARD_NUM = 3               //明牌数量
       var newPlayer = deepCopy(player)
 
       if(room.cardMode == conf.MODE_CARD_SHOW){
-        for(var i = 0; i < GAME_PLAYER;i++){
+        for(var i = 0; i < GAME_PLAYER;i++){ 
             if(i == chair){
               if(curRound == 0){
                 delete newPlayer[i].handCard[3]
@@ -836,7 +835,8 @@ var MING_CARD_NUM = 3               //明牌数量
       var notify = {
           roomInfo : {
           player : newPlayer,
-          gameNumber : room.maxGameNumber,
+          gameNumber : room.maxGameNumber - room.gameNumber,
+          maxGameNumber : room.maxGameNumber,
           consumeMode : room.consumeMode,
           bankerMode : room.bankerMode,
           cardMode : room.cardMode,

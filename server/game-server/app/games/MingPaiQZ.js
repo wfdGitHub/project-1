@@ -34,6 +34,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var basic = 0                        //房间底分
     var actionFlag = true                //行动标志
     var lastScore = {}                   //上一局输赢
+    var betAmount = 0
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -275,7 +276,7 @@ var MING_CARD_NUM = 4               //明牌数量
               player[i].isShowCard = false    
             }
         }
-
+        betAmount = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
       do{
@@ -401,7 +402,7 @@ var MING_CARD_NUM = 4               //明牌数量
       banker = num
       player[banker].isBanker = true
       gameState = conf.GS_NONE
-      setTimeout(local.betting,800)
+      setTimeout(local.betting,1000)
     }
     //下注阶段
     local.betting = function() {
@@ -546,6 +547,7 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             betList[chair] += param.bet
+            betAmount += param.bet
             local.betMessege(chair,param.bet)
             local.isAllBet()
             cb(true)
@@ -588,7 +590,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var flag = true
     for(var index in betList){
       if(betList.hasOwnProperty(index)){
-        if(player[index].isActive && index != banker){
+        if(player[index].isActive && index != banker && player[index].isReady){
             if(betList[index] === 0){
               flag = false
             }
@@ -714,7 +716,8 @@ var MING_CARD_NUM = 4               //明牌数量
       var notify = {
         "cmd" : "bet",
         "chair" : chair,
-        "bet" : bet
+        "bet" : bet,
+        "betAmount" : betAmount
       }
       local.sendAll(notify)     
     }
@@ -741,6 +744,9 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         surplusGameNumber : room.maxGameNumber - room.gameNumber
+      }
+      if(notify.state === conf.GS_NONE){
+        notify.state = conf.GS_ROB_BANKER
       }
       cb(notify)
     }
@@ -817,18 +823,20 @@ var MING_CARD_NUM = 4               //明牌数量
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
       //明牌模式所有人四张牌可见  暗牌自己四张牌可见
-      if(room.cardMode == conf.MODE_CARD_SHOW){
-        for(var i = 0; i < GAME_PLAYER;i++){
-            delete newPlayer[i].handCard[4]
-        }
-      }else if(room.cardMode == conf.MODE_CARD_HIDE){
-        for(var i = 0; i < GAME_PLAYER;i++){
-            if(i == chair){
-              delete newPlayer[chair].handCard[4]
-            }else{
-              delete newPlayer[i].handCard
-            }
-        }
+      if(gameState < conf.GS_DEAL){
+        if(room.cardMode == conf.MODE_CARD_SHOW){
+          for(var i = 0; i < GAME_PLAYER;i++){
+              delete newPlayer[i].handCard[4]
+          }
+        }else if(room.cardMode == conf.MODE_CARD_HIDE){
+          for(var i = 0; i < GAME_PLAYER;i++){
+              if(i == chair){
+                delete newPlayer[chair].handCard[4]
+              }else{
+                delete newPlayer[i].handCard
+              }
+          }
+        }        
       }
       console.log(newPlayer[0])
       var notify = {
@@ -851,7 +859,9 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState
       }
-      
+      if(notify.state === conf.GS_NONE){
+        notify.state = conf.GS_ROB_BANKER
+      }
       return notify
     }
   //房间是否已开始游戏

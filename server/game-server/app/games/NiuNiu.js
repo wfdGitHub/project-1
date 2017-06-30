@@ -275,7 +275,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         roomInfo : {
           player : newPlayer,
           gameMode : room.gameMode,
-          gameNumber : room.maxGameNumber,
+          maxGameNumber : room.maxGameNumber,
+          gameNumber : room.maxGameNumber - room.gameNumber,
           consumeMode : room.consumeMode,
           bankerMode : room.bankerMode,
           cardMode : room.cardMode,
@@ -385,6 +386,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       return    
     }
     player[banker].score += bonusPool
+    var tmpOldBanker = banker
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
@@ -398,7 +400,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       "chair" : chair,
       "banker" : banker,
       "bonusPool" : bonusPool,
-      "bankerScore" : player[banker].score
+      "bankerScore" : player[banker].score,
+      "oldBankerScore" : player[tmpOldBanker].score
     }
     local.sendAll(notify)
   }
@@ -526,7 +529,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     var flag = true
     for(var index in betList){
       if(betList.hasOwnProperty(index)){
-        if(player[index].isActive && index != banker){
+        if(player[index].isActive && index != banker && player[index].isReady){
             if(betList[index] === 0){
               flag = false
             }
@@ -663,8 +666,10 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       room.gameNumber--
       betAmount = 0
       if(room.gameMode == MODE_GAME_BULL){
-        //积分池空则换庄
-        if(bonusPool <= GAME_PLAYER){
+        //积分池小于人数则换庄
+        if(bonusPool < room.playerCount){
+          player[banker].score += bonusPool
+          local.updatePlayerScore(banker)
             do{
                 banker = (banker + 1)%GAME_PLAYER
             }while(player[banker].isActive == false)
@@ -834,7 +839,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       gameState = GS_FREE
       for(var i = 0;i < GAME_PLAYER; i++){
           player[i].isReady = false;
-      }
+      } 
       readyCount = 0
       oldBanker = banker
       //计算牌型
@@ -1064,6 +1069,16 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           sid: tsid
         }]);  
       }
+  }
+
+  //更新单个玩家积分
+  local.updatePlayerScore = function(chair) {
+    var notify = {
+      "cmd" : "updatePlayerScore",
+      "chair" : chair,
+      "score" : player[chair].score
+    }
+    local.sendAll(notify)
   }
 
   //房间初始化

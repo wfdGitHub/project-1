@@ -412,7 +412,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							"gameType" : params.gameType,
 							"gameNumber" : params.gameNumber,
 							"gameMode" : params.gameMode,
-							"cardMode" : params.cardMode
+							"cardMode" : params.cardMode,
+							"basic" : params.basic
 						}
 						// self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
 						GameRemote.niuniuService.setAgencyRoom(uid,agencyRoomInfo)

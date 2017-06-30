@@ -118,7 +118,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 		var agencyRoomInfo = {
 			"roomId" : roomId,
 			"state" : 2,
-			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber
+			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber,
 		}
 		if(flag == true){
 			agencyRoomInfo.state = 3
