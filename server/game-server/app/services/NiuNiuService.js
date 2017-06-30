@@ -2,7 +2,7 @@
 var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
-var ROOM_ALL_AMOUNT = 2000			   //总房间数量
+var ROOM_ALL_AMOUNT = 20000			   //总房间数量
 var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
 var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
