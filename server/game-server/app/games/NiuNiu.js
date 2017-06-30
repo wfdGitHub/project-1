@@ -692,6 +692,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         //console.log("banker : "+banker)
         player[banker].isBanker = true    
+        player[banker].bankerCount++
         //广播庄家信息
         var notify = {
           "cmd" : "banker",
@@ -834,7 +835,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       clearTimeout(timer)
       log("settlement")
       room.runCount++
-      player[banker].bankerCount++
       //房间重置
       gameState = GS_FREE
       for(var i = 0;i < GAME_PLAYER; i++){
