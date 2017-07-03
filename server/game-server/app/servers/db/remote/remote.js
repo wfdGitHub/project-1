@@ -1,3 +1,5 @@
+var httpConf = require("../../../conf/httpModule.js")
+
 module.exports = function(app) {
 	return new DBRemote(app);
 };
@@ -85,6 +87,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 		if(data != null){
 			//console.log("data : "+data)
 			//console.log('value :'+value)
+			var oldValue = value
 			value = parseInt(data) + parseInt(value)
 			//console.log('value :'+value)
 			if(value < 0){
@@ -98,7 +101,9 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					"cmd" : "updateDiamond",
 					"data" : value
 				}
-				DBRemote.app.rpc.connector.remote.sendByUid(null,uid,notify,function(){})						
+				DBRemote.app.rpc.connector.remote.sendByUid(null,uid,notify,function(){})		
+				//通知后台
+				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")				
 			}
 		}else{
 			if(cb){

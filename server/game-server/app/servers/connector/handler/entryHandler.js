@@ -1,7 +1,6 @@
 var async = require('async')
-var http = require('http')
 var userLoginLogger = require("pomelo-logger").getLogger("userLogin-log");
-var crypto = require('crypto');
+var httpConf = require("../../../conf/httpModule.js")
 var url = require("url")
 module.exports = function(app) {
   return new Handler(app)
@@ -268,7 +267,7 @@ handler.enter = function(msg, session, next) {
           uid: playerId,
           sid: "connector-server-1"
         }])
-        sendHttp(notify)
+        httpConf.sendLoginHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
       }
@@ -330,42 +329,6 @@ var onUserLeave = function(self, session) {
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
   self.app.rpc.game.remote.kick(session,session.uid,null)
 }
-
-
-var sendHttp = function(notify) {
-  notify.data["uid"] = notify.data["playerId"]
-  var data = {}
-
-  data.game_uid = notify.data.uid
-  data.open_id = notify.openId
-  data.union_id = notify.unionid
-  data.nickname = notify.data.nickname
-  data.head_img = notify.data.head
-  data.sum_play = 0
-  data.coin = notify.data.diamond
-  data.used_coin = 0
-
-  var keys = Object.keys(data).sort()
-  var string = ""
-  for(var i = 0;i < keys.length;i++){
-    string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
-  }
-  string += "key=niuniuyiyousecretkey"
-  data.sign = md5(string)
-  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
-
-  })
-  req.on("error",function(err){
-    console.log(err.message)
-  })
-  req.end()
-
-}
-
-function md5 (text) {
-  return crypto.createHash('md5').update(text).digest('hex');
-};
-
 
 
 var strReplace = function(str) {
