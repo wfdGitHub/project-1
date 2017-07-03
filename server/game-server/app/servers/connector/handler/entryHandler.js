@@ -369,6 +369,9 @@ function md5 (text) {
 
 
 var strReplace = function(str) {
+  if(!str){
+    return ""
+  }
   var strArr = str.split(""),
       result = "",
       totalLen = 0;
