@@ -665,20 +665,6 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       log("gameBegin")      
       room.gameNumber--
       betAmount = 0
-      if(room.gameMode == MODE_GAME_BULL){
-        //积分池小于人数则换庄
-        if(bonusPool < room.playerCount){
-          player[banker].score += bonusPool
-          local.updatePlayerScore(banker)
-            do{
-                banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false)
-            bonusPool = room.playerCount * 8
-            player[banker].score -= bonusPool
-            bankerTime = 0
-            log("banker change : "+banker)
-        }        
-      }
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
             betList[i] = 0;
@@ -716,6 +702,20 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           notify.bankerScore = player[banker].score
         }
         local.sendAll(notify)          
+      }
+      if(room.gameMode == MODE_GAME_BULL){
+        //积分池小于人数则换庄
+        if(bonusPool < room.playerCount){
+          player[banker].score += bonusPool
+          local.updatePlayerScore(banker)
+            do{
+                banker = (banker + 1)%GAME_PLAYER
+            }while(player[banker].isActive == false)
+            bonusPool = room.playerCount * 8
+            player[banker].score -= bonusPool
+            bankerTime = 0
+            log("banker change : "+banker)
+        }        
       }
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0

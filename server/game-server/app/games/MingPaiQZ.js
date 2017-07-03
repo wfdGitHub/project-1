@@ -34,6 +34,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var basic = 0                        //房间底分
     var actionFlag = true                //行动标志
     var lastScore = {}                   //上一局输赢
+    var allowAllin = true                //是否允许推注
     var betAmount = 0
     //游戏属性
     var cards = {}                       //牌组
@@ -126,6 +127,9 @@ var MING_CARD_NUM = 4               //明牌数量
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return        
+      }
+      if(!param.allowAllin || param.allowAllin == false){
+        allowAllin = false
       }
       //是否允许中途加入
       if(param.halfwayEnter === false){
@@ -559,6 +563,11 @@ var MING_CARD_NUM = 4               //明牌数量
               cb(false)
               return
             }
+            //本局游戏不允许推注不能推注
+            if(!allowAllin){
+              cb(false)
+              return
+            }
             //庄家不能下注
             if(chair == banker){
               cb(false)
@@ -575,8 +584,9 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             var tmpBet = basic + lastScore[chair]
-            if(tmpBet > 10){
-              tmpBet = 10
+            var maxBet = basic * 4
+            if(tmpBet > maxBet){
+              tmpBet = maxBet
             }
             betList[chair] += tmpBet
             local.betMessege(chair,tmpBet)
@@ -824,7 +834,7 @@ var MING_CARD_NUM = 4               //明牌数量
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
       //明牌模式所有人四张牌可见  暗牌自己四张牌可见
-      if(gameState < conf.GS_DEAL){
+      if(gameState !== conf.GS_DEAL && gameState !== conf.GS_SETTLEMENT){
         if(room.cardMode == conf.MODE_CARD_SHOW){
           for(var i = 0; i < GAME_PLAYER;i++){
               delete newPlayer[i].handCard[4]
@@ -858,7 +868,8 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
-        robState : robState
+        robState : robState,
+        allowAllin : allowAllin
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
