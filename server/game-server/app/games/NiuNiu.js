@@ -688,6 +688,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       }
       //斗牛模式更新积分池
       if(room.gameMode == MODE_GAME_BULL){
+
         var notify = {
           "cmd" : "bonusPool",
           "bonusPool" : bonusPool,
@@ -700,22 +701,26 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           notify.change = true
           notify.bonusPool = bonusPool
           notify.bankerScore = player[banker].score
-        }
-        local.sendAll(notify)          
-      }
-      if(room.gameMode == MODE_GAME_BULL){
-        //积分池小于人数则换庄
-        if(bonusPool < room.playerCount){
-          player[banker].score += bonusPool
-          local.updatePlayerScore(banker)
+        }else{
+          //积分池小于人数则换庄
+          if(bonusPool < room.playerCount){
+            player[banker].isBanker = false
+            player[banker].score += bonusPool
+            local.updatePlayerScore(banker)
             do{
                 banker = (banker + 1)%GAME_PLAYER
             }while(player[banker].isActive == false)
             bonusPool = room.playerCount * 8
             player[banker].score -= bonusPool
+            player[banker].isBanker = true
             bankerTime = 0
             log("banker change : "+banker)
-        }        
+            notify.change = true
+            notify.bonusPool = bonusPool
+            notify.bankerScore = player[banker].score
+          } 
+        }
+        local.sendAll(notify)          
       }
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
