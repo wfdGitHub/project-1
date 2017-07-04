@@ -8,6 +8,8 @@ var NiuNiu = require("../games/NiuNiu.js")
 var ZhaJinNiu = require("../games/ZhaJinNiu.js")
 var MingPaiQZ = require("../games/MingPaiQZ.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
+var streamLogger = require("pomelo-logger").getLogger("matchStream-log");
+var querystring = require('querystring')
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
 	"zhajinniu" : ZhaJinNiu,
@@ -32,7 +34,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 	var roomPlayerCount = 0
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
-			if(players[index].isActive){
+			if(players[index].isActive){		
                 roomPlayerCount++
                 delete NiuNiuService.userMap[players[index].uid]
 			}
@@ -112,6 +114,33 @@ var roomCallback = function(roomId,players,flag,cb) {
 	//记录日志
 	var info = "   Room finish   roomId  : "+ roomId
 	openRoomLogger.info(info)
+	//记录牌局流水
+	//记录流水日志
+	var streamData = {
+		"beginTime" : NiuNiuService.roomList[roomId].beginTime,
+		"endTime" : NiuNiuService.roomList[roomId].endTime,
+		"matchStream" : NiuNiuService.roomList[roomId].MatchStream,
+		"scores" : NiuNiuService.roomList[roomId].scores
+	}
+	info = "\r\n"
+	info += "roomId  "+roomId+" :\r\n"
+	info += "beginTime : "+streamData.beginTime + "     endTime : "+streamData.endTime+"\r\n"
+	info += "matchStream : \r\n"
+	for(var index in streamData.matchStream){
+		if(streamData.matchStream.hasOwnProperty(index)){
+			info += index + " : \r\n"+"players : \r\n"
+			for(var i in streamData.matchStream[index]){
+				if(streamData.matchStream[index].hasOwnProperty(i)){
+					info += "    uid : " + streamData.matchStream[index][i].uid +"   changeScore : "+streamData.matchStream[index][i].changeScore
+					+ " : "+JSON.stringify(streamData.matchStream[index][i].handCard)
+					+ " : "+JSON.stringify(streamData.matchStream[index][i].result)+" \r\n"
+				}
+			}
+		}
+	}
+	info += "scores : " + JSON.stringify(streamData.scores)
+	info += "\r\n\r\n"
+	streamLogger.info(info)
 	//更新代开房记录   state : 0 未结束   1 正在游戏中 2 已结束   3 已失效 
 	var agencyId = NiuNiuService.roomList[roomId].agencyId
 	if(agencyId){

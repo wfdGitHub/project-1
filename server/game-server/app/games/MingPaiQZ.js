@@ -17,6 +17,8 @@ var MING_CARD_NUM = 4               //明牌数量
     room.handle = {}   //玩家操作
     room.halfwayEnter = true             //允许中途加入
     room.agencyId = 0                    //代开房玩家ID 
+    room.beginTime = (new Date()).valueOf()
+    room.MatchStream = {}
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -698,6 +700,20 @@ var MING_CARD_NUM = 4               //明牌数量
           "player" : player
         }
         local.sendAll(notify)
+        //记录牌局流水
+        var stream = {}
+        for(var i = 0; i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+              stream[i] = {
+                "uid" : player[i].uid,
+                "result" : result[i],
+                "handCard" : player[i].handCard,
+                "changeScore" : curScores[i]
+              }
+          }
+        }
+        room.MatchStream[room.runCount] = stream
+
         //TODO 房间重置
         gameState = conf.GS_FREE
         for(var i = 0;i < GAME_PLAYER; i++){
@@ -719,6 +735,14 @@ var MING_CARD_NUM = 4               //明牌数量
         "player" : player
       }
       local.sendAll(notify)
+      room.endTime = (new Date()).valueOf()
+      var tmpscores = {}
+      for(var i = 0; i < GAME_PLAYER;i++){
+        if(player[i].isActive){
+          tmpscores[player[i].uid] = player[i].score
+        }
+      }
+      room.scores = tmpscores
       //结束游戏
       roomCallBack(room.roomId,player,flag,local.init)
     }

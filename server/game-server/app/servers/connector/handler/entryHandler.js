@@ -24,7 +24,9 @@ handler.getNotify = function(msg,session,next) {
       next(null,data)
   })
 }
-
+handler.getLoginFlag = function(msg,session,next) {
+  next(null,true)
+}
 //获取代开房记录
 handler.getAgencyRoom = function(msg,session,next) {
     var uid = session.get("uid")
