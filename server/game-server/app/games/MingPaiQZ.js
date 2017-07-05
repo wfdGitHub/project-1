@@ -15,6 +15,7 @@ var MING_CARD_NUM = 4               //明牌数量
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}   //玩家操作
+    room.gameMode = 2
     room.halfwayEnter = true             //允许中途加入
     room.agencyId = 0                    //代开房玩家ID 
     room.beginTime = (new Date()).valueOf()
@@ -57,7 +58,6 @@ var MING_CARD_NUM = 4               //明牌数量
    //房间初始化
     local.init = function() {
       //console.log("enter init=====================================")
-      room.gameMode = 0                    //游戏模式
       room.gameNumber = 0                  //游戏局数
       room.maxGameNumber = 0               //游戏最大局数
       room.consumeMode = 0                 //消耗模式
@@ -147,7 +147,6 @@ var MING_CARD_NUM = 4               //明牌数量
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
-      room.gameMode = param.gameMode                     //游戏模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式

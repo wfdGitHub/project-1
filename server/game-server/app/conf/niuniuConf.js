@@ -44,6 +44,7 @@ conf.GS_NONE 		 = 1099 			 //不可操作阶段
 
 //游戏模式
 conf.MODE_GAME_NORMAL = 1              //常规模式
+conf.MODE_GAME_MING   = 2 			   //明牌抢庄
 conf.MODE_GAME_BULL   = 3              //斗公牛模式
 conf.MODE_GAME_SHIP   = 4              //开船模式
 conf.MODE_GAME_ZHAJINNIU = 5		   //炸金牛
