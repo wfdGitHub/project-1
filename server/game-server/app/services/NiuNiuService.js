@@ -10,6 +10,7 @@ var MingPaiQZ = require("../games/MingPaiQZ.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 var streamLogger = require("pomelo-logger").getLogger("matchStream-log");
 var querystring = require('querystring')
+var httpConf = require("../conf/httpModule.js")
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
 	"zhajinniu" : ZhaJinNiu,
@@ -121,7 +122,9 @@ var roomCallback = function(roomId,players,flag,cb) {
 			"endTime" : NiuNiuService.roomList[roomId].endTime,
 			"matchStream" : NiuNiuService.roomList[roomId].MatchStream,
 			"scores" : NiuNiuService.roomList[roomId].scores,
-			"gameMode" : NiuNiuService.roomList[roomId].gameMode
+			"gameMode" : NiuNiuService.roomList[roomId].gameMode,
+			"roomId" : roomId,
+			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
@@ -142,11 +145,8 @@ var roomCallback = function(roomId,players,flag,cb) {
 		info += "scores : " + JSON.stringify(streamData.scores)
 		info += "\r\n\r\n"
 		streamLogger.info(info)
-		delete streamData.matchStream
-		//streamData.scores = querystring.stringify(streamData.scores)
-		var httpurl = JSON.stringify(streamData)
-		console.log(httpurl)
-		console.log("length : "+httpurl.length)
+		//向后台发送当局数据
+		httpConf.sendGameOver(streamData)
 	}
 
 
