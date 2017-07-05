@@ -211,6 +211,10 @@ handler.enter = function(msg, session, next) {
       function(result,cb){
         //console.log(result)
         userId = result.unionid
+        if(!userId){
+          next(null,{"flag" : false , "code" : -300})
+          return
+        }
         result.nickname = strReplace(result.nickname)
         self.app.rpc.db.remote.check(session,result,function(flag){
             cb(null)
