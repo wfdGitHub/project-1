@@ -68,19 +68,9 @@ module.exports.sendGameOver = function(data) {
     string += "key=niuniuyiyousecretkey"
     data.sign = md5(string)    
     data = JSON.stringify(data)
-    console.log('http://pay.5d8d.com/niu_admin.php/api/gameResultDetail?data='+data)
+
     var req=http.request('http://pay.5d8d.com/niu_admin.php/api/gameResultDetail?data='+data,function(res){
-      var data1  = ""
-      res.on("data",function(chunk){
-          console.log("111111")
-          data1 += chunk
-          console.log(JSON.parse(chunk))
-      });
-      res.on("end",function(){
-          console.log("发送完毕！");
-          console.log(data1)
-      });
-      console.log(res.statusCode);
+
     })
     req.on("error",function(err){
       console.log(err.message)
