@@ -124,16 +124,42 @@
         });          
       }
       var vlogin = function(uid) {
+        queryEntry(uid,function(host, port) {
+          pomelo.init({
+            host: host,
+            port: port,
+            log: true
+          }, function() {
+            var route = "connector.entryHandler.visitorEnter";
+            pomelo.request(route,{"uid" : uid}, function(data) {
+              if(data.error) {
+                console.log(data)
+                return;
+              }
+            });
+          });
+        });        
+      }
+      // query connector
+      var queryEntry = function(uid,callback) {
+        var route = 'gate.gateHandler.queryEntry';
         pomelo.init({
-          host: host,
-          port: port,
+          host: "127.0.0.1",
+          port: 3900,
           log: true
         }, function() {
-          pomelo.request("connector.entryHandler.visitorEnter", {"uid" : uid}, function(data) {
-
+          pomelo.request(route, {
+            uid: uid
+          }, function(data) {
+            pomelo.disconnect();
+            if(data.code === 500) {
+              console.log(data)
+              return;
+            }
+            callback(data.host, data.port);
           });
-        });          
-      }
+        });
+      };
       var test = function() {
           pomelo.request("connector.entryHandler.test",null,null);
       }

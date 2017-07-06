@@ -1,24 +1,9 @@
 {
   "development":{
     "connector": [
-    {"id": "connector-server-1", "host": "127.0.0.1", "port": 3150, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true,"args": " --debug=32312 "}
-    ],
-    "login":[
-      {"id":"login-server","host":"127.0.0.1","port":3160,"args": " --debug=32313 "}
-    ],
-    "game":[
-      {"id":"game-server","host":"127.0.0.1","port":3210,"args": " --debug=32314 "}
-    ],
-    "db":[
-      {"id":"db-server","host":"127.0.0.1","port":3250,"args": " --debug=32315 "}
-    ],
-    "monitor":[
-      {"id" : "monitor-server","host":"127.0.0.1","port":3290}
-    ]    
-  },
-  "production":{
-    "connector": [
-    {"id": "connector-server-1", "host": "127.0.0.1", "port": 3150, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true}
+      {"id": "connector-server-1", "host": "127.0.0.1", "port": 3150, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true},
+      {"id": "connector-server-2", "host": "127.0.0.1", "port": 3151, "clientHost": "127.0.0.1", "clientPort": 3011, "frontend": true},
+      {"id": "connector-server-3", "host": "127.0.0.1", "port": 3152, "clientHost": "127.0.0.1", "clientPort": 3012, "frontend": true}
     ],
     "login":[
       {"id":"login-server","host":"127.0.0.1","port":3160}
@@ -31,7 +16,31 @@
     ],
     "monitor":[
       {"id" : "monitor-server","host":"127.0.0.1","port":3290}
-    ]
+    ],
+    "gate":[
+       {"id": "gate-server-1", "host": "127.0.0.1", "port": 3850, "clientHost": "127.0.0.1", "clientPort": 3900, "frontend": true}
+    ]        
+  },
+  "production":{ 
+    "connector": [
+      {"id": "connector-server-1", "host": "127.0.0.1", "port": 3150, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true},
+      {"id": "connector-server-2", "host": "127.0.0.1", "port": 3151, "clientHost": "127.0.0.1", "clientPort": 3011, "frontend": true},
+      {"id": "connector-server-3", "host": "127.0.0.1", "port": 3152, "clientHost": "127.0.0.1", "clientPort": 3012, "frontend": true}
+    ],
+    "login":[
+      {"id":"login-server","host":"127.0.0.1","port":3160}
+    ],
+    "game":[
+      {"id":"game-server","host":"127.0.0.1","port":3210}
+    ],
+    "db":[
+      {"id":"db-server","host":"127.0.0.1","port":3250}
+    ],
+    "monitor":[
+      {"id" : "monitor-server","host":"127.0.0.1","port":3290}
+    ],
+    "gate":[
+       {"id": "gate-server-1", "host": "127.0.0.1", "port": 3850, "clientHost": "127.0.0.1", "clientPort": 3900, "frontend": true}
+    ]  
   }
-
 }

@@ -147,7 +147,7 @@ handler.visitorEnter = function(msg, session, next) {
         }
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
-          sid: "connector-server-1"
+          sid: self.app.get('serverId')
         }])
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)        
@@ -271,7 +271,7 @@ handler.enter = function(msg, session, next) {
         }
         self.channelService.pushMessageByUids('onMessage', notify, [{
           uid: playerId,
-          sid: "connector-server-1"
+          sid: self.app.get('serverId')
         }])
         httpConf.sendLoginHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")

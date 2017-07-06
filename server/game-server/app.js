@@ -16,7 +16,16 @@ app.configure('production|development', 'connector', function(){
       useProtobuf : true
     });
 });
-
+app.configure('production|development', 'gate', function(){
+  app.set('connectorConfig',
+    {
+      connector : pomelo.connectors.hybridconnector,
+      heartbeat : 10,
+      disconnectOnTimeout: true,
+      useDict : true,
+      useProtobuf : true
+    });
+});
 //加载NiuNiuService
 app.configure('production|development', 'game', function() {
   app.load(NiuNiuService(app))
