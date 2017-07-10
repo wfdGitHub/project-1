@@ -100,7 +100,6 @@ var roomCallback = function(roomId,players,flag,cb) {
 						"score" : players[index].score
 					}
 				}
-			
 			}	
 		}	
 		for(var index in players){
@@ -124,7 +123,10 @@ var roomCallback = function(roomId,players,flag,cb) {
 			"scores" : NiuNiuService.roomList[roomId].scores,
 			"gameMode" : NiuNiuService.roomList[roomId].gameMode,
 			"roomId" : roomId,
-			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber
+			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber,
+			"cardMode" : NiuNiuService.roomList[roomId].cardMode,
+			"consumeMode" : NiuNiuService.roomList[roomId].consumeMode,
+			"basic" : NiuNiuService.roomList[roomId].basic
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
