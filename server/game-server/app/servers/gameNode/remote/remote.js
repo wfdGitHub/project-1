@@ -14,6 +14,18 @@ var GameRemote = function(app) {
 
 GameRemote.roomList = {};
 
+//新建房间
 GameRemote.newRoom = function(argument) {
+	
+}
+
+//加入房间
+GameRemote.join = function(argument) {
+	
+}
+
+
+//结束房间
+GameRemote.finishRoom = function(argument) {
 	
 }

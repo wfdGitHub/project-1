@@ -19,7 +19,12 @@
     ],
     "gate":[
        {"id": "gate-server-1", "host": "127.0.0.1", "port": 3850, "clientHost": "127.0.0.1", "clientPort": 3900, "frontend": true}
-    ]        
+    ],
+    "gameNode":[
+       {"id": "game-node-server-1", "host": "127.0.0.1", "port": 3901},
+       {"id": "game-node-server-2", "host": "127.0.0.1", "port": 3902},
+       {"id": "game-node-server-3", "host": "127.0.0.1", "port": 3903}
+    ]          
   },
   "production":{ 
     "connector": [
@@ -41,6 +46,11 @@
     ],
     "gate":[
        {"id": "gate-server-1", "host": "127.0.0.1", "port": 3850, "clientHost": "127.0.0.1", "clientPort": 3900, "frontend": true}
-    ]  
+    ],
+    "gameNode":[
+       {"id": "game-node-server-1", "host": "127.0.0.1", "port": 3901},
+       {"id": "game-node-server-2", "host": "127.0.0.1", "port": 3902},
+       {"id": "game-node-server-3", "host": "127.0.0.1", "port": 3903}
+    ]   
   }
 }
