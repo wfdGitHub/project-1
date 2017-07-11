@@ -126,4 +126,109 @@ module.exports.compare = function(result1,result2) {
     }
     return false
 }
+
+
+//换牌
+module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
+  var tmpResult = {}
+  tmpResult = module.exports.getType(handCard)
+  if(flag == true){
+    //换好牌
+    console.log("good tmpResult111 : ")
+    console.log(tmpResult)
+    var value = 7
+    var tmpRand = Math.random()
+    var times = 10
+    if(tmpRand < 0.4){
+      value = 8
+      times = 20
+    }else if(tmpRand < 0.1){
+      value = 9
+      times = 40
+    }
+    if(tmpResult.type < value){
+      for(var z = 0;z < 5;z++){
+        cards[endCount++] = deepCopy(handCard[z])
+      }
+      var randTimes = 0
+      var dealFlag = false
+      do{
+        randTimes++
+        dealFlag = false
+        //洗牌
+        for(var i = 0;i < endCount;i++){
+          var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
+          var tmpCard = cards[i]
+          cards[i] = cards[tmpIndex]
+          cards[tmpIndex] = tmpCard
+        }
+        //发牌
+        for(var i = 0; i < 5; i++){
+          handCard[i] = cards[endCount - 5 + i]
+        }
+        tmpResult = module.exports.getType(handCard)
+        console.log("tmpResult222 : ")
+        console.log(tmpResult)
+        if(tmpResult.type < value){
+          dealFlag = true
+        }
+      }while(dealFlag && randTimes < times)      
+    }
+    console.log("handCard : ")
+    console.log(handCard)
+  }else{
+    //换差牌
+    console.log("bad tmpResult111 : ")
+    console.log(tmpResult)
+    var value = 6
+    var tmpRand = Math.random()
+    var times = 3
+    if(tmpRand < 0.4){
+      value = 5
+      times = 4
+    }else if(tmpRand < 0.1){
+      value = 4
+      times = 5
+    }
+    if(tmpResult.type > value){
+      for(var z = 0;z < 5;z++){
+        cards[endCount++] = deepCopy(handCard[z])
+      }
+      var randTimes = 0
+      var dealFlag = false
+      do{
+        randTimes++
+        dealFlag = false
+        //洗牌
+        for(var i = 0;i < endCount;i++){
+          var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
+          var tmpCard = cards[i]
+          cards[i] = cards[tmpIndex]
+          cards[tmpIndex] = tmpCard
+        }
+        //发牌
+        for(var i = 0; i < 5; i++){
+          handCard[i] = cards[endCount - 5 + i]
+        }
+        tmpResult = module.exports.getType(handCard)
+        console.log("tmpResult222 : ")
+        console.log(tmpResult)
+        if(tmpResult.type > value){
+          dealFlag = true
+        }
+      }while(dealFlag && randTimes < times)      
+    }
+    console.log("handCard : ")
+    console.log(handCard)    
+  }
+}
+
+var deepCopy = function(source) { 
+  var result={}
+  for (var key in source) {
+        result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
+     } 
+  return result;
+}
+
  return module

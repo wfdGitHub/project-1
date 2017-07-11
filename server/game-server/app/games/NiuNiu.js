@@ -724,6 +724,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         local.sendAll(notify)          
       }
+      var index = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
       do{
@@ -737,7 +738,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         }
         //发牌
         var result = {}
-        var index = 0;
+        index = 0
         var tmpAllCount = 0     //总玩家数
         var tmpTypeCount = 0    //牌型权重 
         
@@ -758,6 +759,62 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             dealFlag = true
         }
       }while(dealFlag && randTimes < conf.ROUND_TIMES)
+
+      //找出剩余牌
+      var tmpCards = {}
+      var tmpCardCount = 0
+      for(var i = index;i < cardCount;i++){
+        tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      }
+
+      console.log("============1")
+      console.log(tmpCards)
+      console.log("============1")
+      //执行控制   
+      //先计算每个人的运气值   -1 到 1之间     
+      var luckyValue = {}
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            luckyValue[i] = player[i].score / 400
+            if(luckyValue[i] > 1){
+              luckyValue[i] = 1
+            }else if(luckyValue[i] < -1){
+              luckyValue[i] = -1
+            }
+
+            luckyValue[i] = luckyValue[i] * 0.65
+          }
+      }
+      //斗公牛模式庄家积分应加上积分池
+      if(room.gameMode == MODE_GAME_BULL){
+        luckyValue[banker] = (player[banker].score + bonusPool) / 400
+        if(luckyValue[banker] > 1){
+          luckyValue[banker] = 1
+        }else if(luckyValue[banker] < -1){
+          luckyValue[banker] = -1
+        }
+        luckyValue[banker] = luckyValue[banker] * 0.65
+      }
+      console.log("luckyValue : ")
+      console.log(luckyValue)
+      //运气值低的先执行控制 
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+              if(luckyValue[i] < 0){
+                if(Math.random() < -luckyValue[i]  || true){
+                  //换好牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                     console.log(tmpCards)
+                }
+              }else if(luckyValue[i] > 0){
+                if(Math.random() < luckyValue[i]  || true){
+                  //换差牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                     console.log(tmpCards)
+                }
+              }
+          }
+      }
 
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
