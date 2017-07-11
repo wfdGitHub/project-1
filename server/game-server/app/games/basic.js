@@ -264,24 +264,28 @@ var MING_CARD_NUM = 3               //明牌数量
     }
     //游戏开始
     local.gameBegin = function(argument) {
-        log("gameBegin") 
-        gameState = conf.GS_GAMEING     
-        room.gameNumber--
-        //重置下注信息
-        for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isReady){
-              betList[i] = basic;
-              player[i].isShowCard = false    
-            }
-        }
-        var notify = {
-          "cmd" : "gameBegin",
-          "betList" : betList
-        }
-        local.sendAll(notify)
-
+      log("gameBegin") 
+      gameState = conf.GS_GAMEING     
+      room.gameNumber--
+      //重置下注信息
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isReady){
+            betList[i] = 0
+            player[i].isShowCard = false    
+          }
+      }
+      betAmount = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
+      var index = 0;
+      //换一副新牌
+      cards = {}                       //牌组
+      cardCount = 0                    //卡牌剩余数量
+      for(var i = 1;i <= 13;i++){
+        for(var j = 0;j < 4;j++){
+          cards[cardCount++] = {num : i,type : j}
+        }
+      }
       do{
         randTimes++
         //洗牌
@@ -293,7 +297,7 @@ var MING_CARD_NUM = 3               //明牌数量
         }
         //发牌
         var tmpResult = {}
-        var index = 0;
+        index = 0
         var tmpAllCount = 0     //总玩家数
         var tmpTypeCount = 0    //牌型权重 
 
@@ -313,6 +317,49 @@ var MING_CARD_NUM = 3               //明牌数量
             dealFlag = true
         }
       }while(dealFlag && randTimes < conf.ROUND_TIMES)
+      //找出剩余牌
+      var tmpCards = {}
+      var tmpCardCount = 0
+      for(var i = index;i < cardCount;i++){
+        tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      }
+
+      console.log("============1")
+      console.log(tmpCards)
+      console.log("============1")
+      //执行控制   
+      //先计算每个人的运气值   -1 到 1之间     
+      var luckyValue = {}
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            luckyValue[i] = player[i].score / 400
+            if(luckyValue[i] > 1){
+              luckyValue[i] = 1
+            }else if(luckyValue[i] < -1){
+              luckyValue[i] = -1
+            }
+
+            luckyValue[i] = luckyValue[i] * 0.65
+          }
+      }
+      console.log("luckyValue : ")
+      console.log(luckyValue)
+      //运气值低的先执行控制 
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+              if(luckyValue[i] < 0){
+                if(Math.random() < -luckyValue[i]  || true){
+                  //换好牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                }
+              }else if(luckyValue[i] > 0){
+                if(Math.random() < luckyValue[i]  || true){
+                  //换差牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                }
+              }
+          }
+      }
 
 
       //记录参与游戏人数
