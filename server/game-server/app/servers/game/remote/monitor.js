@@ -4,19 +4,19 @@ module.exports = function(app) {
 
 var Remote = function(app) {
 	this.app = app;
-	Remote.niuniuService = this.app.get("NiuNiuService")
+	Remote.GameService = this.app.get("GameService")
 };
 var remote = Remote.prototype
 
 remote.roomInfos = function(cb) {
 	var roomList = new Array()
-	for(var index in Remote.niuniuService.roomState){
-		if(Remote.niuniuService.roomState.hasOwnProperty(index)){
-			if(Remote.niuniuService.roomState[index] === false){
+	for(var index in Remote.GameService.roomState){
+		if(Remote.GameService.roomState.hasOwnProperty(index)){
+			if(Remote.GameService.roomState[index] === false){
 				var roomInfo = {
 					"roomId" : index,
-					"roomType" : Remote.niuniuService.roomList[index].roomType,
-					"roomPlayer" : Remote.niuniuService.roomList[index].chairMap
+					"roomType" : Remote.GameService.roomList[index].roomType,
+					"roomPlayer" : Remote.GameService.roomList[index].chairMap
 				}
 				roomList.push(roomInfo)
 			}
@@ -26,16 +26,16 @@ remote.roomInfos = function(cb) {
 }
 
 remote.getAgencyList = function(cb) {
-	var data = Remote.niuniuService.agencyList
+	var data = Remote.GameService.agencyList
 	if(cb){
 		cb(data)		
 	}
 }
 
 remote.finishRoom = function(roomId,cb) {
-	if(Remote.niuniuService.roomState[roomId] === false){
-		if(Remote.niuniuService.roomList[roomId].finishGame){
-			Remote.niuniuService.roomList[roomId].finishGame(true)
+	if(Remote.GameService.roomState[roomId] === false){
+		if(Remote.GameService.roomList[roomId].finishGame){
+			Remote.GameService.roomList[roomId].finishGame(true)
 		}
 	}
 	cb(true)
@@ -43,16 +43,16 @@ remote.finishRoom = function(roomId,cb) {
 
 remote.finishAllRoom = function(cb) {
 	var roomList = new Array()
-	for(var index in Remote.niuniuService.roomState){
-		if(Remote.niuniuService.roomState.hasOwnProperty(index)){
-			if(Remote.niuniuService.roomState[index] === false){
+	for(var index in Remote.GameService.roomState){
+		if(Remote.GameService.roomState.hasOwnProperty(index)){
+			if(Remote.GameService.roomState[index] === false){
 				var roomInfo = {
 					"roomId" : index,
-					"roomType" : Remote.niuniuService.roomList[index].roomType,
-					"roomPlayer" : Remote.niuniuService.roomList[index].chairMap
+					"roomType" : Remote.GameService.roomList[index].roomType,
+					"roomPlayer" : Remote.GameService.roomList[index].chairMap
 				}
 				roomList.push(roomInfo)
-				Remote.niuniuService.roomList[index].finishGame(true)
+				Remote.GameService.roomList[index].finishGame(true)
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 var pomelo = require('pomelo');
-var NiuNiuService = require("./app/services/NiuNiuService.js")
+var GameService = require("./app/services/GameService.js")
 var dbService = require("./app/services/dbService.js")
 /**
  * Init app for client.
@@ -26,9 +26,9 @@ app.configure('production|development', 'gate', function(){
       useProtobuf : true
     });
 });
-//加载NiuNiuService
+//加载GameService
 app.configure('production|development', 'game', function() {
-  app.load(NiuNiuService(app))
+  app.load(GameService(app))
 });
 //加载dbService
 app.configure('production|development', 'db', function() {

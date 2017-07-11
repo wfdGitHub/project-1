@@ -17,45 +17,45 @@ var ROOM_FACTORY = {
 	"mingpaiqz" : MingPaiQZ
 }
 module.exports = function(app) {
-  return new NiuNiuService(app);
+  return new GameService(app);
 };
 
-var NiuNiuService = function(app) {
+var GameService = function(app) {
 	this.app = app
-	NiuNiuService.app = app
+	GameService.app = app
 }
-NiuNiuService.name = "NiuNiuService"
+GameService.name = "GameService"
 //房间回调 flag为true代表房间自动解散、否则为正常结束
 var roomCallback = function(roomId,players,flag,cb) {
 	//console.log("room end : "+ roomId)
-	//console.log("diamond mode : "+NiuNiuService.roomList[roomId].consumeMode)
+	//console.log("diamond mode : "+GameService.roomList[roomId].consumeMode)
 	//取消房间生存定时器
-	clearTimeout(NiuNiuService.liveTimer[roomId])
+	clearTimeout(GameService.liveTimer[roomId])
 	//将玩家从房间中解锁
 	var roomPlayerCount = 0
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
 			if(players[index].isActive){		
                 roomPlayerCount++
-                delete NiuNiuService.userMap[players[index].uid]
+                delete GameService.userMap[players[index].uid]
 			}
 		}
 	}	
 	//扣除钻石
-	var diamond = NiuNiuService.roomList[roomId].needDiamond
+	var diamond = GameService.roomList[roomId].needDiamond
 	var GAME_PLAYER = roomPlayerCount
 	//console.log("diamond : "+diamond)
 	//console.log("GAME_PLAYER : "+GAME_PLAYER)
 	if(diamond !== 0){
-		switch(NiuNiuService.roomList[roomId].consumeMode){
+		switch(GameService.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 
-				NiuNiuService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * 3),null)
+				GameService.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * 3),null)
 				break;
 			case MODE_DIAMOND_EVERY: 
 				for(var index in players){
 					if(players.hasOwnProperty(index)){
                         if(players[index].isActive){
-                            NiuNiuService.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+                            GameService.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
                         }
 					}
 				}			
@@ -73,11 +73,11 @@ var roomCallback = function(roomId,players,flag,cb) {
 						}
 					}
 				}
-				NiuNiuService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
+				GameService.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
 				break;		
 		}		
 	}
-	if(NiuNiuService.roomList[roomId].isRecord == true){
+	if(GameService.roomList[roomId].isRecord == true){
 		//记录战绩 
 		var date = new Date()
 		var record = {}
@@ -105,7 +105,7 @@ var roomCallback = function(roomId,players,flag,cb) {
 		for(var index in players){
 			if(players.hasOwnProperty(index)){
 				if(players[index].isActive){
-					NiuNiuService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)
+					GameService.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)
 				}
 			
 			}	
@@ -117,16 +117,16 @@ var roomCallback = function(roomId,players,flag,cb) {
 		//记录牌局流水
 		//记录流水日志
 		var streamData = {
-			"beginTime" : NiuNiuService.roomList[roomId].beginTime,
-			"endTime" : NiuNiuService.roomList[roomId].endTime,
-			"matchStream" : NiuNiuService.roomList[roomId].MatchStream,
-			"scores" : NiuNiuService.roomList[roomId].scores,
-			"gameMode" : NiuNiuService.roomList[roomId].gameMode,
+			"beginTime" : GameService.roomList[roomId].beginTime,
+			"endTime" : GameService.roomList[roomId].endTime,
+			"matchStream" : GameService.roomList[roomId].MatchStream,
+			"scores" : GameService.roomList[roomId].scores,
+			"gameMode" : GameService.roomList[roomId].gameMode,
 			"roomId" : roomId,
-			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber,
-			"cardMode" : NiuNiuService.roomList[roomId].cardMode,
-			"consumeMode" : NiuNiuService.roomList[roomId].consumeMode,
-			"basic" : NiuNiuService.roomList[roomId].basic
+			"gameNumber" : GameService.roomList[roomId].maxGameNumber,
+			"cardMode" : GameService.roomList[roomId].cardMode,
+			"consumeMode" : GameService.roomList[roomId].consumeMode,
+			"basic" : GameService.roomList[roomId].basic
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
@@ -154,12 +154,12 @@ var roomCallback = function(roomId,players,flag,cb) {
 
 
 	//更新代开房记录   state : 0 未结束   1 正在游戏中 2 已结束   3 已失效 
-	var agencyId = NiuNiuService.roomList[roomId].agencyId
+	var agencyId = GameService.roomList[roomId].agencyId
 	if(agencyId){
 		var agencyRoomInfo = {
 			"roomId" : roomId,
 			"state" : 2,
-			"gameNumber" : NiuNiuService.roomList[roomId].maxGameNumber,
+			"gameNumber" : GameService.roomList[roomId].maxGameNumber,
 		}
 		if(flag == true){
 			agencyRoomInfo.state = 3
@@ -178,55 +178,55 @@ var roomCallback = function(roomId,players,flag,cb) {
 			}
 			agencyRoomInfo.player = agencyPlayer
 		}
-		NiuNiuService.updateAgencyRoom(agencyId,agencyRoomInfo)
+		GameService.updateAgencyRoom(agencyId,agencyRoomInfo)
 
 		//房间未开始游戏则返回钻石
-		if(!NiuNiuService.roomList[roomId].isBegin()){
-			var tmpDiamond = Math.ceil(NiuNiuService.roomList[roomId].maxGameNumber / 10) * 3
-			NiuNiuService.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
+		if(!GameService.roomList[roomId].isBegin()){
+			var tmpDiamond = Math.ceil(GameService.roomList[roomId].maxGameNumber / 10) * 3
+			GameService.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 		}
 	}
 
 	//删除房间
-	NiuNiuService.roomState[roomId] = true
-	NiuNiuService.roomList[roomId] = false
+	GameService.roomState[roomId] = true
+	GameService.roomList[roomId] = false
 
 	cb()
 }
 //房间列表
-NiuNiuService.roomList = {};
+GameService.roomList = {};
 //房间状态
-NiuNiuService.roomState = {};
+GameService.roomState = {};
 //用户房间映射表
-NiuNiuService.userMap = {}		
+GameService.userMap = {}		
 //房间锁定状态   用户请求解散房间会锁定房间
-NiuNiuService.roomLock = {}
+GameService.roomLock = {}
 //玩家相应解散状态
-NiuNiuService.lockState = {}
+GameService.lockState = {}
 //解散请求计时器
-NiuNiuService.lockTimer = {}
+GameService.lockTimer = {}
 //房间生存计时器(时间到后自动解散房间)
-NiuNiuService.liveTimer = {}
+GameService.liveTimer = {}
 //代开房数据
-NiuNiuService.agencyList = {}
+GameService.agencyList = {}
 
-NiuNiuService.prototype.start = function(cb) {
+GameService.prototype.start = function(cb) {
 	//初始化房间
-	NiuNiuService.channelService = this.app.get('channelService');
+	GameService.channelService = this.app.get('channelService');
 
 	for(var i = ROOM_BEGIN_INDEX;i < ROOM_ALL_AMOUNT + ROOM_BEGIN_INDEX;i++){
-		NiuNiuService.roomState[i] = true
-		NiuNiuService.roomList[i] = false
-		NiuNiuService.roomLock[i] = true
-		NiuNiuService.lockState[i] = {}
+		GameService.roomState[i] = true
+		GameService.roomList[i] = false
+		GameService.roomLock[i] = true
+		GameService.lockState[i] = {}
 	}
 
-	this.app.set("NiuNiuService",NiuNiuService)
+	this.app.set("GameService",GameService)
 	cb()
 }
 
 //分配房间号
-NiuNiuService.getUnusedRoom = function(roomType) {
+GameService.getUnusedRoom = function(roomType) {
 	if(!ROOM_FACTORY[roomType]){
 		return false
 	}
@@ -234,9 +234,9 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 	var roomId = Math.floor((Math.random() * ROOM_ALL_AMOUNT))
 	for(var i = roomId;i < ROOM_ALL_AMOUNT + roomId;i++){
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
-		if(NiuNiuService.roomState[index] == true){
-			NiuNiuService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,NiuNiuService.channelService,roomCallback)
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),8 * 60 * 60 * 1000)
+		if(GameService.roomState[index] == true){
+			GameService.roomList[index] = ROOM_FACTORY[roomType].createRoom(index,GameService.channelService,roomCallback)
+			GameService.liveTimer[index] = setTimeout(finishGameOfTimer(index),8 * 60 * 60 * 1000)
 			return index
 		}
 	}
@@ -245,22 +245,22 @@ NiuNiuService.getUnusedRoom = function(roomType) {
 
 var finishGameOfTimer = function(index) {
 	return function() {
-		if(NiuNiuService.roomList[index].isFree()){
+		if(GameService.roomList[index].isFree()){
 			//房间空闲则解散
 			//记录日志
 			var info = "finishGameOfTimer   Room finish   roomId  : "+ index
 			openRoomLogger.info(info)
-			NiuNiuService.roomList[index].finishGame(true)
+			GameService.roomList[index].finishGame(true)
 		}else{
 			//正在游戏中则过一段时间后再次发起再次解散
-			NiuNiuService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
+			GameService.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
 		}
 	}
 }
 
 
-NiuNiuService.setAgencyRoom = function(uid,agencyRoom) {
-	var  agencyInfo = NiuNiuService.agencyList[uid]
+GameService.setAgencyRoom = function(uid,agencyRoom) {
+	var  agencyInfo = GameService.agencyList[uid]
 	if(!agencyInfo){
 		agencyInfo = {}
 		agencyInfo.List = {}
@@ -271,24 +271,24 @@ NiuNiuService.setAgencyRoom = function(uid,agencyRoom) {
 		}
 	}	
 	agencyInfo.List[0] = agencyRoom
-	NiuNiuService.agencyList[uid] = agencyInfo
+	GameService.agencyList[uid] = agencyInfo
 }
 
-NiuNiuService.updateAgencyRoom = function(agencyId,agencyRoom) {
-	var agencyInfo = NiuNiuService.agencyList[agencyId]
+GameService.updateAgencyRoom = function(agencyId,agencyRoom) {
+	var agencyInfo = GameService.agencyList[agencyId]
 		for(var i = 9;i >= 0;i--){
 			if(agencyInfo.List[i]){
 				//找到并修改代开房记录
 				if(agencyInfo.List[i].roomId === agencyRoom.roomId){
 					agencyInfo.List[i] = agencyRoom
-					NiuNiuService.agencyList[agencyId] = agencyInfo
+					GameService.agencyList[agencyId] = agencyInfo
 					return
 				}
 			}
 		}
 }
 
-NiuNiuService.getAgencyRoom = function(agencyId) {
-	var agencyInfo = NiuNiuService.agencyList[agencyId]
+GameService.getAgencyRoom = function(agencyId) {
+	var agencyInfo = GameService.agencyList[agencyId]
 	return agencyInfo
 }
