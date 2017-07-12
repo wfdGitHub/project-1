@@ -3,7 +3,7 @@ var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var freeFrame = require("freeFrame.js")
+var freeFrame = require("./freeFrame.js")
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);

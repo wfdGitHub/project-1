@@ -1,6 +1,6 @@
 //解散房间
 var frame = module.exports
-
+var local = {}
 var GameService
 //设置GameService
 frame.start = function(GameService) {
