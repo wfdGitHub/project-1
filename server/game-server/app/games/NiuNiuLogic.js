@@ -134,17 +134,15 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
   tmpResult = module.exports.getType(handCard)
   if(flag == true){
     //换好牌
-    console.log("good tmpResult111 : ")
-    console.log(tmpResult)
-    var value = 7
+    var value = 6
     var tmpRand = Math.random()
-    var times = 10
+    var times = 5
     if(tmpRand < 0.4){
+      value = 7
+      times = 10
+    }else if(tmpRand < 0.1){
       value = 8
       times = 20
-    }else if(tmpRand < 0.1){
-      value = 9
-      times = 40
     }
     if(tmpResult.type < value){
       for(var z = 0;z < 5;z++){
@@ -167,27 +165,21 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
           handCard[i] = cards[endCount - 5 + i]
         }
         tmpResult = module.exports.getType(handCard)
-        console.log("tmpResult222 : ")
-        console.log(tmpResult)
         if(tmpResult.type < value){
           dealFlag = true
         }
       }while(dealFlag && randTimes < times)      
     }
-    console.log("handCard : ")
-    console.log(handCard)
   }else{
     //换差牌
-    console.log("bad tmpResult111 : ")
-    console.log(tmpResult)
-    var value = 6
+    var value = 5
     var tmpRand = Math.random()
     var times = 3
     if(tmpRand < 0.4){
-      value = 5
+      value = 4
       times = 4
     }else if(tmpRand < 0.1){
-      value = 4
+      value = 3
       times = 5
     }
     if(tmpResult.type > value){
@@ -211,15 +203,11 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
           handCard[i] = cards[endCount - 5 + i]
         }
         tmpResult = module.exports.getType(handCard)
-        console.log("tmpResult222 : ")
-        console.log(tmpResult)
         if(tmpResult.type > value){
           dealFlag = true
         }
       }while(dealFlag && randTimes < times)      
-    }
-    console.log("handCard : ")
-    console.log(handCard)    
+    } 
   }
 }
 
