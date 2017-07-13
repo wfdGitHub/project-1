@@ -147,7 +147,7 @@ var MING_CARD_NUM = 3               //明牌数量
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
-      room.gameNumber = param.gameNumber                 //游戏局数
+      room.gameNumber = 2                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式
@@ -639,6 +639,7 @@ var MING_CARD_NUM = 3               //明牌数量
           actionFlag = true
           clearTimeout(timer)
           local.nextCurPlayer()
+          cb(true)
           return
         case "giveUp":
           if(curPlayer !== chair){
@@ -656,7 +657,8 @@ var MING_CARD_NUM = 3               //明牌数量
           }else{
             //TODO 游戏结束
             local.settlement()
-          }          
+          } 
+          cb(true)         
           return
         case "compare" :
           //比牌
@@ -737,8 +739,9 @@ var MING_CARD_NUM = 3               //明牌数量
           }else{
             //TODO 游戏结束
             local.settlement()
-          }          
-          break
+          }     
+          cb(true)     
+          return
       }
 
       cb(true)

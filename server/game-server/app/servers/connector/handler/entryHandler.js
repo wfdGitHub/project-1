@@ -115,16 +115,23 @@ handler.visitorEnter = function(msg, session, next) {
           }
           session.bind(playerId)
           session.set("uid", playerId)
-          session.set("nickname",data.nickname)
           session.push("uid", function(err) {
             if(err) {
               console.error('set uid for session service failed! error is : %j', err.stack)
             }
           })
           //console.log("uid : "+session.get("uid"))
+          session.set("nickname",data.nickname)
           session.push("nickname", function(err) {
             if(err) {
               console.error('set nickname for session service failed! error is : %j', err.stack)
+            }
+          })
+          //connect服务器ID
+          session.set("cid", self.app.get('serverId'))
+          session.push("cid", function(err) {
+            if(err) {
+              console.error('set cid for session service failed! error is : %j', err.stack)
             }
           })
           //console.log("nickname : "+session.get("nickname"))
@@ -177,23 +184,6 @@ handler.enter = function(msg, session, next) {
     next(null,{code : -120})
     return
   }
-  //duplicate log in
-  
-  // async.waterfall([
-
-  //     function(cb) { console.log('1.1.1: ', 'start'); cb(null, 3); },
-
-  //     function(n, cb) { console.log('1.1.2: ',n); cb(null,n, cb); },
-
-  //     function(n, cb) { console.log('1.1.3: ',n);}
-
-  // ], function (err, result) {
-
-  //     console.log('1.1 err: ', err);
-
-  //     console.log('1.1 result: ', result);
-
-  // });
   //登陆验证
   var userId = 0    //微信ID
   var playerId = 0  //玩家ID
@@ -239,15 +229,22 @@ handler.enter = function(msg, session, next) {
           }
           session.bind(playerId)
           session.set("uid", playerId)
-          session.set("nickname",data.nickname)
           session.push("uid", function(err) {
             if(err) {
               console.error('set uid for session service failed! error is : %j', err.stack)
             }
           })
+          session.set("nickname",data.nickname)
           session.push("nickname", function(err) {
             if(err) {
               console.error('set nickname for session service failed! error is : %j', err.stack)
+            }
+          })
+          //connect服务器ID
+          session.set("cid", self.app.get('serverId'))
+          session.push("cid", function(err) {
+            if(err) {
+              console.error('set cid for session service failed! error is : %j', err.stack)
             }
           })
           // console.log("uid : "+session.get("uid"))

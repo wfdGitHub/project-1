@@ -34,6 +34,42 @@ app.configure('production|development', 'game', function() {
 app.configure('production|development', 'db', function() {
   app.load(dbService(app))
 });
+//游戏服务器分配路由
+var gameNodeRoute = function(session, msg, app, cb) {
+  var gameNodeServers = app.getServersByType('gameNode')
+
+  if(!gameNodeServers || gameNodeServers.length === 0) {
+    cb(new Error('can not find gameNode servers.'))
+    return
+  }
+  //获取用户游戏服务ID
+  var gid = msg.args[0].gid
+  if(gid === undefined || !gameNodeServers[gid]){
+    cb(new Error('can not find gameNode servers.'))
+    return
+  }
+  cb(null, gameNodeServers[gid].id);
+};
+//连接服务器分配路由
+var connectorRoute = function(session, msg, app, cb) {
+  var connectors = app.getServersByType('connector')
+
+  if(!connectors || connectors.length === 0) {
+    cb(new Error('can not find connector servers.'))
+    return
+  }
+  //获取用户游戏服务ID
+  var cid = session.get("cid")
+  if(cid === undefined || !connectors[cid]){
+    cb(new Error('can not find connector servers.'))
+    return
+  }
+  console.log("sid : "+connectors[cid].id)
+  cb(null, connectors[cid].id);
+};
+app.configure('production|development', function() {
+  app.route('gameNode', gameNodeRoute);
+});
 // start app
 app.start();
 

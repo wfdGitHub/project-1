@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      //host = "192.168.1.65";
+      host = "192.168.1.65";
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -145,7 +145,7 @@
         var route = 'gate.gateHandler.queryEntry';
         pomelo.init({
           host: "127.0.0.1",
-          port: 3900,
+          port: "3900",
           log: true
         }, function() {
           pomelo.request(route, {

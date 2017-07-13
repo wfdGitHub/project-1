@@ -531,7 +531,7 @@ var MING_CARD_NUM = 4               //明牌数量
         clearTimeout(timer)
         local.settlement()
       }
-
+      cb(true)
     }
     //玩家操作
     room.handle.useCmd = function(uid,sid,param,cb) {

@@ -580,7 +580,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       clearTimeout(timer)
       local.settlement()
     }
-
+    cb(true)
   }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {

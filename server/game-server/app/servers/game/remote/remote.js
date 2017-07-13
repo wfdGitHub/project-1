@@ -3,7 +3,7 @@ var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var freeFrame = require("./freeFrame.js")
+
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -13,7 +13,7 @@ var GameRemote = function(app) {
 	this.app = app
 	GameRemote.app = app
 	GameRemote.GameService = this.app.get("GameService")
-	freeFrame.start(GameRemote.GameService)
+	GameRemote.NodeNumber = 0
 };
 
 
@@ -25,27 +25,40 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 	}
 }
 
-GameRemote.prototype.onFrame = freeFrame.onFrame
+GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
+	if(GameRemote.GameService.userMap[uid] !== undefined){
+		var roomId = GameRemote.GameService.userMap[uid]
+		var params = {}
+		params.gid = GameRemote.GameService.roomList[roomId]
+		this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
+			cb(flag)
+		})
+	}else{
+		cb()
+	}
+}
+
 
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
-	//console.log("uid : "+uid+"code : "+code)
-	//房间已锁定则拒绝操作
-	if(GameRemote.GameService.userMap[uid]){
-		var roomId = GameRemote.GameService.userMap[uid]
-		if(GameRemote.GameService.roomLock[roomId] == false){
-			cb(false)
-			return
-		}
-	}
+	// //console.log("uid : "+uid+"code : "+code)
+	// //房间已锁定则拒绝操作
+	// if(GameRemote.GameService.userMap[uid]){
+	// 	var roomId = GameRemote.GameService.userMap[uid]
+	// 	if(GameRemote.GameService.roomLock[roomId] == false){
+	// 		cb(false)
+	// 		return
+	// 	}
+	// }
 
 	var self = this
 	//加入房间需要用户不在房间内
 	if(code == "join"){
 		if(!GameRemote.GameService.userMap[uid]){
 			//无效条件判断
+			console.log(111111)
 			if(typeof(params.roomId) != "number" || params.roomId < 0 
-				|| !GameRemote.GameService.roomList[params.roomId] || GameRemote.GameService.roomState[params.roomId]){
+				|| GameRemote.GameService.roomList[params.roomId] === undefined || GameRemote.GameService.roomState[params.roomId]){
 				//console.log("params.roomId : "+params.roomId)
 				//console.log("type : "+typeof(params.roomId))
                 //console.log(GameRemote.GameService.roomList[roomId])
@@ -53,70 +66,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
                 return
 			}
 			var roomId = params.roomId
-			//不能进入锁定的房间
-			if(GameRemote.GameService.roomLock[roomId] == false){
-				cb(false,{"code" : tips.LOCK_ROOM})
-				return
-			}
-			async.waterfall([
-				function(next) {
-					//获取玩家钻石，判断是否满足准入数额
-					self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
-						next(null,data)
-					})
-				},
-				function(data,next) {
-					var diamond = data
-					var needMond = 0
-					switch(GameRemote.GameService.roomList[roomId].consumeMode){
-						case conf.MODE_DIAMOND_HOST : 
-							needMond = 0
-						break;
-						case conf.MODE_DIAMOND_EVERY :
-							needMond = GameRemote.GameService.roomList[roomId].needDiamond
-						break;
-						case conf.MODE_DIAMOND_WIN : 
-							needMond = GameRemote.GameService.roomList[roomId].needDiamond * 3;
-						break;
-					} 
-					if(diamond >= needMond){
-						next()
-					}else{
-						cb(false,{"code" :tips.NO_DIAMOND})
-						return
-					}
-				},
-				function(next) {
-					//获取玩家信息
-					self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
-						next(null,data)
-					})
-				},
-				function(playerInfo) {
-					delete playerInfo["history"]
-					//加入房间
-					var roomId = params.roomId
-					var ip = params.ip;
-					GameRemote.GameService.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag,code) {
-						if(flag === true){
-							GameRemote.GameService.userMap[uid] = roomId;
-						}
-						cb(flag,{"code" : code})
-					})
+			params.gid = GameRemote.GameService.roomList[roomId]
+			console.log(2222222)
+			self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg){
+				if(flag === true){
+					GameRemote.GameService.userMap[uid] = roomId;
 				}
-			],function(err,result) {
-				//console.log(err)
-				//console.log(result)
-				cb(false)
-				return
+				cb(flag,msg)
 			})
 		}else{
-			var roomId = GameRemote.GameService.userMap[uid]
-			GameRemote.GameService.roomList[roomId].reconnection(uid,sid,null,function(flag) {
-				cb(flag)
-			})
+			cb(false)
 			return
-		}		
+		}
 	}else if(code == "newRoom"){
 		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
@@ -169,15 +130,24 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				params.playerInfo = playerInfo
 				var roomId = GameRemote.GameService.getUnusedRoom(params.gameType)
 				if(roomId !== false){		
-					GameRemote.GameService.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
+					//分配游戏服务器
+					GameRemote.NodeNumber++
+					var nodeLength = GameRemote.app.getServersByType('gameNode').length
+					if(GameRemote.NodeNumber >= nodeLength){
+						GameRemote.NodeNumber = 0
+					}
+					//记录房间对应游戏服务器
+					GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
+					params.gid = GameRemote.GameService.roomList[roomId]
+					//与游戏服务器连接
+					self.app.rpc.gameNode.remote.newRoom(null,params,uid,sid,roomId,function (flag) {
+						console.log("======== : "+flag)
 						if(flag === true){
 							GameRemote.GameService.userMap[uid] = roomId;
 							GameRemote.GameService.roomState[roomId] = false;
-							var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
-							openRoomLogger.info(info)
-							//做个保护  创建房间后把定时器取消
-							clearTimeout(GameRemote.GameService.lockTimer[roomId])
-							delete GameRemote.GameService.lockTimer[roomId]
+						}else{
+							GameRemote.GameService.roomState[roomId] = true
+							GameRemote.GameService.roomList[roomId] = false
 						}
 						cb(flag)
 					})
@@ -234,31 +204,39 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	},
 	    	function(next) {
 	    		//代开房
-				GameRemote.GameService.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
+	    		//分配游戏服务器
+				GameRemote.NodeNumber++
+				var nodeLength = GameRemote.app.getServersByType('gameNode').length
+				if(GameRemote.NodeNumber >= nodeLength){
+					GameRemote.NodeNumber = 0
+				}
+				//记录房间对应游戏服务器
+				GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
+				params.gid = GameRemote.GameService.roomList[roomId]
+				//与游戏服务器连接
+				self.app.rpc.gameNode.remote.agencyRoom(null,params,uid,sid,roomId,function (flag) {
+					console.log("======== : "+flag)
 					if(flag === true){
 						GameRemote.GameService.roomState[roomId] = false;
+                        //保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
+                        var agencyRoomInfo = {
+                            "roomId" : roomId,
+                            "state" : 0,
+                            "gameType" : params.gameType,
+                            "gameNumber" : params.gameNumber,
+                            "gameMode" : params.gameMode,
+                            "cardMode" : params.cardMode,
+                            "basic" : params.basic
+                        }
+                        GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
+
 						next(null,roomId)
-						//保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
-						var agencyRoomInfo = {
-							"roomId" : roomId,
-							"state" : 0,
-							"gameType" : params.gameType,
-							"gameNumber" : params.gameNumber,
-							"gameMode" : params.gameMode,
-							"cardMode" : params.cardMode,
-							"basic" : params.basic
-						}
-						// self.app.rpc.db.remote.setAgencyRoom(null,uid,agencyRoomInfo,function() {})
-						GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
-						var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
-						openRoomLogger.info(info)
 					}else{
-						//删除房间
 						GameRemote.GameService.roomState[roomId] = true
 						GameRemote.GameService.roomList[roomId] = false
 						cb(false)
 					}
-				})	    		
+				})    		
 	    	},function(roomId) {
 				//扣除钻石
 				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
@@ -283,9 +261,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		//console.log("room id : " + GameRemote.GameService.userMap[uid])
 		if(GameRemote.GameService.userMap[uid] !== undefined){
 			var roomId = GameRemote.GameService.userMap[uid];
-			if(roomId != undefined && GameRemote.GameService.roomList[roomId].handle[code] != undefined){
-			    GameRemote.GameService.roomList[roomId].handle[code](uid,sid,params,cb)
-			    cb(true)
+			if(roomId != undefined){
+				if(!params){
+					params = {}
+				}
+				params.gid = GameRemote.GameService.roomList[roomId]
+				self.app.rpc.gameNode.remote.receive(null,params,uid,sid,roomId,code,function (flag){
+					cb(flag)
+				})
 			}else{
 			    cb(false)
 			}
@@ -297,11 +280,61 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 };
 
 
+GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNumber,cb) {
+	//解锁房间内玩家   清理房间  更新代开房记录
+	var roomPlayerCount = 0
+	for(var index in players){
+		if(players.hasOwnProperty(index)){
+			if(players[index].isActive){		
+                roomPlayerCount++
+                delete GameRemote.GameService.userMap[players[index].uid]
+			}
+		}
+	}
+	//更新代开房记录   state : 0 未结束   1 正在游戏中 2 已结束   3 已失效 
+	if(agencyId){
+		var agencyRoomInfo = {
+			"roomId" : roomId,
+			"state" : 2,
+			"gameNumber" : maxGameNumber,
+		}
+		if(flag == true){
+			agencyRoomInfo.state = 3
+		}else{
+			var agencyPlayer = {}
+			var nowIndex = 0
+			for(var index in players){
+				if(players.hasOwnProperty(index)){
+					if(players[index].isActive){
+						agencyPlayer[nowIndex++] = {
+							"name" : players[index].playerInfo.nickname,
+							"score" : players[index].score
+						}
+					}
+				}	
+			}
+			agencyRoomInfo.player = agencyPlayer
+		}
+		GameService.updateAgencyRoom(agencyId,agencyRoomInfo)
+	}
+
+	GameRemote.GameService.roomState[roomId] = true
+	GameRemote.GameService.roomList[roomId] = false
+	if(cb){
+		cb()
+	}
+}
+
+
 GameRemote.prototype.kick = function(uid,cb) {
 	console.log("user leave : "+uid)
 	if(GameRemote.GameService.userMap[uid] != undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
-		GameRemote.GameService.roomList[roomId].leave(uid)
+		var params = {}
+		params.gid = GameRemote.GameService.roomList[roomId]
+		this.app.rpc.gameNode.remote.disconnect(null,params,uid,null,roomId,function (flag){
+			cb(flag)
+		})
 	}
 	if(cb){
 		cb()
@@ -312,9 +345,18 @@ GameRemote.prototype.kick = function(uid,cb) {
 GameRemote.prototype.reconnection = function(uid, sid,cb) {
 	if(GameRemote.GameService.userMap[uid] !== undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
-		GameRemote.GameService.roomList[roomId]["reconnection"](uid,sid,null,cb)
+		var params = {}
+		params.gid = GameRemote.GameService.roomList[roomId]
+		this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (flag){
+			cb(flag)
+		})
 	}else{
 		cb()
 	}
 }
 
+//用户退出房间
+GameRemote.prototype.userQuit = function(uid,cb) {
+	delete GameRemote.GameService.userMap[uid]
+	cb(true)
+}
