@@ -56,6 +56,9 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
 			openRoomLogger.info(info)
 			GameRemote.userMap[uid] = roomId
+			//房间计时器
+			clearTimeout(GameRemote.liveTimer[roomId])
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
     	}else{
     		delete GameRemote.roomList[roomId]
     	}
@@ -76,13 +79,30 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
 			openRoomLogger.info(info)
+			//房间计时器
+			clearTimeout(GameRemote.liveTimer[roomId])
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
     	}else{
     		delete GameRemote.roomList[roomId]
     	}
 		cb(flag)
 	})
 }
-
+//房间超时回调
+var finishGameOfTimer = function(index) {
+	return function() {
+		if(GameRemote.roomList[index].isFree()){
+			//房间空闲则解散
+			//记录日志
+			var info = "finishGameOfTimer   Room finish   roomId  : "+ index
+			openRoomLogger.info(info)
+			GameRemote.roomList[index].finishGame(true)
+		}else{
+			//正在游戏中则过一段时间后再次发起再次解散
+			GameRemote.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
+		}
+	}
+}
 //加入房间
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 	console.log(33333)
@@ -178,8 +198,8 @@ GameRemote.prototype.sendAllMessge = function(params,roomId,notidy,cb) {
 
 //游戏结束
 var gemeOver = function(roomId,players,flag,cb) {
+	clearTimeout(GameRemote.liveTimer[roomId])
 	console.log("gameover")
-	console.log(players)
 	//扣除钻石
 	var roomPlayerCount = 0
 	for(var index in players){

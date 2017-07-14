@@ -13,6 +13,7 @@ var GameRemote = function(app) {
 	this.app = app
 	GameRemote.app = app
 	GameRemote.GameService = this.app.get("GameService")
+	GameRemote.backendSessionService = this.app.get('backendSessionService');
 	GameRemote.NodeNumber = 0
 };
 
@@ -38,7 +39,7 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	}
 }
 
-
+GameRemote.userConnectorMap = {}
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	// //console.log("uid : "+uid+"code : "+code)
@@ -50,7 +51,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	// 		return
 	// 	}
 	// }
-
+	GameRemote.userConnectorMap[uid] = sid
 	var self = this
 	//加入房间需要用户不在房间内
 	if(code == "join"){
@@ -359,4 +360,14 @@ GameRemote.prototype.reconnection = function(uid, sid,cb) {
 GameRemote.prototype.userQuit = function(uid,cb) {
 	delete GameRemote.GameService.userMap[uid]
 	cb(true)
+}
+
+//通知玩家
+GameRemote.prototype.sendByUid = function(uid,notify,cb) {
+	var params = {}
+	params.cid = GameRemote.userConnectorMap[uid]
+	if(params.cid){
+		GameRemote.app.rpc.connector.remote.sendByUid(null,params,uid,notify,function(){})
+	}
+	cb()
 }

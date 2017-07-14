@@ -10,14 +10,12 @@ var ConnectorRemote = function(app) {
 
 var remote = ConnectorRemote.prototype
 
-remote.sendByUid = function(uid,notify,cb) {
-	//console.log("uid : "+uid)
-	//console.log(notify)
+remote.sendByUid = function(params,uid,notify,cb) {
 	ConnectorRemote.channelService.pushMessageByUids('onMessage', notify, [{
       uid: uid,
       sid: this.app.get('serverId')
     }]);  
     if(cb){
-    	cb()
+    	cb() 
     }
 }

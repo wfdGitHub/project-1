@@ -18,11 +18,8 @@ var handler = Handler.prototype;
  * @param {Function} next next stemp callback
  *
  */
+var index = 0
 handler.queryEntry = function(msg, session, next) {
-	var uid = msg.uid;
-	if(!uid) {
-		uid = Math.floor(Math.random() * 100)
-	}
 	// get all connectors
 	var connectors = this.app.getServersByType('connector');
 	if(!connectors || connectors.length === 0) {
@@ -31,8 +28,11 @@ handler.queryEntry = function(msg, session, next) {
 		});
 		return;
 	}
-	// select connector
-	var res = dispatcher.dispatch(uid, connectors);
+	index++;
+	if(index >= connectors.length){
+		index = 0
+	}
+	var res = connectors[index % connectors.length]
 	next(null, {
 		code: 200,
 		host: res.host,
