@@ -773,27 +773,44 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       //执行控制   
       //先计算每个人的运气值   -1 到 1之间     
       var luckyValue = {}
+      var randomMaxScore = 500 + Math.floor(Math.random() * 300)
+      var randomMinScore = 400 + Math.floor(Math.random() * 200)
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
-            luckyValue[i] = player[i].score / 400
+            if(player[i].score > 100){
+                luckyValue[i] = player[i].score / randomMaxScore
+            }else if(player[i].score < -100){
+                luckyValue[i] = player[i].score / randomMinScore
+            }else{
+              continue
+            }
             if(luckyValue[i] > 1){
               luckyValue[i] = 1
             }else if(luckyValue[i] < -1){
               luckyValue[i] = -1
             }
-
-            luckyValue[i] = luckyValue[i] * 0.65
+            luckyValue[i] = luckyValue[i] * 0.6
           }
       }
       //斗公牛模式庄家积分应加上积分池
       if(room.gameMode == MODE_GAME_BULL){
-        luckyValue[banker] = (player[banker].score + bonusPool) / 400
-        if(luckyValue[banker] > 1){
-          luckyValue[banker] = 1
-        }else if(luckyValue[banker] < -1){
-          luckyValue[banker] = -1
-        }
-        luckyValue[banker] = luckyValue[banker] * 0.65
+          var tmpFlag = true
+          if(player[banker].score > 100){
+              luckyValue[banker] = player[banker].score / randomMaxScore
+          }else if(player[banker].score < -100){
+              luckyValue[banker] = player[banker].score / randomMinScore
+          }else{
+            tmpFlag = false
+          }
+          if(tmpFlag){
+            if(luckyValue[banker] > 1){
+              luckyValue[banker] = 1
+            }else if(luckyValue[banker] < -1){
+              luckyValue[banker] = -1
+            }
+            luckyValue[banker] = luckyValue[banker] * 0.6             
+          }
+         
       }
       console.log("luckyValue : ")
       console.log(luckyValue)
@@ -801,13 +818,13 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
               if(luckyValue[i] < 0){
-                if(Math.random() < -luckyValue[i]  || true){
+                if(Math.random() < -luckyValue[i]){
                   //换好牌
                     logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
                      console.log(tmpCards)
                 }
               }else if(luckyValue[i] > 0){
-                if(Math.random() < luckyValue[i]  || true){
+                if(Math.random() < luckyValue[i]){
                   //换差牌
                     logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
                      console.log(tmpCards)
