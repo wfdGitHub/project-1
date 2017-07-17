@@ -293,7 +293,8 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         betList : betList,
         state : gameState,
         bonusPool : bonusPool,
-        surplusGameNumber : room.maxGameNumber - room.gameNumber
+        surplusGameNumber : room.maxGameNumber - room.gameNumber,
+        freeState : param
       }
     cb(notify)
     }else{
@@ -1077,6 +1078,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
           if(curScores[i] != 0){
             local.changeScore(i,curScores[i])
           }
+      }
+      //重置下注信息
+      for(var i = 0;i < GAME_PLAYER;i++){
+          betList[i] = 0;
+          player[i].isShowCard = false
       }
       if(room.gameMode === conf.MODE_GAME_BULL){
         notify.bankerTime = bankerTime

@@ -169,7 +169,11 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 }
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
-	GameRemote.roomList[roomId].reconnection(uid,sid,null,function(flag) {
+	var freeState = false
+	if(freeFrame.GameService.roomLock[roomId] === false){
+		freeState = freeFrame.GameService.lockState[roomId]
+	}
+	GameRemote.roomList[roomId].reconnection(uid,sid,freeState,function(flag) {
 		cb(flag)
 	})
 }

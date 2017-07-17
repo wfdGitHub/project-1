@@ -927,7 +927,8 @@ var MING_CARD_NUM = 3               //明牌数量
         },
         betList : betList,
         state : gameState,
-        surplusGameNumber : room.maxGameNumber - room.gameNumber
+        surplusGameNumber : room.maxGameNumber - room.gameNumber,
+        freeState : param
       }
       cb(notify)
     }
