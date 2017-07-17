@@ -1,7 +1,7 @@
 var logic = require("./NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
-
+var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 4               //明牌数量
 //游戏状态
 
@@ -235,39 +235,12 @@ var MING_CARD_NUM = 4               //明牌数量
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
-       //游戏状态为空闲时才能准备
-      if(gameState !== conf.GS_FREE){
-        cb(false)
-        return
-      }
-      //判断是否在椅子上
       var chair = room.chairMap[uid]
       if(chair === undefined){
         cb(false)
         return
       }
-      if(player[chair].isReady === false){
-        player[chair].isReady = true
-        readyCount++
-        var notify = {
-          cmd: "userReady",
-          uid: uid,
-          chair : chair
-        }
-        local.sendAll(notify)
-        //房间内玩家全部准备且人数大于2时开始游戏
-        if(readyCount == room.playerCount && room.playerCount >= 2){
-            //console.log("beginGame")
-            //发送游戏开始消息
-            notify = {
-              "cmd" : "gameStart"
-            }
-            local.sendAll(notify)
-            //TODO游戏开始
-            local.gameBegin()
-        }      
-      }
-      cb(true)
+      frame.ready(uid,chair,player,gameState,local,local.gameBegin,cb)
     }
     //游戏开始
     local.gameBegin = function(argument) {
@@ -720,7 +693,7 @@ var MING_CARD_NUM = 4               //明牌数量
         }
         //TODO 积分计算
         for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive){
+          if(player[i].isActive && player[i].isReady){
               if(i === banker || player[i].isReady != true) continue
               //比较大小
               if(logic.compare(result[i],result[banker])){
@@ -795,7 +768,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.endTime = (new Date()).valueOf()
       var tmpscores = {}
       for(var i = 0; i < GAME_PLAYER;i++){
-        if(player[i].isActive){
+        if(player[i].isActive && player[i].isReady){
           tmpscores[player[i].uid] = player[i].score
         }
       }
@@ -884,6 +857,7 @@ var MING_CARD_NUM = 4               //明牌数量
           chair : chair
         }
         local.sendAll(notify)      
+        frame.disconnect(chair,player,gameState,local.gameBegin)
       }
     }
     //积分改变
