@@ -50,7 +50,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}	
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
@@ -74,7 +74,7 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}	
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
@@ -105,7 +105,6 @@ var finishGameOfTimer = function(index) {
 }
 //加入房间
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
-	console.log(33333)
 	var self = this
 	async.waterfall([
 	function(next) {
@@ -115,7 +114,6 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		})
 	},
 	function(data,next) {
-		console.log(444444)
 		var diamond = data
 		var needMond = 0
 		switch(GameRemote.roomList[roomId].consumeMode){
@@ -137,14 +135,12 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		}
 	},
 	function(next) {
-		console.log(55555)
 		//获取玩家信息
 		self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 			next(null,data)
 		})
 	},
 	function(playerInfo) {
-		console.log(66666)
 		delete playerInfo["history"]
 		//加入房间
 		var roomId = params.roomId
@@ -153,7 +149,7 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 			if(flag){
 				GameRemote.userMap[uid] = roomId
 			}
-			cb(flag,{"code" : code})
+			cb(flag,{"code" : code,},playerInfo)
 		})
 	}
 	],function(err,result) {
@@ -199,7 +195,10 @@ GameRemote.prototype.sendAllMessge = function(params,roomId,notidy,cb) {
 		cb()
 	}
 }
-
+//游戏开始
+var gameBegin = function(roomId,agencyId) {
+	GameRemote.app.rpc.game.remote.gameBeginCB(null,roomId,agencyId,function() {})
+}
 //游戏结束
 var gemeOver = function(roomId,players,flag,cb) {
 	clearTimeout(GameRemote.liveTimer[roomId])
@@ -322,13 +321,13 @@ var gemeOver = function(roomId,players,flag,cb) {
 		//向后台发送当局数据
 		httpConf.sendGameOver(streamData)
 	}
-	//删除房间
-	GameRemote.roomList[roomId] = false
-	cb()	
 	//通知gameServer
 	var agencyId = GameRemote.roomList[roomId].agencyId
 	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	GameRemote.app.rpc.game.remote.gameOver(null,roomId,players,flag,agencyId,maxGameNumber,function() {})
+	//删除房间
+	GameRemote.roomList[roomId] = false
+	cb()
 }
 
 //解散房间

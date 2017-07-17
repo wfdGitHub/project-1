@@ -30,9 +30,10 @@ var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
-module.exports.createRoom = function(roomId,channelService,cb) {
+module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
-  var roomCallBack = cb
+  var roomBeginCB = gameBegincb
+  var roomCallBack = gameOvercb
   var room = {}
   room.roomId = roomId
   room.roomType = "niuniu"
@@ -324,8 +325,17 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         uid: uid,
         chair : chair
       }
-      local.sendAll(notify)      
-      frame.disconnect(chair,player,gameState,local.chooseBanker)
+      local.sendAll(notify)    
+      if(room.gameMode == conf.MODE_GAME_BULL){
+        if(banker == chair){
+          return
+        }
+      }else if(room.gameMode == conf.MODE_GAME_NORMAL){
+        if(room.bankerMode == conf.MODE_BANKER_HOST && banker == chair){
+          return
+        }
+      }
+      frame.disconnect(chair,player,gameState,local,local.chooseBanker)
     }
   }
   //玩家准备
@@ -366,7 +376,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
-    }while(player[banker].isActive == false)
+    }while(player[banker].isActive == false || player[banker].isReady == false)
     bonusPool = room.playerCount * 8
     player[banker].score -= bonusPool
     bankerTime = 0
@@ -469,6 +479,11 @@ module.exports.createRoom = function(roomId,channelService,cb) {
       cb(false)
       return
     }
+    //不在游戏中不能下注
+    if(!player[chair].isReady){
+      cb(false)
+      return
+    }    
     //庄家不能下注
     if(chair == banker){
       cb(false)
@@ -584,7 +599,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
         //轮庄
         do{
             banker = (banker + 1)%GAME_PLAYER
-        }while(player[banker].isActive == false)
+        }while(player[banker].isActive == false || player[banker].isReady == false)
 
         local.gameBegin()
         break
@@ -638,7 +653,12 @@ module.exports.createRoom = function(roomId,channelService,cb) {
   //游戏开始
   local.gameBegin = function() {
     if(room.gameNumber > 0){
-      log("gameBegin")      
+      log("gameBegin")   
+      gameState = conf.GS_GAMEING    
+      //第一次开始游戏调用游戏开始回调
+      if(room.gameNumber === room.maxGameNumber){
+        roomBeginCB(room.roomId,room.agencyId)
+      }      
       room.gameNumber--
       betAmount = 0
       //重置下注信息
@@ -685,7 +705,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
             local.updatePlayerScore(banker)
             do{
                 banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false)
+            }while(player[banker].isActive == false || player[banker].isReady == false)
             bonusPool = room.playerCount * 8
             player[banker].score -= bonusPool
             player[banker].isBanker = true
@@ -1116,7 +1136,7 @@ module.exports.createRoom = function(roomId,channelService,cb) {
     room.endTime = (new Date()).valueOf()
     var tmpscores = {}
     for(var i = 0; i < GAME_PLAYER;i++){
-      if(player[i].isActive && player[i].isReady){
+      if(player[i].isActive){
         tmpscores[player[i].uid] = player[i].score
       }
     }

@@ -20,12 +20,15 @@ frame.ready = function (uid,chair,player,gameState,local,nextcb,cb) {
     var readyCount = 0
     for(var index in player){
     	if(player.hasOwnProperty(index)){
-    		if(player[index].isActive && player[index].isOnline){
+    		if(player[index].isActive){
+          //准备玩家数
     			if(player[index].isReady){
     				readyCount++
-    			}else{
-    				readyFlag = false
     			}
+          //在线玩家中有人未准备则不开始
+          if(player[index].isReady == false && player[index].isOnline){
+            readyFlag = false
+          }
     		}
     	}
     }
@@ -44,35 +47,36 @@ frame.ready = function (uid,chair,player,gameState,local,nextcb,cb) {
 }
 
 
-frame.disconnect = function(chair,player,gameState,nextcb) {
+frame.disconnect = function(chair,player,gameState,local,nextcb) {
 	//离线时判断是否可以开始游戏
 	if(gameState !== conf.GS_FREE){
 		return
 	}	
-	if(player[chair].isReady === false){
-	    //房间内玩家全部准备且人数大于2时开始游戏
-	    var readyFlag = true
-	    var readyCount = 0
-	    for(var index in player){
-	    	if(player.hasOwnProperty(index)){
-	    		if(player[index].isActive && player[index].isOnline){
-	    			if(player[index].isReady){
-	    				readyCount++
-	    			}else{
-	    				readyFlag = false
-	    			}
-	    		}
-	    	}
-	    }
-	    if(readyFlag && readyCount >= 2){
-	        //console.log("beginGame")
-	        //发送游戏开始消息
-	        notify = {
-	          "cmd" : "gameStart"
-	        }
-	        local.sendAll(notify)
-	        //TODO游戏开始
-	        nextcb()
-	    }	
-	}
+  //房间内玩家全部准备且人数大于2时开始游戏
+  var readyFlag = true
+  var readyCount = 0
+  for(var index in player){
+    if(player.hasOwnProperty(index)){
+      if(player[index].isActive){
+        //准备玩家数
+        if(player[index].isReady){
+          readyCount++
+        }
+        //在线玩家中有人未准备则不开始
+        if(player[index].isReady == false && player[index].isOnline){
+          readyFlag = false
+        }
+      }
+    }
+  }
+  if(readyFlag && readyCount >= 2){
+      //console.log("beginGame")
+      //发送游戏开始消息
+      notify = {
+        "cmd" : "gameStart"
+      }
+      local.sendAll(notify)
+      //TODO游戏开始
+      nextcb()
+  }      
 }

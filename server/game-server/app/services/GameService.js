@@ -20,7 +20,8 @@ GameService.roomList = {};
 GameService.roomState = {};
 //用户房间映射表
 GameService.userMap = {}		
-
+//房间与用户映射表
+GameService.RoomMap = {}	
 //代开房数据
 GameService.agencyList = {}
 
@@ -82,19 +83,51 @@ GameService.setAgencyRoom = function(uid,agencyRoom) {
 
 GameService.updateAgencyRoom = function(agencyId,agencyRoom) {
 	var agencyInfo = GameService.agencyList[agencyId]
-		for(var i = 9;i >= 0;i--){
-			if(agencyInfo.List[i]){
-				//找到并修改代开房记录
-				if(agencyInfo.List[i].roomId === agencyRoom.roomId){
-					agencyInfo.List[i] = agencyRoom
-					GameService.agencyList[agencyId] = agencyInfo
-					return
-				}
+	for(var i = 9;i >= 0;i--){
+		if(agencyInfo.List[i]){
+			//找到并修改代开房记录
+			if(agencyInfo.List[i].roomId === agencyRoom.roomId){
+				agencyInfo.List[i] = agencyRoom
+				GameService.agencyList[agencyId] = agencyInfo
+				return
 			}
 		}
+	}
 }
 
 GameService.getAgencyRoom = function(agencyId) {
 	var agencyInfo = GameService.agencyList[agencyId]
 	return agencyInfo
+}
+
+//从房间ID获取代开房信息
+GameService.getAgencyRoomByID = function(agencyId,roomId) {
+	var agencyInfo = GameService.getAgencyRoom(agencyId)
+	for(var i = 9;i >= 0;i--){
+		if(agencyInfo.List[i]){
+			if(agencyInfo.List[i].roomId === roomId){
+				return agencyInfo.List[i]
+			}
+		}
+	}
+	return false	
+}
+
+//通过房间ID设置代开房信息
+GameService.setAgencyRoomByID = function(agencyId,roomId,agencyRoom) {
+	console.log(GameService.agencyList[agencyId])
+	console.log("setAgencyRoomByID  roomId : "+roomId)
+	var agencyInfo = GameService.agencyList[agencyId]
+	for(var i = 9;i >= 0;i--){
+		if(agencyInfo.List[i]){
+			if(agencyInfo.List[i].roomId === roomId){
+				agencyInfo.List[i] = agencyRoom
+				GameService.agencyList[agencyId] = agencyInfo
+				console.log("setAgencyRoomByID====")
+				console.log(GameService.agencyList[agencyId])
+				return
+			}
+		}
+	}	
+
 }

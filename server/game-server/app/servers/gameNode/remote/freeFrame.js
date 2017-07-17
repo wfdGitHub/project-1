@@ -23,11 +23,6 @@ frame.onFrame = function(params,uid,code,cb) {
 			}
 			if(frame.GameService.roomList[roomId].isBegin()){
 				//游戏已开始为解散
-				//只有空闲时间能解散
-				if(!frame.GameService.roomList[roomId].isFree()){
-					cb(false)
-					return
-				}
 				//锁定房间
 				frame.GameService.roomLock[roomId] = false
 				frame.GameService.lockState[roomId] = {}

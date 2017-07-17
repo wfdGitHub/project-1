@@ -12,9 +12,10 @@ var MING_CARD_NUM = 3               //明牌数量
 //游戏状态
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,cb) {
+  module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
-    var roomCallBack = cb
+    var roomBeginCB = gameBegincb
+    var roomCallBack = gameOvercb
     var room = {}
     room.roomId = roomId
     room.roomType = "zhajinniu"
@@ -277,7 +278,11 @@ var MING_CARD_NUM = 3               //明牌数量
     //游戏开始
     local.gameBegin = function(argument) {
         log("gameBegin") 
-        gameState = conf.GS_GAMEING     
+        gameState = conf.GS_GAMEING  
+        //第一次开始游戏调用游戏开始回调
+        if(room.gameNumber === room.maxGameNumber){
+          roomBeginCB(room.roomId,room.agencyId)
+        }       
         room.gameNumber--
         //重置下注信息
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -823,7 +828,7 @@ var MING_CARD_NUM = 3               //明牌数量
       room.endTime = (new Date()).valueOf()
       var tmpscores = {}
       for(var i = 0; i < GAME_PLAYER;i++){
-        if(player[i].isActive && player[i].isReady){
+        if(player[i].isActive){
           tmpscores[player[i].uid] = player[i].score
         }
       }
@@ -947,7 +952,7 @@ var MING_CARD_NUM = 3               //明牌数量
           chair : chair
         }
         local.sendAll(notify)    
-        frame.disconnect(chair,player,gameState,local.gameBegin)  
+        frame.disconnect(chair,player,gameState,local,local.gameBegin)  
       }
     }
     //积分改变
