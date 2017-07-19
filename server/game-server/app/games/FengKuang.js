@@ -36,11 +36,12 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   var roomCallBack = gameOvercb
   var room = {}
   room.roomId = roomId
-  room.roomType = "FengKuang"
+  room.roomType = "fengkuang"
   room.channel = channelService.getChannel(roomId,true)
   room.isRecord = true
   room.handle = {} //玩家操作
   room.halfwayEnter = true             //允许中途加入
+  room.limitAward = false              //限制最大倍率
   room.agencyId = 0                    //代开房玩家ID
   room.beginTime = (new Date()).valueOf()
   room.MatchStream = {}
@@ -96,6 +97,11 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
+    if(typeof(param.limitAward) !== "boolean"){
+      log("newRoom error   param.limitAward : "+param.limitAward)
+      cb(false)
+      return
+    }
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
     }
@@ -115,7 +121,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.maxGameNumber = param.gameNumber              //游戏最大局数
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
-    room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
+    room.limitAward = !param.limitAward                //倍率限制
+    room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
     //设置下注上限
     maxBet = 20
     if(room.bankerMode == conf.MODE_BANKER_HOST){
@@ -782,30 +789,27 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
                 //闲家赢
                 var award = result[i].award
                 var tmpAwardList = []
-                award = result[i].type
-                // if(award > 10){
-                //   award = 10
-                // }else if(award <= 0){
-                //   award = 1
-                // }
+                if(room.limitAward){
+                  if(award > 10){
+                    award = 10
+                  }              
+                }
                 console.log("award : "+award)
                 curScores[i] += betList[i] * award
                 curScores[banker] -= betList[i] * award
             }else{
                 //庄家赢
                 var award = result[banker].award
-                award = result[banker].type
-                // if(award > 10){
-                //   award = 10
-                // }else if(award <= 0){
-                //   award = 1
-                // }
+                if(room.limitAward){
+                  if(award > 10){
+                    award = 10
+                  }              
+                }
                 console.log("award : "+award)
                 curScores[i] -= betList[i] * award
                 curScores[banker] += betList[i] * award
             }              
         }
-
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
