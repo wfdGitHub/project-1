@@ -48,6 +48,7 @@ conf.MODE_GAME_MING   = 2 			   //明牌抢庄
 conf.MODE_GAME_BULL   = 3              //斗公牛模式
 conf.MODE_GAME_SHIP   = 4              //开船模式
 conf.MODE_GAME_ZHAJINNIU = 5		   //炸金牛
+conf.MODE_GAME_CRAZE = 6 			   //疯狂模式
 //定庄模式
 conf.MODE_BANKER_ROB   = 1              //随机抢庄
 conf.MODE_BANKER_HOST  = 2              //房主做庄
@@ -69,7 +70,8 @@ conf.GAME_TYPE = {
 }
 
 //大牌控制
-conf.ROUND_TIMES = 1 						//最大洗牌次数
-conf.TYPE_WEIGHT = 2 						//低于此权重洗牌
+conf.ROUND_TIMES = 1000 						//最大洗牌次数
+conf.TYPE_WEIGHT = 10 						//低于此权重洗牌
 conf.typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,100,200]
+conf.FengKuangtypeWeight = [0,1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,21]
 module.exports.niuConf = conf

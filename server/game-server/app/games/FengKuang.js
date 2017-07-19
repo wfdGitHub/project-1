@@ -1,4 +1,4 @@
-var logic = require("./logic/NiuNiuLogic.js")
+var logic = require("./logic/FengKuangLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
@@ -36,7 +36,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   var roomCallBack = gameOvercb
   var room = {}
   room.roomId = roomId
-  room.roomType = "niuniu"
+  room.roomType = "FengKuang"
   room.channel = channelService.getChannel(roomId,true)
   room.isRecord = true
   room.handle = {} //玩家操作
@@ -55,6 +55,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   var timer                            //定时器句柄
   var bankerTime = 0                   //连庄次数
   room.GAME_PLAYER = 6                 //游戏人数
+  room.gameMode = 6
   GAME_PLAYER = 6
   //游戏属性
   
@@ -71,17 +72,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   //下注上限
   var maxBet = 0
   //斗公牛模式积分池
-  var bonusPool = 40
   var robState,betList
   local.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
       //无效条件判断
-    if(!param.gameMode || typeof(param.gameMode) !== "number" || 
-      !(param.gameMode == 1 || param.gameMode == 3 || param.gameMode == 4)){
-      log("newRoom error   param.gameMode : "+param.gameMode)
-      cb(false)
-      return
-    }
     if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
       log("newRoom error   param.consumeMode : "+param.consumeMode)
       cb(false)
@@ -116,7 +110,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     banker = -1                      //庄家椅子号
     roomHost = 0                     //房主椅子号
     room.runCount = 0                //当前游戏局数
-    room.gameMode = param.gameMode                     //游戏模式
     room.bankerMode = param.bankerMode                 //定庄模式
     room.gameNumber = param.gameNumber                 //游戏局数
     room.maxGameNumber = param.gameNumber              //游戏最大局数
@@ -125,23 +118,9 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
     //设置下注上限
     maxBet = 20
-    // if(room.gameMode == MODE_GAME_BULL){
-    //   room.bankerMode = MODE_BANKER_NONE
-    //   banker = roomHost
-    //   maxBet = 10
-    // }
-    //console.log("room maxGameNumber : "+room.maxGameNumber)
-    if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
-      room.bankerMode = MODE_BANKER_NONE
-    }
-    if(room.gameMode == MODE_GAME_BULL){
+    if(room.bankerMode == conf.MODE_BANKER_HOST){
       banker = roomHost
-    }
-    if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-      if(room.bankerMode == conf.MODE_BANKER_HOST){
-        banker = roomHost
-      }
-    }   
+    } 
     cb(true)
   }
   //代开房间
@@ -233,7 +212,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     notify = {
       cmd : "roomPlayer",
       player:newPlayer,
-      gameMode : room.gameMode,
       maxGameNumber : room.maxGameNumber,
       gameNumber : room.maxGameNumber - room.gameNumber,
       consumeMode : room.consumeMode,
@@ -247,7 +225,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       roomType : room.roomType,
       bankerTime : bankerTime,
       betList : betList,
-      bonusPool : bonusPool
+      gameMode : room.gameMode
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -285,7 +263,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       notify = {
         roomInfo : {
           player : newPlayer,
-          gameMode : room.gameMode,
           maxGameNumber : room.maxGameNumber,
           gameNumber : room.maxGameNumber - room.gameNumber,
           consumeMode : room.consumeMode,
@@ -297,11 +274,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           TID_SETTLEMENT : conf.TID_SETTLEMENT,
           roomType : room.roomType,
           bankerTime : bankerTime,
-          bonusPool : bonusPool
+          gameMode : room.gameMode
         },
         betList : betList,
         state : gameState,
-        bonusPool : bonusPool,
         surplusGameNumber : room.maxGameNumber - room.gameNumber,
         freeState : param
       }
@@ -333,14 +309,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         chair : chair
       }
       local.sendAll(notify)    
-      if(room.gameMode == conf.MODE_GAME_BULL){
-        if(banker == chair){
-          return
-        }
-      }else if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-        if(room.bankerMode == conf.MODE_BANKER_HOST && banker == chair){
-          return
-        }
+      if(room.bankerMode == conf.MODE_BANKER_HOST && banker == chair){
+        return
       }
       frame.disconnect(chair,player,gameState,local,local.chooseBanker)
     }
@@ -353,61 +323,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         return
       }
       var tmpBanker = -1
-      if(room.gameMode == conf.MODE_GAME_BULL){
-        if(banker == chair){
-          tmpBanker = banker
-        }
+      if(room.bankerMode == conf.MODE_BANKER_HOST){
+        tmpBanker = banker
       }
-      if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-        if(room.bankerMode == conf.MODE_BANKER_HOST){
-          tmpBanker = banker
-        }
-      }      
       frame.ready(uid,chair,player,gameState,local, local.chooseBanker,tmpBanker,cb)
-  }
-  //玩家下庄
-  room.handle.downBanker = function(uid,sid,param,cb) {
-    if(gameState !== GS_FREE){
-      cb(false)
-      return
-    }
-    if(room.gameMode !== conf.MODE_GAME_BULL){
-      cb(false)
-      return      
-    }
-    var chair = room.chairMap[uid]
-    if(chair == undefined){
-      cb(false)
-      return
-    } 
-    if(chair !== banker){
-      cb(false)
-      return      
-    }
-    //连庄三局才能换庄
-    if(bankerTime < 3){
-      cb(false)
-      return    
-    }
-    player[banker].score += bonusPool
-    var tmpOldBanker = banker
-    //换庄
-    do{
-        banker = (banker + 1)%GAME_PLAYER
-    }while(player[banker].isActive == false || player[banker].isReady == false)
-    bonusPool = room.playerCount * 8
-    player[banker].score -= bonusPool
-    bankerTime = 0
-    log("banker change : "+banker)      
-    var notify = {
-      "cmd" : "downBanker",
-      "chair" : chair,
-      "banker" : banker,
-      "bonusPool" : bonusPool,
-      "bankerScore" : player[banker].score,
-      "oldBankerScore" : player[tmpOldBanker].score
-    }
-    local.sendAll(notify)
   }
   //玩家抢庄
   room.handle.robBanker = function(uid,sid,param,cb) {
@@ -507,32 +426,16 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     }
-    //斗公牛模式使用特殊下注限制
-    if(room.gameMode == MODE_GAME_BULL){
-      if(param.bet && typeof(param.bet) == "number" 
-        && (param.bet >= Math.floor(bonusPool / room.playerCount / 5)) && param.bet > 0
-        && (param.bet + betList[chair]) <= 40 
-        && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) 
-        && (param.bet + betAmount) <= bonusPool ){
-        betList[chair] += param.bet
-        betAmount += param.bet 
-        local.betMessege(chair,param.bet)     
-      }else{
-        cb(false)
-        return
-      }
+    //其他模式
+    if(param.bet && typeof(param.bet) == "number" 
+      && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
+      betList[chair] += param.bet
+      betAmount += param.bet
+      local.betMessege(chair,param.bet)     
     }else{
-      //其他模式
-      if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
-        betList[chair] += param.bet
-        betAmount += param.bet
-        local.betMessege(chair,param.bet)     
-      }else{
-        cb(false)
-        return
-      }      
-    }
+      cb(false)
+      return
+    }      
     cb(true)
     //判断所有人都下注进入发牌阶段
     var flag = true
@@ -692,42 +595,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         }
         local.sendAll(notify)   
       }
-      //斗牛模式更新积分池
-      if(room.gameMode == MODE_GAME_BULL){
-
-        var notify = {
-          "cmd" : "bonusPool",
-          "bonusPool" : bonusPool,
-          "bankerScore" : player[banker].score,
-          "change" : oldBanker !== banker
-        }
-        if(bonusPool == 0 && room.runCount == 0){
-          bonusPool = room.playerCount * 8
-          player[banker].score -= bonusPool
-          notify.change = true
-          notify.bonusPool = bonusPool
-          notify.bankerScore = player[banker].score
-        }else{
-          //积分池小于人数则换庄
-          if(bonusPool < room.playerCount){
-            player[banker].isBanker = false
-            player[banker].score += bonusPool
-            local.updatePlayerScore(banker)
-            do{
-                banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false || player[banker].isReady == false)
-            bonusPool = room.playerCount * 8
-            player[banker].score -= bonusPool
-            player[banker].isBanker = true
-            bankerTime = 0
-            log("banker change : "+banker)
-            notify.change = true
-            notify.bonusPool = bonusPool
-            notify.bankerScore = player[banker].score
-          } 
-        }
-        local.sendAll(notify)          
-      }
       var index = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
       var randTimes = 0
@@ -754,7 +621,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
               tmpAllCount++
               result[i] = logic.getType(player[i].handCard)
               //console.log("type : "+result[i].type)
-              tmpTypeCount += conf.typeWeight[result[i].type]
+              tmpTypeCount += conf.FengKuangtypeWeight[result[i].type]
             }
         }
         var dealFlag = false
@@ -792,26 +659,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
             }
             luckyValue[i] = luckyValue[i] * 0.6
           }
-      }
-      //斗公牛模式庄家积分应加上积分池
-      if(room.gameMode == MODE_GAME_BULL){
-          var tmpFlag = true
-          if(player[banker].score > 100){
-              luckyValue[banker] = player[banker].score / randomMaxScore
-          }else if(player[banker].score < -100){
-              luckyValue[banker] = player[banker].score / randomMinScore
-          }else{
-            tmpFlag = false
-          }
-          if(tmpFlag){
-            if(luckyValue[banker] > 1){
-              luckyValue[banker] = 1
-            }else if(luckyValue[banker] < -1){
-              luckyValue[banker] = -1
-            }
-            luckyValue[banker] = luckyValue[banker] * 0.6             
-          }
-         
       }
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -874,12 +721,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
             var tmpBet = 1
-            if(room.gameMode === conf.MODE_GAME_BULL){
-              tmpBet = Math.floor(bonusPool / room.playerCount / 5)
-              if(tmpBet === 0){
-                tmpBet = 1
-              }
-            }
             betList[i] = tmpBet
             betAmount += tmpBet
             local.betMessege(i,tmpBet)  
@@ -932,141 +773,39 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       }
       var bankerScoreChange = 0
       
-      switch(room.gameMode){
-        case conf.MODE_GAME_NORMAL : 
-        case conf.MODE_GAME_CRAZE :
-          //常规模式和疯狂模式结算
-          for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
-                if(i === banker || player[i].isReady != true) continue
-                //比较大小
-                if(logic.compare(result[i],result[banker])){
-                    //闲家赢
-                    var award = result[i].award
-                    curScores[i] += betList[i] * award
-                    curScores[banker] -= betList[i] * award
-                }else{
-                    //庄家赢
-                    var award = result[banker].award
-                    curScores[i] -= betList[i] * award
-                    curScores[banker] += betList[i] * award
-                }              
-            }
+      //常规模式和疯狂模式结算
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+            if(i === banker || player[i].isReady != true) continue
+            //比较大小
+            if(logic.compare(result[i],result[banker])){
+                //闲家赢
+                var award = result[i].award
+                var tmpAwardList = []
+                award = result[i].type
+                // if(award > 10){
+                //   award = 10
+                // }else if(award <= 0){
+                //   award = 1
+                // }
+                console.log("award : "+award)
+                curScores[i] += betList[i] * award
+                curScores[banker] -= betList[i] * award
+            }else{
+                //庄家赢
+                var award = result[banker].award
+                award = result[banker].type
+                // if(award > 10){
+                //   award = 10
+                // }else if(award <= 0){
+                //   award = 1
+                // }
+                console.log("award : "+award)
+                curScores[i] -= betList[i] * award
+                curScores[banker] += betList[i] * award
+            }              
+        }
 
-          }
-          break
-        case conf.MODE_GAME_BULL : 
-          //斗公牛模式优先结算庄家赢的钱，再按牌型从高到低结算输的钱，直至积分池为空
-          //结算庄家赢
-            //console.log(betList)
-            for(var i = 0;i < GAME_PLAYER;i++){
-              if(i === banker || player[i].isReady != true) continue
-              if(!logic.compare(result[i],result[banker])){
-                  //庄家赢
-                  var tmpScore = betList[i] * result[banker].award
-                  //console.log("uid : "+player[i].uid+"  chair : "+i+"  lose tmpScore : "+tmpScore)
-                  curScores[i] -= tmpScore
-                  bankerScoreChange += tmpScore
-                  bonusPool += tmpScore
-              }
-            }
-            //console.log("bonusPool : "+bonusPool)
-            //结算庄家输
-            //牌型按大小排序
-            var tmpUidList = new Array(GAME_PLAYER)
-            for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
-            //console.log(result)
-            for(var i = 0;i < GAME_PLAYER - 1;i++){
-              for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
-                if(!player[tmpUidList[j + 1]].isReady){ continue }
-                if(player[tmpUidList[j]].isReady != true || !logic.compare(result[j],result[j + 1])){
-                   var tmpResult = result[j + 1]
-                   result[j + 1] = result[j]
-                   result[j] = tmpResult
-                   var tmpUid = tmpUidList[j + 1]
-                   tmpUidList[j + 1] = tmpUidList[j]
-                   tmpUidList[j] = tmpUid
-                }
-              }
-            }
-            //console.log(trueResult)
-            //console.log(tmpUidList)
-            //优先赔付牌型大的闲家
-            for(var i = 0;i < GAME_PLAYER;i++){
-              if(tmpUidList[i] === banker || player[tmpUidList[i]].isReady != true) continue
-              if(logic.compare(result[i],bankerResult)){
-                  //闲家赢
-                  var tmpScore = betList[tmpUidList[i]] * result[i].award
-                  if(tmpScore > bonusPool){
-                      tmpScore = bonusPool
-                  }
-                  //console.log("uid : "+player[tmpUidList[i]].uid+"  chair : "+tmpUidList[i]+"  win tmpScore : "+tmpScore)
-                  curScores[tmpUidList[i]] += tmpScore
-                  bankerScoreChange -= tmpScore
-                  bonusPool -= tmpScore
-              }
-            } 
-            bankerTime++
-            //斗牛模式更新积分池
-            if(room.gameMode == MODE_GAME_BULL){
-              var notify = {
-                "cmd" : "bonusPool",
-                "bonusPool" : bonusPool,
-                "bankerScore" : player[banker].score,
-                "change" : false
-              }
-              local.sendAll(notify)          
-            }
-            //console.log("bonusPool : "+bonusPool)           
-          break
-        case MODE_GAME_SHIP : 
-          //开船模式先收集所有人的下注，再按从大到小赔付
-          //先减去下注额
-          var tmpAllBet = 0
-          //console.log(betList)
-          for(var i = 0;i < GAME_PLAYER;i++){
-            if(betList[i] && typeof(betList[i]) == "number" && player[i].isReady){
-              curScores[i] -= betList[i]
-              tmpAllBet += betList[i]
-            }
-          }
-          //排序
-          var tmpUidList = new Array(GAME_PLAYER)
-          for(var i = 0;i < GAME_PLAYER;i++){ tmpUidList[i] = i }
-
-          //console.log(result)
-          for(var i = 0;i < GAME_PLAYER - 1;i++){
-            for(var j = 0;j < GAME_PLAYER - 1 - i;j++){
-              if(player[tmpUidList[j + 1]].isReady != true){ 
-                continue 
-              }
-              if(player[tmpUidList[j]].isReady != true || !logic.compare(result[j],result[j + 1])){
-                  var tmpUid = tmpUidList[j + 1]
-                  tmpUidList[j + 1] = tmpUidList[j]
-                  tmpUidList[j] = tmpUid
-                  var tmpResult = result[j + 1]
-                  result[j + 1] = result[j]
-                  result[j] = tmpResult
-              }
-            }
-          }
-          //console.log(result)
-          log("curScores==================")
-          log(curScores)
-          //按牌型赔付
-          for(var i = 0;i < GAME_PLAYER;i++){
-            if(betList[tmpUidList[i]] && typeof(betList[tmpUidList[i]]) == "number" && player[tmpUidList[i]].isReady){
-              var tmpScore = betList[tmpUidList[i]] * result[i].award + betList[tmpUidList[i]]
-              if(tmpScore > tmpAllBet){
-                tmpScore = tmpAllBet
-              }
-              log("award : "+tmpScore)
-              tmpAllBet -= tmpScore
-              curScores[tmpUidList[i]] += tmpScore
-            }
-          }  
-
-          break 
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -1078,10 +817,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       for(var i = 0;i < GAME_PLAYER;i++){
           betList[i] = 0;
           player[i].isShowCard = false
-      }
-      if(room.gameMode === conf.MODE_GAME_BULL){
-        notify.bankerTime = bankerTime
-        curScores[oldBanker] = bankerScoreChange
       }
       var realScores = {}
       //返回玩家实际分数
@@ -1121,11 +856,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   }
   //总结算
   local.gameOver = function(flag) {
-    //斗公牛模式庄家积分需加上积分池
-    if(room.gameMode === conf.MODE_GAME_BULL){
-      player[banker].score += bonusPool
-      bonusPool = 0
-    }
     //总结算
     room.state = true
     var notify = {
@@ -1186,7 +916,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   //房间初始化
   local.init = function() {
     //console.log("enter init=====================================")
-    room.gameMode = 0                    //游戏模式
     room.gameNumber = 0                  //游戏局数
     room.maxGameNumber = 0               //游戏最大局数
     room.consumeMode = 0                 //消耗模式
@@ -1216,8 +945,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     betAmount = 0
     //下注上限
     maxBet = 0
-    //斗公牛模式积分池
-    bonusPool = room.playerCount * 8
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){

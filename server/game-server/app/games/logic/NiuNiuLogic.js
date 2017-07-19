@@ -218,5 +218,3 @@ var deepCopy = function(source) {
      } 
   return result;
 }
-
- return module

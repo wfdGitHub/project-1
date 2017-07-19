@@ -1,4 +1,4 @@
-var logic = require("./NiuNiuLogic.js")
+var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
@@ -164,6 +164,8 @@ var MING_CARD_NUM = 3               //明牌数量
       local.newRoom(uid,sid,param,function(flag) {
           if(flag){
             room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+          }else{
+            cb(false)
           }
       })
     }
@@ -234,7 +236,7 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       }
-      frame.ready(uid,chair,player,gameState,local,cb)
+      frame.ready(uid,chair,player,gameState,local,-1,cb)
 
       //  //游戏状态为空闲时才能准备
       // if(gameState !== conf.GS_FREE){

@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      //host = "192.168.1.65";
+      host = "192.168.1.65";
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -132,6 +132,8 @@
           }, function() {
             var route = "connector.entryHandler.visitorEnter";
             pomelo.request(route,{"uid" : uid}, function(data) {
+              console.log("111111")
+              console.log(data)
               if(data.error) {
                 console.log(data)
                 return;

@@ -1,7 +1,7 @@
 var frame =   module.exports
 var conf = require("../../conf/niuniuConf.js").niuConf
 
-frame.ready = function (uid,chair,player,gameState,local,nextcb,cb) {
+frame.ready = function (uid,chair,player,gameState,local,nextcb,banker,cb) {
    //游戏状态为空闲时才能准备
   if(gameState !== conf.GS_FREE){
     cb(false)
@@ -31,6 +31,10 @@ frame.ready = function (uid,chair,player,gameState,local,nextcb,cb) {
           }
     		}
     	}
+    }
+    console.log("banker : "+banker)
+    if(banker >= 0 && player[banker] && !player[banker].isReady){
+      readyFlag = false
     }
     if(readyFlag && readyCount >= 2){
         //console.log("beginGame")
