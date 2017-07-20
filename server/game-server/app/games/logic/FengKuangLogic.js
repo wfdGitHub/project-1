@@ -54,7 +54,7 @@ module.exports.getType = function(handCard) {
       }
       //判断顺子
       for(var i = 0;i < 4;i++){
-        if(tmpHandCard[i].num !== (tmpHandCard[i+1].num + 1)){
+        if(tmpHandCard[i].num !== (tmpHandCard[i+1].num - 1)){
           shunFlag = false
           break
         }
@@ -189,7 +189,7 @@ module.exports.compare = function(result1,result2) {
 
 
 //换牌
-module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
+module.exports.changeHandCard = function(handCard,cards,endCount,flag) { 
   var tmpResult = {}
   tmpResult = module.exports.getType(handCard)
   if(flag == true){
