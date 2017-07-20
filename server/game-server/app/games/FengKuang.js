@@ -82,7 +82,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     }
-     if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
       (param.bankerMode != 1 && param.bankerMode != 2 && param.bankerMode != 3 && param.bankerMode != 5)){
       log("newRoom error   param.bankerMode : "+param.bankerMode)
       cb(false)
@@ -125,7 +125,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.limitAward = !param.limitAward                //倍率限制
     room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
     //设置下注上限
-    maxBet = 20
+    maxBet = 3
     if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
       banker = roomHost
     }
@@ -974,8 +974,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     //下注信息
     betList = new Array(GAME_PLAYER)
     betAmount = 0
-    //下注上限
-    maxBet = 0
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){

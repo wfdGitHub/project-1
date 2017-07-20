@@ -22,15 +22,16 @@ var GameRemote = function(app) {
 GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 	var data = GameRemote.GameService.getAgencyRoom(uid)
 	//当前玩家数据
-	for(var index in data.List){
-		if(data.List.hasOwnProperty(index)){
-			//未开始或正在游戏中
-			if(data.List[index].state == 0 || data.List[index].state == 1){
-				data.List[index].players = GameRemote.GameService.RoomMap[data.List[index].roomId]
+	if(data){
+		for(var index in data.List){
+			if(data.List.hasOwnProperty(index)){
+				//未开始或正在游戏中
+				if(data.List[index].state == 0 || data.List[index].state == 1){
+					data.List[index].players = GameRemote.GameService.RoomMap[data.List[index].roomId]
+				}
 			}
-		}
+		}		
 	}
-	console.log(data)
 	if(cb){
 		cb(data)
 	}

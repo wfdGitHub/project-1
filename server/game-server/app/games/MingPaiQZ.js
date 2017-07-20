@@ -116,6 +116,12 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       } 
+      if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+        (param.bankerMode != 3 && param.bankerMode != 5)){
+        log("newRoom error   param.bankerMode : "+param.bankerMode)
+        cb(false)
+        return
+      }  
       if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
@@ -148,6 +154,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
+      room.bankerMode = param.bankerMode                 //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
@@ -243,7 +250,12 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       }
-      frame.ready(uid,chair,player,gameState,local,local.gameBegin,-1,cb)
+      var tmpBanker = -1
+      if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+        tmpBanker = banker
+      }
+
+      frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
     }
     //游戏开始
     local.gameBegin = function(argument) {
@@ -398,17 +410,21 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      gameState = conf.GS_ROB_BANKER
-      //初始化抢庄状态为-1
-      for(var i = 0; i < GAME_PLAYER;i++){
+      if(room.bankerMode == conf.MODE_BANKER_ROB){
+        gameState = conf.GS_ROB_BANKER
+        //初始化抢庄状态为-1
+        for(var i = 0; i < GAME_PLAYER;i++){
         robState[i] = -1
+        }
+        //抢庄
+        var notify = {
+          "cmd" : "beginRob"
+        }
+        local.sendAll(notify)
+        timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)         
+      }else{
+        local.betting()
       }
-      //抢庄
-      var notify = {
-        "cmd" : "beginRob"
-      }
-      local.sendAll(notify)
-      timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)   
     }
     //结束抢庄
     local.endRob = function() {
@@ -718,8 +734,33 @@ var MING_CARD_NUM = 4               //明牌数量
                   curScores[banker] += betList[i] * result[banker].award * room.maxRob
               }              
           }
-
         }
+        //牛牛坐庄模式换庄
+        if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+          var maxResultFlag = false
+          var maxResultIndex = -1
+          for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isActive && player[i].isReady){
+                if(result[i].type >= 10){
+                  if(maxResultFlag == false){
+                    maxResultFlag = true
+                    maxResultIndex = i
+                  }else{
+                    if(logic.compare(result[i],result[maxResultIndex])){
+                      maxResultIndex = i
+                    }
+                  }
+                }           
+            }
+          }
+          if(maxResultFlag){
+            banker = maxResultIndex
+          }else{
+            do{
+                banker = (banker + 1)%GAME_PLAYER
+            }while(player[banker].isActive == false || player[banker].isReady == false)
+          }
+        }        
         //积分改变
         for(var i = 0;i < GAME_PLAYER;i++){
             if(curScores[i] != 0){
@@ -869,6 +910,9 @@ var MING_CARD_NUM = 4               //明牌数量
           chair : chair
         }
         local.sendAll(notify)      
+        if(room.bankerMode == conf.MODE_BANKER_NIUNIU && banker == chair){
+          return
+        }
         frame.disconnect(chair,player,gameState,local,local.gameBegin)
       }
     }
@@ -917,7 +961,6 @@ var MING_CARD_NUM = 4               //明牌数量
           }
         }        
       }
-      console.log(newPlayer[0])
       var notify = {
         cmd : "roomPlayer",
         player:newPlayer,
