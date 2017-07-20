@@ -266,6 +266,17 @@ var MING_CARD_NUM = 4               //明牌数量
       if(room.gameNumber === room.maxGameNumber){
         roomBeginCB(room.roomId,room.agencyId)
       }       
+      if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+        if(banker !== -1){
+          //重置庄家信息
+          for(var i = 0;i < GAME_PLAYER;i++){
+              betList[i] = 0;
+              player[i].isBanker = false
+          }
+          //console.log("banker : "+banker)
+          player[banker].isBanker = true    
+        }
+      }
       room.gameNumber--
       room.maxRob = 1
       //重置下注信息
