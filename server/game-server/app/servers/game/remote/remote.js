@@ -39,13 +39,23 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	if(GameRemote.GameService.userMap[uid] !== undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
-		var params = {}
+		params = {}
 		params.gid = GameRemote.GameService.roomList[roomId]
 		this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
 			cb(flag)
 		})
+	}else if(code == "agencyFinish"){
+		var roomId = params.roomId
+		params.gid = GameRemote.GameService.roomList[roomId]
+		if(params.gid !== undefined){
+			this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
+				cb(flag)
+			})			
+		}else{
+			cb(false)
+		}
 	}else{
-		cb()
+		cb(false)
 	}
 }
 
@@ -419,7 +429,7 @@ GameRemote.prototype.sendByUid = function(uid,notify,cb) {
 	cb()
 }
 
-var deepCopy = function(source) { 
+var deepCopy = function(source) {
   var result={}
   for (var key in source) {
         result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]

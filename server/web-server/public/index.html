@@ -20,6 +20,7 @@
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
       host = "192.168.1.65";
+      //host = "120.77.157.99"
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -132,7 +133,6 @@
           }, function() {
             var route = "connector.entryHandler.visitorEnter";
             pomelo.request(route,{"uid" : uid}, function(data) {
-              console.log("111111")
               console.log(data)
               if(data.error) {
                 console.log(data)
@@ -146,7 +146,7 @@
       var queryEntry = function(uid,callback) {
         var route = 'gate.gateHandler.queryEntry';
         pomelo.init({
-          host: "127.0.0.1",
+          host: host,
           port: "3900",
           log: true
         }, function() {
@@ -158,7 +158,7 @@
               console.log(data)
               return;
             }
-            callback(data.host, data.port);
+            callback(host, data.port);
           });
         });
       };
@@ -187,32 +187,38 @@
           pomelo.request("connector.entryHandler.sendFrame", {"code" : "userQuit"},null, function(data) {
               console.log("flag is : "+data.flag)
             }
-          );
+          )
       }        
+      var agencyFinish = function(roomId) {
+          pomelo.request("connector.entryHandler.sendFrame", {"code" : "agencyFinish","params" : {"roomId" : roomId}},null, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          )
+      }
       var giveDiamond = function(target,diamond) {
           pomelo.request("monitor.handle.giveDiamond", {target : target,diamond : diamond}, function(data) {
               console.log(data)
-          });        
+          })
       }
       var queryNickName = function(uid) {
           pomelo.request("monitor.handle.queryNickName", {uid : uid}, function(data) {
               console.log(data)
-          });   
+          })
       }
       var getUsers = function() {
           pomelo.request("connector.monitor.onlineUser",null, function(data) {
               console.log(data)
-          });           
+          })
       }
       var getRooms = function() {
           pomelo.request("connector.monitor.roomInfos",null, function(data) {
               console.log(data)
-          });           
+          })      
       }
       var getAgencyList = function() {
           pomelo.request("connector.monitor.getAgencyList",null, function(data) {
               console.log(data)
-          });           
+          })      
       }
       var init = function() {
         pomelo.init({
@@ -220,19 +226,19 @@
           port: port,
           log: true
         }, function() {
-        }); 
+        })
       }
 
       var finishRoom = function(roomId) {
           pomelo.request("connector.monitor.finishRoom",{"roomId" : roomId}, function(data) {
               console.log(data)
-          });   
+          })
       }
 
       var finishAllRoom = function() {
           pomelo.request("connector.monitor.finishAllRoom",null, function(data) {
               console.log(data)
-          }); 
+          })
       }
 
       var getAgencyRoom = function() {

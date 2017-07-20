@@ -100,6 +100,21 @@ frame.onFrame = function(params,uid,code,cb) {
 			local.responseFinish(roomId,chair,false)
 			cb(true)
 			break
+		case "agencyFinish" :
+		console.log("=======agencyFinish======= : "+params.roomId)
+			var roomId = params.roomId
+			if(!frame.GameService.roomList[roomId] || frame.GameService.roomList[roomId].agencyId !== uid){
+				cb(false)
+				return
+			}
+			if(frame.GameService.roomList[roomId].isBegin()){
+				cb(false)
+				return
+			}
+			frame.GameService.roomList[roomId].finishGame()
+			
+			cb(true)
+			break;
 	}
 }
 

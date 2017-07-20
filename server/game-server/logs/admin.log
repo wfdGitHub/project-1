@@ -1,0 +1,1 @@
+[2017-07-19 15:42:52.057] [INFO] admin-log - [32m[C:\Users\Administrator\Documents\project-1\server\game-server\node_modules\pomelo\lib\master\master.js] [39m{"action":"execute","moduleId":"__console__","method":"clientHandler","msg":{"signal":"list","clientId":"pomelo_list_1500450172012","username":"admin"}}

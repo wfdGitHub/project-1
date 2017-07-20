@@ -219,6 +219,8 @@ var gemeOver = function(roomId,players,flag,cb) {
 	var GAME_PLAYER = roomPlayerCount
 	//console.log("diamond : "+diamond)
 	//console.log("GAME_PLAYER : "+GAME_PLAYER)
+	var agencyId = GameRemote.roomList[roomId].agencyId
+	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	if(diamond !== 0){
 		switch(GameRemote.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 
@@ -231,7 +233,7 @@ var gemeOver = function(roomId,players,flag,cb) {
                             GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
                         }
 					}
-				}			
+				}
 				break;
 			case MODE_DIAMOND_WIN: 
 				var win = 0
@@ -249,6 +251,12 @@ var gemeOver = function(roomId,players,flag,cb) {
 				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
 				break;		
 		}		
+	}else{
+		//代开房未开始则返回钻石
+		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
+			var tmpDiamond = Math.floor(maxGameNumber/10) * 3
+			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
+		}
 	}
 	if(GameRemote.roomList[roomId].isRecord == true){
 		//记录战绩 
@@ -273,14 +281,13 @@ var gemeOver = function(roomId,players,flag,cb) {
 						"score" : players[index].score
 					}
 				}
-			}	
-		}	
+			}
+		}
 		for(var index in players){
 			if(players.hasOwnProperty(index)){
 				if(players[index].isActive){
 					GameRemote.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)
 				}
-			
 			}	
 		}
 
@@ -324,8 +331,6 @@ var gemeOver = function(roomId,players,flag,cb) {
 		httpConf.sendGameOver(streamData)
 	}
 	//通知gameServer
-	var agencyId = GameRemote.roomList[roomId].agencyId
-	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	GameRemote.app.rpc.game.remote.gameOver(null,roomId,players,flag,agencyId,maxGameNumber,function() {})
 	//删除房间
 	GameRemote.roomList[roomId] = false
