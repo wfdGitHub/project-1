@@ -733,9 +733,9 @@ var MING_CARD_NUM = 4               //明牌数量
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
+        var maxResultFlag = false
+        var maxResultIndex = -1
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
-          var maxResultFlag = false
-          var maxResultIndex = -1
           for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
                 if(result[i].type >= 10){
