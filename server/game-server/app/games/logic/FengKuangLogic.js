@@ -37,6 +37,12 @@ module.exports.getType = function(handCard) {
       var shunFlag = true
       var tonghuaFlag = true
       var tmpHandCard = deepCopy(handCard)
+      //A视为14 
+      for(var i = 0;i < 5;i++){
+        if(tmpHandCard[i].num == 1){
+          tmpHandCard[i].num = 14
+        }
+      }
       for(var i = 0;i < 5;i++){
         for(var j = i+1; j < 5;j++){
           if(tmpHandCard[i].num > tmpHandCard[j].num || (tmpHandCard[i].num == tmpHandCard[j].num && tmpHandCard[i].type > tmpHandCard[j].type)){
@@ -64,6 +70,11 @@ module.exports.getType = function(handCard) {
       if(shunFlag && tonghuaFlag){
           result.type = COMB_TYPE_TONGHUASHUN
           result.award = awardList[result.type]
+          for(var i = 1;i < 5;i++){
+              if(tmpHandCard[i].num > result.card.num || (tmpHandCard[i].num == result.card.num && tmpHandCard[i].type > result.card.type)){
+                  result.card = tmpHandCard[i]
+              }
+          }          
           return result        
       }
       //炸弹
@@ -127,6 +138,11 @@ module.exports.getType = function(handCard) {
       if(shunFlag){
           result.type = COMB_TYPE_SHUN
           result.award = awardList[result.type]
+          for(var i = 1;i < 5;i++){
+              if(tmpHandCard[i].num > result.card.num || (tmpHandCard[i].num == result.card.num && tmpHandCard[i].type > result.card.type)){
+                  result.card = tmpHandCard[i]
+              }
+          } 
           return result          
       }
       var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10]
