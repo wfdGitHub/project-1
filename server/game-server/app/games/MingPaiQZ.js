@@ -21,6 +21,7 @@ var MING_CARD_NUM = 4               //明牌数量
     room.agencyId = 0                    //代开房玩家ID 
     room.beginTime = (new Date()).valueOf()
     room.MatchStream = {}
+    room.maxResultFlag = false
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -117,7 +118,7 @@ var MING_CARD_NUM = 4               //明牌数量
         return
       } 
       if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
-        (param.bankerMode != 3 && param.bankerMode != 5)){
+        (param.bankerMode != 1 && param.bankerMode != 5)){
         log("newRoom error   param.bankerMode : "+param.bankerMode)
         cb(false)
         return
@@ -266,6 +267,7 @@ var MING_CARD_NUM = 4               //明牌数量
         roomBeginCB(room.roomId,room.agencyId)
       }       
       room.gameNumber--
+      room.maxRob = 1
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isReady){
@@ -322,10 +324,6 @@ var MING_CARD_NUM = 4               //明牌数量
       for(var i = index;i < cardCount;i++){
         tmpCards[tmpCardCount++] = deepCopy(cards[i])
       }
-
-      console.log("============1")
-      console.log(tmpCards)
-      console.log("============1")
       //执行控制   
       //先计算每个人的运气值   -1 到 1之间     
       var luckyValue = {}
@@ -348,8 +346,6 @@ var MING_CARD_NUM = 4               //明牌数量
             luckyValue[i] = luckyValue[i] * 0.6
           }
       }
-      console.log("luckyValue : ")
-      console.log(luckyValue)
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
@@ -410,11 +406,12 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      if(room.bankerMode == conf.MODE_BANKER_ROB){
+      if(room.bankerMode == conf.MODE_BANKER_ROB || 
+        (room.bankerMode == conf.MODE_BANKER_NIUNIU && room.maxResultFlag == false)){
         gameState = conf.GS_ROB_BANKER
         //初始化抢庄状态为-1
         for(var i = 0; i < GAME_PLAYER;i++){
-        robState[i] = -1
+          robState[i] = -1
         }
         //抢庄
         var notify = {
@@ -736,6 +733,7 @@ var MING_CARD_NUM = 4               //明牌数量
           }
         }
         //牛牛坐庄模式换庄
+        room.maxResultFlag = false
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
           var maxResultFlag = false
           var maxResultIndex = -1
@@ -755,10 +753,7 @@ var MING_CARD_NUM = 4               //明牌数量
           }
           if(maxResultFlag){
             banker = maxResultIndex
-          }else{
-            do{
-                banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false || player[banker].isReady == false)
+            room.maxResultFlag = true
           }
         }        
         //积分改变
@@ -804,7 +799,6 @@ var MING_CARD_NUM = 4               //明牌数量
             player[i].isNoGiveUp = true
             player[i].isShowCard = false
         }
-        room.maxRob = 0
         if(room.gameNumber <= 0){
             local.gameOver()
         }
