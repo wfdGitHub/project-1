@@ -406,8 +406,7 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      if(room.bankerMode == conf.MODE_BANKER_ROB || 
-        (room.bankerMode == conf.MODE_BANKER_NIUNIU && room.maxResultFlag == false)){
+      if(room.bankerMode == conf.MODE_BANKER_ROB){
         gameState = conf.GS_ROB_BANKER
         //初始化抢庄状态为-1
         for(var i = 0; i < GAME_PLAYER;i++){
@@ -733,7 +732,7 @@ var MING_CARD_NUM = 4               //明牌数量
           }
         }
         //牛牛坐庄模式换庄
-        room.maxResultFlag = false
+        //room.maxResultFlag = false
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
           var maxResultFlag = false
           var maxResultIndex = -1
@@ -753,7 +752,7 @@ var MING_CARD_NUM = 4               //明牌数量
           }
           if(maxResultFlag){
             banker = maxResultIndex
-            room.maxResultFlag = true
+            //room.maxResultFlag = true
           }
         }        
         //积分改变
