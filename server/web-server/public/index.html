@@ -190,7 +190,7 @@
           )
       }        
       var agencyFinish = function(roomId) {
-          pomelo.request("connector.entryHandler.sendFrame", {"code" : "agencyFinish","params" : {"roomId" : roomId}},null, function(data) {
+          pomelo.request("connector.entryHandler.sendFrame", {"code" : "agencyFinish","params" : {"roomId" : roomId}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           )

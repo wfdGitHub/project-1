@@ -87,7 +87,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     }
-    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || param.bankerMode > 3 || param.bankerMode < 0){
+    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+      (param.bankerMode != 1 && param.bankerMode != 2 && param.bankerMode != 3 && param.bankerMode != 5)){
       log("newRoom error   param.bankerMode : "+param.bankerMode)
       cb(false)
       return
@@ -137,8 +138,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     if(room.gameMode == MODE_GAME_BULL){
       banker = roomHost
     }
-    if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-      if(room.bankerMode == conf.MODE_BANKER_HOST){
+    if(room.gameMode == conf.MODE_GAME_NORMAL){
+      if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
         banker = roomHost
       }
     }   
@@ -338,7 +339,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           return
         }
       }else if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-        if(room.bankerMode == conf.MODE_BANKER_HOST && banker == chair){
+        if((room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU)&& banker == chair){
           return
         }
       }
@@ -358,8 +359,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           tmpBanker = banker
         }
       }
-      if(room.gameMode == conf.MODE_GAME_NORMAL || room.gameMode == conf.MODE_GAME_CRAZE){
-        if(room.bankerMode == conf.MODE_BANKER_HOST){
+      if(room.gameMode == conf.MODE_GAME_NORMAL){
+        if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
           tmpBanker = banker
         }
       }      
@@ -935,7 +936,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       switch(room.gameMode){
         case conf.MODE_GAME_NORMAL : 
         case conf.MODE_GAME_CRAZE :
-          //常规模式和疯狂模式结算
+          //常规模式结算
           for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
                 if(i === banker || player[i].isReady != true) continue
@@ -952,7 +953,32 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
                     curScores[banker] += betList[i] * award
                 }              
             }
-
+          }
+          //牛牛坐庄模式换庄
+          if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+            var maxResultFlag = false
+            var maxResultIndex = -1
+            for(var i = 0;i < GAME_PLAYER;i++){
+              if(player[i].isActive && player[i].isReady){
+                  if(result[i].type >= 10){
+                    if(maxResultFlag == false){
+                      maxResultFlag = true
+                      maxResultIndex = i
+                    }else{
+                      if(logic.compare(result[i],result[maxResultIndex])){
+                        maxResultIndex = i
+                      }
+                    }
+                  }           
+              }
+            }
+            if(maxResultFlag){
+              banker = maxResultIndex
+            }else{
+              do{
+                  banker = (banker + 1)%GAME_PLAYER
+              }while(player[banker].isActive == false || player[banker].isReady == false)
+            }
           }
           break
         case conf.MODE_GAME_BULL : 

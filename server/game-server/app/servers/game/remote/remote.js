@@ -108,7 +108,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	}else if(code == "newRoom"){
 		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
-	      //console.log("agency error   param.gameNumber : "+params.gameNumber)
+	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
 	    }  

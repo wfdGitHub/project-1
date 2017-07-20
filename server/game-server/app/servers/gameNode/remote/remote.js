@@ -182,6 +182,7 @@ GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
 }
 //结束房间
 GameRemote.prototype.finishRoom = function(params,roomId,cb) {
+	console.log("finishRoom roomId : "+roomId)
 	if(GameRemote.roomList[roomId].finishGame){
 		GameRemote.roomList[roomId].finishGame()
 	}

@@ -288,7 +288,7 @@ handler.enter = function(msg, session, next) {
 
 //接受客户端发送数据
 handler.sendData = function(msg, session, next){
-    //console.log("code : "+msg.code)
+    console.log("code : "+msg.code)
     var self = this
     //判断登录
     var uid = session.get("uid")

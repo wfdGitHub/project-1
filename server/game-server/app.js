@@ -53,19 +53,16 @@ var gameNodeRoute = function(session, msg, app, cb) {
 //连接服务器分配路由
 var connectorRoute = function(session, msg, app, cb) {
   var connectors = app.getServersByType('connector')
-  console.log("11111111")
   if(!connectors || connectors.length === 0) {
     cb(new Error('can not find connector servers.'))
     return
   }
-  console.log("2222222222")
   //获取用户游戏服务ID
   var cid = msg.args[0].cid
   if(cid === undefined){
     cb(new Error('can not find connector servers.'))
     return
   }
-  console.log("cid222222 : "+cid)
   cb(null, cid);
 };
 app.configure('production|development', function() {

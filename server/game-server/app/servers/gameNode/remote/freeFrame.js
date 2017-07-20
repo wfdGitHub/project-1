@@ -101,7 +101,6 @@ frame.onFrame = function(params,uid,code,cb) {
 			cb(true)
 			break
 		case "agencyFinish" :
-		console.log("=======agencyFinish======= : "+params.roomId)
 			var roomId = params.roomId
 			if(!frame.GameService.roomList[roomId] || frame.GameService.roomList[roomId].agencyId !== uid){
 				cb(false)
@@ -112,7 +111,6 @@ frame.onFrame = function(params,uid,code,cb) {
 				return
 			}
 			frame.GameService.roomList[roomId].finishGame()
-			
 			cb(true)
 			break;
 	}

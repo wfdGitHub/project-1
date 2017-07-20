@@ -82,7 +82,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     }
-    if(!param.bankerMode || typeof(param.bankerMode) !== "number" || param.bankerMode > 3 || param.bankerMode < 0){
+     if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+      (param.bankerMode != 1 && param.bankerMode != 2 && param.bankerMode != 3 && param.bankerMode != 5)){
       log("newRoom error   param.bankerMode : "+param.bankerMode)
       cb(false)
       return
@@ -125,9 +126,9 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
     //设置下注上限
     maxBet = 20
-    if(room.bankerMode == conf.MODE_BANKER_HOST){
+    if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
       banker = roomHost
-    } 
+    }
     cb(true)
   }
   //代开房间
@@ -316,7 +317,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         chair : chair
       }
       local.sendAll(notify)    
-      if(room.bankerMode == conf.MODE_BANKER_HOST && banker == chair){
+      if((room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU) && banker == chair){
         return
       }
       frame.disconnect(chair,player,gameState,local,local.chooseBanker)
@@ -330,7 +331,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         return
       }
       var tmpBanker = -1
-      if(room.bankerMode == conf.MODE_BANKER_HOST){
+      if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
         tmpBanker = banker
       }
       frame.ready(uid,chair,player,gameState,local, local.chooseBanker,tmpBanker,cb)
@@ -780,7 +781,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       }
       var bankerScoreChange = 0
       
-      //常规模式和疯狂模式结算
+      //疯狂模式结算
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isActive && player[i].isReady){
             if(i === banker || player[i].isReady != true) continue
@@ -809,6 +810,32 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
                 curScores[i] -= betList[i] * award
                 curScores[banker] += betList[i] * award
             }              
+        }
+      }
+      //牛牛坐庄模式换庄
+      if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+        var maxResultFlag = false
+        var maxResultIndex = -1
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+              if(result[i].type >= 10){
+                if(maxResultFlag == false){
+                  maxResultFlag = true
+                  maxResultIndex = i
+                }else{
+                  if(logic.compare(result[i],result[maxResultIndex])){
+                    maxResultIndex = i
+                  }
+                }
+              }           
+          }
+        }
+        if(maxResultFlag){
+          banker = maxResultIndex
+        }else{
+          do{
+              banker = (banker + 1)%GAME_PLAYER
+          }while(player[banker].isActive == false || player[banker].isReady == false)
         }
       }
       //积分改变

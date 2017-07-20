@@ -54,6 +54,7 @@ conf.MODE_BANKER_ROB   = 1              //随机抢庄
 conf.MODE_BANKER_HOST  = 2              //房主做庄
 conf.MODE_BANKER_ORDER = 3              //轮庄
 conf.MODE_BANKER_NONE  = 4              //无定庄模式
+conf.MODE_BANKER_NIUNIU = 5 			//牛牛坐庄
 //消耗模式
 conf.MODE_DIAMOND_HOST = 1              //房主扣钻
 conf.MODE_DIAMOND_EVERY = 2             //每人扣钻
@@ -66,9 +67,13 @@ conf.MODE_CARD_SHOW  = 2 				//明牌
 conf.GAME_TYPE = {
 	"niuniu" : true,
 	"zhajinniu" : true,
-	"mingpaiqz" : true
+	"mingpaiqz" : true,
+	"fengkuang" : true
 }
 
+var ROOM_FACTORY = {
+
+}
 //大牌控制
 conf.ROUND_TIMES = 1000 						//最大洗牌次数
 conf.TYPE_WEIGHT = 11 						//低于此权重洗牌
