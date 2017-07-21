@@ -93,6 +93,7 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 		DBRemote.dbService.setNotify(data)
 		if(cb){
 			cb()
+			cb(true)
 		}
 	})
 }
