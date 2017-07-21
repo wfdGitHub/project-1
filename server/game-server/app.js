@@ -10,7 +10,7 @@ app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
-      heartbeat : 1,
+      heartbeat : 10,
       disconnectOnTimeout: true,
       useDict : true,
       useProtobuf : true
@@ -20,7 +20,7 @@ app.configure('production|development', 'gate', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
-      heartbeat : 1,
+      heartbeat : 10,
       disconnectOnTimeout: true,
       useDict : true,
       useProtobuf : true
