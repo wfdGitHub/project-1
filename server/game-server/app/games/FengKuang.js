@@ -334,7 +334,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
         tmpBanker = banker
       }
-      frame.ready(uid,chair,player,gameState,local, local.chooseBanker,tmpBanker,cb)
+      frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
   }
   //玩家抢庄
   room.handle.robBanker = function(uid,sid,param,cb) {
@@ -390,7 +390,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     if(chair == undefined){
       cb(false)
       return
-    }    
+    }
     log("sendMsg")
     var notify = {
       cmd : "sayMsg",
@@ -428,18 +428,18 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     if(!player[chair].isReady){
       cb(false)
       return
-    }    
+    }
     //庄家不能下注
     if(chair == banker){
       cb(false)
       return
     }
     //其他模式
-    if(param.bet && typeof(param.bet) == "number" 
+    if(param.bet && typeof(param.bet) == "number"
       && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
       betList[chair] += param.bet
       betAmount += param.bet
-      local.betMessege(chair,param.bet)     
+      local.betMessege(chair,param.bet)   
     }else{
       cb(false)
       return
@@ -516,25 +516,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         local.sendAll(notify)
         timer = setTimeout(local.endRob,TID_ROB_TIME)    
         break
-      case MODE_BANKER_ORDER :
-        //轮庄
-        do{
-            banker = (banker + 1)%GAME_PLAYER
-        }while(player[banker].isActive == false || player[banker].isReady == false)
-
-        local.gameBegin()
-        break
-      case MODE_BANKER_HOST :
-        //房主当庄
-        banker = roomHost
-        if(roomHost === -1){
-          banker = 0
-        }
-        local.gameBegin()
-        break
       default:
-
-        local.gameBegin()
+        local.betting()
         break
     }
   }
@@ -568,7 +551,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
 
     banker = num
 
-    local.gameBegin()
+    setTimeout(local.betting,1000)
   }
 
   //游戏开始
@@ -701,8 +684,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           }
         }
       }
-      //进入下注
-      local.betting()      
+      //进入抢庄
+      local.chooseBanker()
     }    
   }
   //下注阶段
