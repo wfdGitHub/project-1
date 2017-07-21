@@ -47,6 +47,11 @@ dbService.updateDiamond = function(value) {
 		dbService.db.set(cmd,value)
 	})
 }
+dbService.setNotify = function(notify) {
+	db.set("nn:notifys",JSON.stringify(notify));
+}
+
+
 dbService.getPlayerInfo = function(uid,cb) {
 	dbService.getPlayerString(uid,"uidMap",function(data) {
 		if(!data){
@@ -158,8 +163,7 @@ dbService.getPlayerObject = function(uid,name,cb) {
 }
 dbService.setNotify = function(notify,cb) {
 	var cmd = "nn:notifys"
-	var notify = {"1" : {"name" : "新服开启","content" : "新服火爆开启"} , "2" : {"name" : "首冲双倍","content" : "首次充值双倍返还"}}
-	dbService.db.set(cmd,notify,function(flag) {
+	dbService.db.set(cmd,JSON.stringify(notify),function(flag) {
 		if(cb){
 			cb(flag)
 		}
@@ -169,8 +173,9 @@ dbService.setNotify = function(notify,cb) {
 dbService.getNotify = function(cb) {
 	var cmd = "nn:notifys"
 	dbService.db.get(cmd,function(err,data) {
-		//console.log(cmd + "  data : "+data)
-		//console.log(JSON.parse(data))
+		// console.log(cmd + "  data : "+data)
+		// console.log(data)
+		// console.log("type : "+typeof(data))
 		cb(JSON.parse(data))
 	})
 }

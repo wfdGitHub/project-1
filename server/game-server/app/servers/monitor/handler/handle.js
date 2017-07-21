@@ -64,6 +64,15 @@ var Handler = function(app) {
 							}
 						})
 					return
+					case "updateNotify" :
+						local.updateNotify(data.notify,data.source,function(flag) {
+							if(flag){
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
 					default :
 						local.write(res,{"flag" : false})
 						break
@@ -94,6 +103,16 @@ local.write = function(res,notidy) {
 	res.write(JSON.stringify(notidy))
 	res.end()
 }
+
+//更新公告
+local.updateNotify = function(notify,source,cb){
+	if(typeof(notify) !== "string" || typeof(source) !== "number"){
+		cb(false)
+		return
+	}
+	Handler.app.rpc.db.remote.updateNotify(null,notify,source,cb)
+}
+
 //添加钻石
 local.addDiamond = function(diamond,uid,cb) {
 	if(!diamond || typeof(diamond) != "number"){

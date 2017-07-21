@@ -81,6 +81,21 @@ DBRemote.prototype.updateDiamond = function(value,cb) {
 	DBRemote.dbService.updateDiamond(value)
 	cb()
 }
+DBRemote.prototype.updateNotify = function(notify,source,cb) {
+	// console.log("notify : "+notify)
+	// console.log("source : "+source)
+	DBRemote.dbService.getNotify(function(data) {
+		if(!data[source]){
+			data[source] = {}
+			data[source].name = ""
+		}
+		data[source].content = notify
+		DBRemote.dbService.setNotify(data)
+		if(cb){
+			cb()
+		}
+	})
+}
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	DBRemote.dbService.getPlayer(uid,name,function(data) {
