@@ -99,9 +99,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       return
     } 
     if(typeof(param.limitAward) !== "boolean"){
-      log("newRoom error   param.limitAward : "+param.limitAward)
-      cb(false)
-      return
+      param.limitAward = true
     }
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
