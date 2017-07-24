@@ -202,6 +202,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     //初始化玩家属性
     room.chairMap[uid] = chair
     player[chair].isActive = true
+    player[chair].isReady = false
     player[chair].isOnline = true
     player[chair].uid = uid
     player[chair].ip = param.ip
@@ -355,9 +356,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       }
       var tmpBanker = -1
       if(room.gameMode == conf.MODE_GAME_BULL){
-        if(banker == chair){
           tmpBanker = banker
-        }
       }
       if(room.gameMode == conf.MODE_GAME_NORMAL){
         if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
@@ -716,7 +715,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
             local.updatePlayerScore(banker)
             do{
                 banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false || player[banker].isReady == false)
+            }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
             bonusPool = room.playerCount * 8
             player[banker].score -= bonusPool
             player[banker].isBanker = true

@@ -215,6 +215,7 @@ var MING_CARD_NUM = 3               //明牌数量
       //初始化玩家属性
       room.chairMap[uid] = chair
       player[chair].isActive = true
+      player[chair].isReady = false
       player[chair].isOnline = true
       player[chair].isNoGiveUp = true //true表示未放弃
       player[chair].uid = uid

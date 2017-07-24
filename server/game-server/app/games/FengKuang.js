@@ -16,10 +16,6 @@ var GS_DEAL         = 1003              //发牌阶段
 var GS_SETTLEMENT   = 1004              //结算阶段
 var GS_ROB_BANKER   = 1005              //抢庄阶段
 
-//游戏模式
-var MODE_GAME_NORMAL = 1              //常规模式
-var MODE_GAME_BULL   = 3              //斗公牛模式
-var MODE_GAME_SHIP   = 4              //开船模式
 //定庄模式
 var MODE_BANKER_ROB   = 1              //随机抢庄
 var MODE_BANKER_HOST  = 2              //房主做庄
@@ -186,6 +182,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     //初始化玩家属性
     room.chairMap[uid] = chair
     player[chair].isActive = true
+    player[chair].isReady = false
     player[chair].isOnline = true
     player[chair].uid = uid
     player[chair].ip = param.ip
@@ -314,7 +311,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         uid: uid,
         chair : chair
       }
-      local.sendAll(notify)    
+      local.sendAll(notify)
       if((room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU) && banker == chair){
         return
       }
