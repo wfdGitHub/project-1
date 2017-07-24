@@ -880,6 +880,9 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
               if(tmpBet === 0){
                 tmpBet = 1
               }
+              if(tmpBet > 40){
+                tmpBet = 40
+              }
             }
             betList[i] = tmpBet
             betAmount += tmpBet
