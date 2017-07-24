@@ -82,9 +82,8 @@ DBRemote.prototype.updateDiamond = function(value,cb) {
 	cb()
 }
 DBRemote.prototype.updateNotify = function(notify,source,cb) {
-	// console.log("notify : "+notify)
-	// console.log("source : "+source)
 	DBRemote.dbService.getNotify(function(data) {
+		console.log(data)
 		if(!data[source]){
 			data[source] = {}
 			data[source].name = ""
@@ -92,8 +91,7 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 		data[source].content = notify
 		DBRemote.dbService.setNotify(data)
 		if(cb){
-			cb()
-			cb(true)
+			cb(true)	
 		}
 	})
 }

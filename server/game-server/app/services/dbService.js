@@ -47,9 +47,6 @@ dbService.updateDiamond = function(value) {
 		dbService.db.set(cmd,value)
 	})
 }
-dbService.setNotify = function(notify) {
-	db.set("nn:notifys",JSON.stringify(notify));
-}
 
 
 dbService.getPlayerInfo = function(uid,cb) {
@@ -163,6 +160,7 @@ dbService.getPlayerObject = function(uid,name,cb) {
 }
 dbService.setNotify = function(notify,cb) {
 	var cmd = "nn:notifys"
+	//console.log(JSON.stringify(notify))
 	dbService.db.set(cmd,JSON.stringify(notify),function(flag) {
 		if(cb){
 			cb(flag)
@@ -173,9 +171,6 @@ dbService.setNotify = function(notify,cb) {
 dbService.getNotify = function(cb) {
 	var cmd = "nn:notifys"
 	dbService.db.get(cmd,function(err,data) {
-		// console.log(cmd + "  data : "+data)
-		// console.log(data)
-		// console.log("type : "+typeof(data))
 		cb(JSON.parse(data))
 	})
 }

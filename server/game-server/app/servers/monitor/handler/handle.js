@@ -106,6 +106,7 @@ local.write = function(res,notidy) {
 
 //更新公告
 local.updateNotify = function(notify,source,cb){
+	console.log(notify)
 	if(typeof(notify) !== "string" || typeof(source) !== "number"){
 		cb(false)
 		return
