@@ -395,7 +395,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
-    }while(player[banker].isActive == false || player[banker].isReady == false)
+    }while(player[banker].isActive == false)
     bonusPool = room.playerCount * 8
     player[banker].score -= bonusPool
     bankerTime = 0
