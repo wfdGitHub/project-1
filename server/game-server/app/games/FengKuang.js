@@ -108,8 +108,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     readyCount = 0                   //游戏准备人数
     gameState = GS_FREE              //游戏状态
     room.chairMap = {}               //玩家UID与椅子号映射表
-    banker = -1                      //庄家椅子号
     roomHost = 0                     //房主椅子号
+    banker = roomHost                //庄家椅子号
     room.runCount = 0                //当前游戏局数
     room.bankerMode = param.bankerMode                 //定庄模式
     room.gameNumber = param.gameNumber                 //游戏局数
@@ -120,9 +120,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
     //设置下注上限
     maxBet = 3
-    if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
-      banker = roomHost
-    }
     cb(true)
   }
   //代开房间
@@ -511,6 +508,14 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         local.sendAll(notify)
         timer = setTimeout(local.endRob,TID_ROB_TIME)    
         break
+      case MODE_BANKER_ORDER :
+        //轮庄
+        local.betting()
+        break
+      case MODE_BANKER_HOST :
+        //房主当庄
+        local.betting()
+        break  
       default:
         local.betting()
         break
@@ -813,8 +818,12 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         }else{
           do{
               banker = (banker + 1)%GAME_PLAYER
-          }while(player[banker].isActive == false || player[banker].isReady == false)
+          }while(player[banker].isActive == false)
         }
+      }else if(room.bankerMode == conf.MODE_BANKER_ORDER){
+          do{
+            banker = (banker + 1)%GAME_PLAYER
+          }while(player[banker].isActive == false)
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
