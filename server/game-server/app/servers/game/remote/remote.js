@@ -62,6 +62,12 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 
 GameRemote.userConnectorMap = {}
 
+
+//用户连接
+GameRemote.prototype.userConnect = function(uid,sid,cb) {
+	GameRemote.userConnectorMap[uid] = sid
+}
+
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	// //console.log("uid : "+uid+"code : "+code)
 	// //房间已锁定则拒绝操作
@@ -72,7 +78,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	// 		return
 	// 	}
 	// }
-	GameRemote.userConnectorMap[uid] = sid
 	var self = this
 	//加入房间需要用户不在房间内
 	if(code == "join"){

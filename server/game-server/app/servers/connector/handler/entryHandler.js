@@ -157,7 +157,9 @@ handler.visitorEnter = function(msg, session, next) {
           sid: self.app.get('serverId')
         }])
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
-        userLoginLogger.info(info)        
+        userLoginLogger.info(info)    
+        //通知gameServer
+        self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})            
       }
       ],
     function(err,result) {
@@ -279,6 +281,8 @@ handler.enter = function(msg, session, next) {
         httpConf.sendLoginHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
+        //通知gameServer
+        self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
       }
       ],
     function(err,result) {
