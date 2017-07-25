@@ -10,6 +10,7 @@ module.exports = function(app) {
 var Handler = function(app) {
 	this.app = app
 	Handler.app = app
+	Handler.channelService = this.app.get('channelService')
 	if(app.get("serverId") === "connector-server-1"){
 	http.createServer(function(req,res){
 		//console.log(req)
@@ -72,6 +73,19 @@ var Handler = function(app) {
 								local.write(res,{"flag" : false})
 							}
 						})
+					return
+					case "addRolling" :
+						if(typeof(data.content) !== "string" || typeof(data.count) !== "number" || data.count <= 0 || data.count > 1000){
+							local.write(res,{"flag" : false})
+							return
+						}
+						var rolling = {
+							"type" : "rolling",
+							"count" : data.count,
+							"content" : data.content
+						}
+						Handler.channelService.broadcast("connector","onNotify",rolling)
+						local.write(res,{"flag" : true})
 					return
 					default :
 						local.write(res,{"flag" : false})

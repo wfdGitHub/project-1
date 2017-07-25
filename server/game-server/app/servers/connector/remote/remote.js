@@ -4,7 +4,7 @@ module.exports = function(app) {
 
 var ConnectorRemote = function(app) {
 	this.app = app
-    ConnectorRemote.channelService = this.app.get('channelService');
+  ConnectorRemote.channelService = this.app.get('channelService');
 }	
 
 
@@ -18,4 +18,10 @@ remote.sendByUid = function(params,uid,notify,cb) {
     if(cb){
     	cb() 
     }
+}
+
+
+//通知公告更新
+remote.broadcast = function(notify) {
+  ConnectorRemote.channelService.broadcast()
 }

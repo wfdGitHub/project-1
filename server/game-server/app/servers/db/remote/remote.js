@@ -8,6 +8,7 @@ var DBRemote = function(app) {
 	this.app = app
 	DBRemote.app = app
     DBRemote.dbService = this.app.get("dbService")
+    DBRemote.channelService = this.app.get('channelService')
     if(DBRemote.dbService && DBRemote.dbService.db){
     	DBRemote.db = DBRemote.dbService.db
     }
@@ -90,8 +91,10 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 		}
 		data[source].content = notify
 		DBRemote.dbService.setNotify(data)
+		//更新公告完通知所有玩家
+		DBRemote.channelService.broadcast("connector","onNotify",{"type":"notify","data":data})
 		if(cb){
-			cb(true)	
+			cb(true)
 		}
 	})
 }
