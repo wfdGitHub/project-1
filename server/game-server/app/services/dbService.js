@@ -59,7 +59,29 @@ dbService.getPlayerInfo = function(uid,cb) {
 	})	
 }
 
+//检查部分数据   若没有则初始化
+dbService.checkData = function(uid) {
+	console.log("beginCheck")
+	//消耗钻石字段
+	dbService.getPlayer(uid,"useDiamond",function(data) {
+		console.log(data)
+		if(!data && data !== 0){
+			console.log("init useDiamond for uid : "+uid)
+			dbService.setPlayer(uid,"useDiamond",0,function() {})
+		}
+	})
+	//金币字段
+	dbService.getPlayer(uid,"gold",function(data) {
+		console.log(data)
+		if(!data && data !== 0){
+			console.log("init gold for uid : "+uid)
+			dbService.setPlayer(uid,"gold",0,function() {})
+		}
+	})
+}
+
 dbService.getPlayerInfoByUid = function(uid,cb) {
+	dbService.checkData(uid)
 	var cmd1 = "nn:acc:"+uid+":"+"diamond"
 	var cmd2 = "nn:acc:"+uid+":"+"uid"
 	var cmd3 = "nn:acc:"+uid+":"+"nickname"
@@ -68,7 +90,9 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd6 = "nn:acc:"+uid+":"+"sex"
 	var cmd7 = "nn:acc:"+uid+":"+"limits"
 	var cmd8 = "nn:acc:"+uid+":"+"freeze"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,function(err,data) {
+	var cmd9 = "nn:acc:"+uid+":"+"useDiamond"
+	var cmd10 = "nn:acc:"+uid+":"+"gold"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -79,6 +103,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["sex"] = data[5]
 			notify["limits"] = data[6]
 			notify["freeze"] = data[7]
+			notify["useDiamond"] = data[8] || 0
+			notify["gold"] = data[9] || 0
 			notify["playerId"] = uid
 			cb(notify)
 		}else{
@@ -89,7 +115,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	//console.log(cmd + "  data : "+value)	
+	console.log(cmd + "  data : "+value)	
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
 			if(!flag){

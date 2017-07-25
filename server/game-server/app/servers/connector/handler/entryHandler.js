@@ -212,11 +212,17 @@ handler.enter = function(msg, session, next) {
       },
       function(cb) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
+          console.log(data)
           notify.cmd = "userInfo"
           notify.data = data
           notify.data.nickname = strReplace(notify.data.nickname)
           notify.openId = openId
           notify.unionid = userId
+          notify.allGames = data.history ? data.history.allGames : 0
+          notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
+          notify.useDiamond = data.useDiamond
+          notify.gold = data.gold
+          notify.platform  = msg.platform
           if(data.freeze == 1){
             next(null,{"flag" : false ,"code" : 500})
             return

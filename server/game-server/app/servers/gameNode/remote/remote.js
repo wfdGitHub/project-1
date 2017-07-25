@@ -51,7 +51,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 	if(!ROOM_FACTORY[params.gameType]){
 		cb(false)
 		return
-	}	
+	}
 	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
@@ -226,12 +226,14 @@ var gemeOver = function(roomId,players,flag,cb) {
 		switch(GameRemote.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 
 				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * 3),null)
+				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"useDiamond",(diamond * 3),null)
 				break;
 			case MODE_DIAMOND_EVERY: 
 				for(var index in players){
 					if(players.hasOwnProperty(index)){
                         if(players[index].isActive){
                             GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+                            GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"useDiamond",diamond,null)
                         }
 					}
 				}
@@ -250,6 +252,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 					}
 				}
 				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
+				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"useDiamond",(diamond * 3),null)
 				break;		
 		}		
 	}else{
@@ -257,6 +260,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
 			var tmpDiamond = Math.floor(maxGameNumber/10) * 3
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
+			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
 		}
 	}
 	if(GameRemote.roomList[roomId].isRecord == true){

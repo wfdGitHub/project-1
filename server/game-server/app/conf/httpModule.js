@@ -4,6 +4,7 @@ module.exports = {
 
 }
 module.exports.sendLoginHttp = function(notify) {
+  console.log(notify)
   notify.data["uid"] = notify.data["playerId"]
   var data = {}
 
@@ -12,9 +13,12 @@ module.exports.sendLoginHttp = function(notify) {
   data.union_id = notify.unionid
   data.nickname = notify.data.nickname
   data.head_img = notify.data.head
-  data.sum_play = 0
+  data.sum_play = notify.allGames
   data.coin = notify.data.diamond
-  data.used_coin = 0
+  data.ip = notify.ip.replace("::ffff:","")
+  data.used_coin = notify.useDiamond
+  data.gold = notify.gold
+  data.platform = notify.platform
 
   var keys = Object.keys(data).sort()
   var string = ""
@@ -23,6 +27,7 @@ module.exports.sendLoginHttp = function(notify) {
   }
   string += "key=niuniuyiyousecretkey"
   data.sign = md5(string)
+  console.log(data)
   var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
   })
   req.on("error",function(err){
