@@ -61,10 +61,10 @@ dbService.getPlayerInfo = function(uid,cb) {
 
 //检查部分数据   若没有则初始化
 dbService.checkData = function(uid) {
-	console.log("beginCheck")
+	//console.log("beginCheck")
 	//消耗钻石字段
 	dbService.getPlayer(uid,"useDiamond",function(data) {
-		console.log(data)
+		//console.log(data)
 		if(!data && data !== 0){
 			console.log("init useDiamond for uid : "+uid)
 			dbService.setPlayer(uid,"useDiamond",0,function() {})
@@ -72,7 +72,7 @@ dbService.checkData = function(uid) {
 	})
 	//金币字段
 	dbService.getPlayer(uid,"gold",function(data) {
-		console.log(data)
+		//console.log(data)
 		if(!data && data !== 0){
 			console.log("init gold for uid : "+uid)
 			dbService.setPlayer(uid,"gold",0,function() {})

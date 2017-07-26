@@ -214,7 +214,7 @@ handler.enter = function(msg, session, next) {
       },
       function(cb) {
         self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
-          console.log(data)
+          //console.log(data)
           notify.cmd = "userInfo"
           notify.data = data
           notify.data.nickname = strReplace(notify.data.nickname)
