@@ -308,6 +308,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"scores" : GameRemote.roomList[roomId].scores,
 			"gameMode" : GameRemote.roomList[roomId].gameMode,
 			"roomId" : roomId,
+			"bankerMode" : GameRemote.roomList[roomId].bankerMode,
 			"gameNumber" : GameRemote.roomList[roomId].maxGameNumber,
 			"cardMode" : GameRemote.roomList[roomId].cardMode,
 			"consumeMode" : GameRemote.roomList[roomId].consumeMode,

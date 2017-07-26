@@ -759,7 +759,7 @@ var MING_CARD_NUM = 4               //明牌数量
                       maxResultIndex = i
                     }
                   }
-                }           
+                }
             }
           }
           if(maxResultFlag){
@@ -796,7 +796,7 @@ var MING_CARD_NUM = 4               //明牌数量
               stream[i] = {
                 "uid" : player[i].uid,
                 "result" : result[i],
-                "handCard" : player[i].handCard,
+                "handCard" : deepCopy(player[i].handCard),
                 "changeScore" : curScores[i]
               }
           }

@@ -475,7 +475,7 @@ var MING_CARD_NUM = 3               //明牌数量
               stream[i] = {
                 "uid" : player[i].uid,
                 "result" : result[i],
-                "handCard" : player[i].handCard,
+                "handCard" : deepCopy(player[i].handCard),
                 "changeScore" : curScores[i]
               }
           }

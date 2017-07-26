@@ -1136,7 +1136,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
             stream[i] = {
               "uid" : player[i].uid,
               "result" : trueResult[i],
-              "handCard" : player[i].handCard,
+              "handCard" : deepCopy(player[i].handCard),
               "changeScore" : curScores[i]
             }
         }
