@@ -67,7 +67,7 @@ GameRemote.userConnectorMap = {}
 GameRemote.prototype.userConnect = function(uid,sid,cb) {
 	GameRemote.userConnectorMap[uid] = sid
 	if(cb){
-		cb
+		cb()
 	}
 }
 
