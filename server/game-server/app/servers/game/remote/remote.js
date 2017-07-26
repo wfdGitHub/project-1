@@ -66,6 +66,9 @@ GameRemote.userConnectorMap = {}
 //用户连接
 GameRemote.prototype.userConnect = function(uid,sid,cb) {
 	GameRemote.userConnectorMap[uid] = sid
+	if(cb){
+		cb
+	}
 }
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {

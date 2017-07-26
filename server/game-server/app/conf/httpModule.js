@@ -4,7 +4,7 @@ module.exports = {
 
 }
 module.exports.sendLoginHttp = function(notify) {
-  console.log(notify)
+  //console.log(notify)
   notify.data["uid"] = notify.data["playerId"]
   var data = {}
 
@@ -27,7 +27,7 @@ module.exports.sendLoginHttp = function(notify) {
   }
   string += "key=niuniuyiyousecretkey"
   data.sign = md5(string)
-  console.log(data)
+  //console.log(data)
   var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
   })
   req.on("error",function(err){
