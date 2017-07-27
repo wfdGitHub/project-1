@@ -138,6 +138,12 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return        
       }
+      if(typeof(param.isWait) !== "boolean"){
+        log("newRoom error   param.isWait : "+param.isWait)
+        cb(false)
+        return
+      }
+      frame.start(param.isWait)      
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }

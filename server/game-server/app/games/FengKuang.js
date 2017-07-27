@@ -94,6 +94,12 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
+    if(typeof(param.isWait) !== "boolean"){
+      log("newRoom error   param.isWait : "+param.isWait)
+      cb(false)
+      return
+    }
+    frame.start(param.isWait)
     if(typeof(param.limitAward) !== "boolean"){
       param.limitAward = true
     }
