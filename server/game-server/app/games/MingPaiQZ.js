@@ -148,6 +148,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basic = param.basic
+      room.basic = basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
