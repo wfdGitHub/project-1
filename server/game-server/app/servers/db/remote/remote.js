@@ -30,7 +30,7 @@ var createAccount = function(result,cb) {
 		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
-		cb(true)
+		cb(false)
 	})
 }
 //每次登陆更新微信信息
