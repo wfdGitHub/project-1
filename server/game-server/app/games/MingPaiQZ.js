@@ -581,7 +581,7 @@ var MING_CARD_NUM = 4               //明牌数量
             var flag = true
             for(var index in robState){
               if(robState.hasOwnProperty(index)){
-                if(player[index].isActive){
+                if(player[index].isActive && player[index].isReady){
                   if(robState[index] == -1){
                     flag = false
                   }
