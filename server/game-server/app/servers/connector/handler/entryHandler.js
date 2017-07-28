@@ -319,6 +319,26 @@ handler.sendData = function(msg, session, next){
         next(null,{flag : false})
     }
 }
+//发送金币场数据
+handler.sendGoldData = function(msg,session,next) {
+    console.log("code : "+msg.code)
+    var self = this
+    //判断登录
+    var uid = session.get("uid")
+    //console.log("uid : "+uid)  
+    if(!!uid){
+        if(msg.code == "join" || msg.code == "newRoom"){
+          if(msg.params){
+            msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
+          }
+        }
+        self.app.rpc.goldGame.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+            next(null,{flag : flag,msg : msg})
+        })
+    }else{
+        next(null,{flag : false})
+    }
+}
 
 handler.sendFrame = function(msg, session, next) {
     //console.log("code : "+msg.code)

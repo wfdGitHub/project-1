@@ -11,6 +11,9 @@
     "game":[
       {"id":"game-server","host":"127.0.0.1","port":3210}
     ],
+    "goldGame":[
+      {"id":"gold-server","host":"127.0.0.1","port":3220}
+    ],
     "db":[
       {"id":"db-server","host":"127.0.0.1","port":3250}
     ],
@@ -37,6 +40,9 @@
     ],
     "game":[
       {"id":"game-server","host":"127.0.0.1","port":3210}
+    ],
+    "goldGame":[
+      {"id":"gold-server","host":"127.0.0.1","port":3220}
     ],
     "db":[
       {"id":"db-server","host":"127.0.0.1","port":3250}
