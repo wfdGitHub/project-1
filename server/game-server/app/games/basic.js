@@ -126,9 +126,7 @@ var MING_CARD_NUM = 3               //明牌数量
         return
       } 
       if(typeof(param.isWait) !== "boolean"){
-        log("newRoom error   param.isWait : "+param.isWait)
-        cb(false)
-        return
+        param.isWait = true
       }
       frame.start(param.isWait)
       //是否允许中途加入
