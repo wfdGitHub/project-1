@@ -183,7 +183,14 @@ handler.h5Enter = function(msg,session,next) {
   }
   httpConf.H5GetData(msg.code,function(data) {
     console.log(data)
-    //handler.enter(msg,session,next)
+    if(data.errcode){
+      console.log(data.errmsg)
+      next(false)
+      return
+    }
+    msg.openId = data.openid
+    msg.token = data.access_token
+    handler.enter(msg,session,next)
   })
 }
 //登录
