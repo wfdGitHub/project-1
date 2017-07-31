@@ -117,7 +117,11 @@ local.createRoom = function(type) {
 }
 
 //用户退出房间
-local.quitRoom = function(uid,cb) {
+local.quitRoom = function(roomId,uid) {
+	delete GameRemote.RoomMap[roomId][i]
+}
+
+local.userQuit = function(uid,cb) {
 	var roomId = GameRemote.userMap[uid]
 	if(!roomId){
 		cb(false)
@@ -126,7 +130,7 @@ local.quitRoom = function(uid,cb) {
 	for(var i in GameRemote.RoomMap[roomId]){
 		if(GameRemote.RoomMap[roomId].hasOwnProperty(i)){
 			if(GameRemote.RoomMap[roomId][i] == uid){
-				delete GameRemote.RoomMap[roomId][i]
+				local.quitRoom(roomId,uid)
 				cb(true)
 				return
 			}
@@ -134,31 +138,30 @@ local.quitRoom = function(uid,cb) {
 	}
 	cb(false)
 }
-
-local.join = function(uid,sid,params,self,cb) {
-	//无效条件判断
-	if(typeof(params.roomId) != "number" || params.roomId < 0 
-		|| GameRemote.roomList[params.roomId] === undefined || GameRemote.roomState[params.roomId]){
-        cb(false,{"code" : tips.NO_ROOM})
-        return
-	}
-	var roomId = params.roomId
-	params.gid = GameRemote.roomList[roomId]
-	self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
-		if(flag === true){
-			GameRemote.userMap[uid] = roomId;
-			if(GameRemote.RoomMap[roomId]){
-				var info = {
-					"uid" : playerInfo.uid,
-					"nickname" : playerInfo.nickname,
-					"head" : playerInfo.head
-				}
-				GameRemote.RoomMap[roomId].push(info)						
-			}
-		}
-		cb(flag,msg)
-	})
-}
+// local.join = function(uid,sid,params,self,cb) {
+// 	//无效条件判断
+// 	if(typeof(params.roomId) != "number" || params.roomId < 0 
+// 		|| GameRemote.roomList[params.roomId] === undefined || GameRemote.roomState[params.roomId]){
+//         cb(false,{"code" : tips.NO_ROOM})
+//         return
+// 	}
+// 	var roomId = params.roomId
+// 	params.gid = GameRemote.roomList[roomId]
+// 	self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
+// 		if(flag === true){
+// 			GameRemote.userMap[uid] = roomId;
+// 			if(GameRemote.RoomMap[roomId]){
+// 				var info = {
+// 					"uid" : playerInfo.uid,
+// 					"nickname" : playerInfo.nickname,
+// 					"head" : playerInfo.head
+// 				}
+// 				GameRemote.RoomMap[roomId].push(info)						
+// 			}
+// 		}
+// 		cb(flag,msg)
+// 	})
+// }
 //定时匹配
 local.matching = function(){
 	//console.log("matching")
@@ -249,8 +252,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		case "leaveMatch" :
 			local.leaveMatch(uid,cb)
 		break
-		case "quitRoom" :
-			local.quitRoom(uid,cb)
+		case "userQuit" :
+			local.userQuit(uid,cb)
 		break 
 	}
 };
@@ -278,6 +281,9 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 //游戏开始回调
 GameRemote.prototype.gameBeginCB = function(roomId,agencyId,cb) {
 	console.log("gameBeginCB========== agencyId : "+agencyId)
+	if(cb){
+		cb()
+	}
 }
 
 GameRemote.prototype.kick = function(uid,cb) {
