@@ -44,9 +44,11 @@ module.exports.sendLoginHttp = function(notify) {
 
   //获取ip对应地址
   getCity(data.ip,function(tmpData) {
-    data.area = tmpData.area
-    data.region = tmpData.region
-    data.city = tmpData.city
+    if(tmpData.data){
+      data.area = tmpData.data.area
+      data.region = tmpData.data.region
+      data.city = tmpData.data.city  
+    }
     // var keys = Object.keys(data).sort()
     // var string = ""
     // for(var i = 0;i < keys.length;i++){
