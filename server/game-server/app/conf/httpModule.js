@@ -4,6 +4,27 @@ var https = require('https')
 module.exports = {
 
 }
+
+var getCity = function(ip,cb) {
+    var string = "http://ip.taobao.com/service/getIpInfo.php?ip="+ip
+    var req=http.get(string,function(res){
+        var data = data
+        res.on("data",function(chunk) {
+          data += chunk
+        })
+        res.on("end",function() {
+          data = data.replace("undefined","")
+          data = JSON.parse(data)
+          if(cb){
+            cb(data)
+          }
+        })
+    })
+    req.on('error', function(e) {
+      console.error(e);
+    })
+}
+
 module.exports.sendLoginHttp = function(notify) {
   //console.log(notify)
   notify.data["uid"] = notify.data["playerId"]
@@ -21,20 +42,28 @@ module.exports.sendLoginHttp = function(notify) {
   data.gold = notify.gold
   data.platform = notify.platform
 
-  var keys = Object.keys(data).sort()
-  var string = ""
-  for(var i = 0;i < keys.length;i++){
-    string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
-  }
-  string += "key=niuniuyiyousecretkey"
-  data.sign = md5(string)
-  //console.log(data)
-  var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
+  //获取ip对应地址
+  getCity(data.ip,function(tmpData) {
+    data.area = tmpData.area
+    data.region = tmpData.region
+    data.city = tmpData.city
+    // var keys = Object.keys(data).sort()
+    // var string = ""
+    // for(var i = 0;i < keys.length;i++){
+    //   string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
+    // }
+    // string += "key=niuniuyiyousecretkey"
+    // data.sign = md5(string)
+    console.log(data)
+    var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
+    })
+    req.on("error",function(err){
+      console.log(err.message)
+    })
+    req.end()    
   })
-  req.on("error",function(err){
-    console.log(err.message)
-  })
-  req.end()
+
+
 }
 
 module.exports.sendDiamondHttp = function(uid,coin,diamond,type) {
