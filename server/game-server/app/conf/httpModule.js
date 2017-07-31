@@ -82,6 +82,23 @@ module.exports.sendGameOver = function(data) {
     req.end()    
 
 }
+var appid = "wxd72486a200bde1db"
+var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
+
+module.exports.H5GetData = function(code,cb) {
+    var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=+"+appid
+    +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
+    var req=http.request(string,function(res){
+        var data = data
+        res.on("data",function(chunk) {
+          data += chunk
+        })
+        res.on("end",function() {
+          console.log(data)
+          cb(data)
+        })
+    })
+}
 
 function md5 (text) {
   return crypto.createHash('md5').update(text).digest('hex');

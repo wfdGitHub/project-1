@@ -175,6 +175,17 @@ handler.visitorEnter = function(msg, session, next) {
   )
   next(null,{"flag" : true})
 }
+//H5登录
+handler.h5Enter = function(msg,session,next) {
+  if(!msg.code || typeof(msg.code) !== "string"){
+    next(false)
+    return
+  }
+  httpConf.H5GetData(msg.code,function(data) {
+    console.log(data)
+    //handler.enter(msg,session,next)
+  })
+}
 //登录
 handler.enter = function(msg, session, next) {
   var self = this
