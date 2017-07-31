@@ -97,8 +97,6 @@ module.exports.H5GetData = function(code,cb) {
         res.on("end",function() {
           data = data.replace("undefined","")
           data = JSON.parse(data)
-          console.log("token ： "+data.access_token)
-          console.log("openid : "+data.openid)
           cb(data)
         })
     })

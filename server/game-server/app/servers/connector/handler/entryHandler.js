@@ -8,6 +8,7 @@ module.exports = function(app) {
 
 var Handler = function(app) {
   this.app = app
+  Handler.app = app
   this.sessionService = this.app.get('sessionService')
   this.channelService = this.app.get('channelService')
   this.gameChanel = this.channelService.getChannel("GameChannel",true)
@@ -181,8 +182,8 @@ handler.h5Enter = function(msg,session,next) {
     next(false)
     return
   }
+  var self = this
   httpConf.H5GetData(msg.code,function(data) {
-    console.log(data)
     if(data.errcode){
       console.log(data.errmsg)
       next(false)
@@ -190,7 +191,8 @@ handler.h5Enter = function(msg,session,next) {
     }
     msg.openId = data.openid
     msg.token = data.access_token
-    handler.enter(msg,session,next)
+    var enterFun = handler.enter.bind(self)
+    enterFun(msg,session,next)
   })
 }
 //登录
