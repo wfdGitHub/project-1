@@ -16,6 +16,15 @@ var local = {}
 var gameType = {
 	"niuniu" : true
 }
+var roomIndex = 0
+//用户连接
+GameRemote.prototype.userConnect = function(uid,sid,cb) {
+	GameRemote.userConnectorMap[uid] = sid
+	if(cb){
+		cb()
+	}
+}
+
 var GameRemote = function(app) {
 	if(app.get("serverId") === "gold-server"){
 		//console.log(app)
@@ -72,10 +81,28 @@ local.joinRoom = function(type,roomId){
 	console.log("roomId : "+roomId)
 	//TODO    玩家加入房间
 	if(GameRemote.RoomMap[roomId].length < ROOMPLAYERNUM){
+		var params = {}
+		params.gid = GameRemote.roomList[roomId]
+		if(!params.gid){
+			cb(false)
+			return
+		}
 		var uid = GameRemote.matchList[type][0]
 		GameRemote.matchList[type].splice(0,1)
-		GameRemote.RoomMap[roomId].push(uid)
-		GameRemote.userMap[uid] = roomId
+		//冗余保护  若玩家已在房间中则不处理
+		if(GameRemote.userMap[uid]){
+			return
+		}
+		var player = {
+			"uid" : uid,
+			"sid" : GameRemote.userConnectorMap[uid]
+		}
+		GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
+			if(flag == true){
+				GameRemote.RoomMap[roomId].push(uid)
+				GameRemote.userMap[uid] = roomId
+			}
+		})
 	}
 }
 //创建房间
@@ -87,14 +114,25 @@ local.createRoom = function(type) {
 		for(var i = 0; i < roomCount; i++){
 			var roomId = local.getUnusedRoom()			
 			var users = []
+			var sids = []
 			for(var j = 0;j < ROOMPLAYERNUM;j++){
-				users.push(GameRemote.matchList[type][0])
+				users.push(GameRemote.matchList[type][j])
+				sids.push(GameRemote.userConnectorMap[users[j]])
+				//冗余保护  有玩家在房间中则撤销此操作
+				if(GameRemote.userMap[users[j]]){
+					GameRemote.matchList[type].splice(j,1)
+					break;
+				}
+			}
+			GameRemote.RoomMap[roomId] = {}
+			for(var j = 0;j < ROOMPLAYERNUM;j++){
 				delete GameRemote.matchMap[users[j]]
 				GameRemote.matchList[type].splice(0,1)
-				//TODO   创建房间   维护房间玩家映射表与玩家房间映射表	
 				GameRemote.RoomMap[roomId][j] = users[j]
 				GameRemote.userMap[users[j]] = roomId
 			}
+			//创建金币场
+			local.goldNodeNewRoom(users,sids,roomId)
 			console.log("createRoom")
 			console.log(users)
 		}
@@ -102,18 +140,51 @@ local.createRoom = function(type) {
 		//人数不足一个房间补足机器人
 		var roomId = local.getUnusedRoom()
 		var users = []
+		var sids = []
 		GameRemote.RoomMap[roomId] = {}
 		for(var j = 0;j < playerList.length;j++){
-			users.push(GameRemote.matchList[type][0])
+			users.push(GameRemote.matchList[type][j])
+			sids.push(GameRemote.userConnectorMap[users[j]])
 			GameRemote.matchList[type].splice(0,1)
+			//冗余保护  有玩家在房间中则撤销此操作
+			if(GameRemote.userMap[users[j]]){
+				GameRemote.matchList[type].splice(j,1)
+				return;
+			}
+		}
+		for(var j = 0;j < users.length;j++){
 			delete GameRemote.matchMap[users[j]]
-			//TODO   创建房间   维护房间玩家映射表与玩家房间映射表	
+			GameRemote.matchList[type].splice(0,1)
 			GameRemote.RoomMap[roomId][j] = users[j]
 			GameRemote.userMap[users[j]] = roomId
 		}
+		//创建金币场
+		local.goldNodeNewRoom(users,sids,roomId)
 		console.log("createRoom")
 		console.log(users)		
 	}		
+}
+//通知游戏服务器创建房间创建成功
+local.goldNodeNewRoom = function(users,sids,roomId) {
+	var params = {}
+	GameRemote.NodeNumber++
+	var nodeLength = GameRemote.app.getServersByType('goldNode').length
+	if(GameRemote.NodeNumber >= nodeLength){
+		GameRemote.NodeNumber = 0
+	}
+	params.gid = GameRemote.NodeNumber
+	GameRemote.app.rpc.goldNode.remote.newRoom(null,params,users,sids,roomId,function(flag,players,roomId) {
+		if(flag == true){
+		}else{
+			//TODO通知匹配失败 删除RoomMap与userMap
+			delete GameRemote.RoomMap[roomId]
+			for(var z in players){
+				if(players.hasOwnProperty(z)){
+					delete GameRemote.userMap[players[z]]
+				}
+			}
+		}
+	})
 }
 
 //用户退出房间
@@ -138,30 +209,7 @@ local.userQuit = function(uid,cb) {
 	}
 	cb(false)
 }
-// local.join = function(uid,sid,params,self,cb) {
-// 	//无效条件判断
-// 	if(typeof(params.roomId) != "number" || params.roomId < 0 
-// 		|| GameRemote.roomList[params.roomId] === undefined || GameRemote.roomState[params.roomId]){
-//         cb(false,{"code" : tips.NO_ROOM})
-//         return
-// 	}
-// 	var roomId = params.roomId
-// 	params.gid = GameRemote.roomList[roomId]
-// 	self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
-// 		if(flag === true){
-// 			GameRemote.userMap[uid] = roomId;
-// 			if(GameRemote.RoomMap[roomId]){
-// 				var info = {
-// 					"uid" : playerInfo.uid,
-// 					"nickname" : playerInfo.nickname,
-// 					"head" : playerInfo.head
-// 				}
-// 				GameRemote.RoomMap[roomId].push(info)						
-// 			}
-// 		}
-// 		cb(flag,msg)
-// 	})
-// }
+
 //定时匹配
 local.matching = function(){
 	//console.log("matching")
@@ -178,18 +226,15 @@ local.matching = function(){
 					return
 				}
 				var roomId = tmpRoomList[i]
-				var playerCount = GameRemote.RoomMap[roomId]
-				if(playerCount < ROOMPLAYERNUM && playerList.length > 0){
-					//当该房间人数未满则加入房间
-					for(var j = playerCount; j < ROOMPLAYERNUM ; j++){
-						if(playerList.length > 0){
-							local.joinRoom(type,roomId)
-							GameRemote.matchTimer[type] = 0
-						}
-					}
-				}
+				var runTime = 0
+				do{
+					runTime++
+					var playerCount = GameRemote.RoomMap[roomId].length
+					local.joinRoom(type,roomId)
+					GameRemote.matchTimer[type] = 0					
+				}while(playerCount < ROOMPLAYERNUM && playerList.length > 0 && runTime < 100)
 			}
-			if(playerList.length > 0){
+			if(playerList.length > 0 && runTime < 100){
 				//已有房间已满   尝试创建新房间
 				GameRemote.matchTimer[type]++
 				console.log("GameRemote.matchTimer[type] : "+GameRemote.matchTimer[type])
@@ -212,7 +257,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 		return
 	}
 	if(GameRemote.matchMap[uid]){
-		console.log("matching : "+uid)
+		console.log("can't join Match user in room: "+GameRemote.matchMap[uid] + "   uid : "+uid)
 		cb(false)
 		return
 	}
@@ -243,7 +288,6 @@ local.leaveMatch = function(uid,cb) {
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	console.log(params)
-	GameRemote.userConnectorMap[uid] = sid
 	var self = this
 	switch(code){
 		case "joinMatch" :

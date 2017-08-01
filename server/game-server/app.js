@@ -65,8 +65,25 @@ var connectorRoute = function(session, msg, app, cb) {
   }
   cb(null, cid);
 };
+//金币场游戏服务器分配路由
+var goldNodeRoute = function(session, msg, app, cb) {
+  var goldNodeServers = app.getServersByType('goldgameNode')
+
+  if(!goldNodeServers || goldNodeServers.length === 0) {
+    cb(new Error('can not find goldNode servers.'))
+    return
+  }
+  //获取用户游戏服务ID
+  var gid = msg.args[0].gid
+  if(gid === undefined || !goldNodeServers[gid]){
+    cb(new Error('can not find gameNode servers.'))
+    return
+  }
+  cb(null, goldNodeServers[gid].id);
+};
 app.configure('production|development', function() {
   app.route('gameNode', gameNodeRoute);
+  app.route('goldNode', goldNodeRoute);
   app.route('connector', connectorRoute);
 });
 // start app
