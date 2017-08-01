@@ -1,13 +1,20 @@
 var crypto = require('crypto')
 var http = require('http')
 var https = require('https')
+var errorLogger = require("pomelo-logger").getLogger("error-log");
 module.exports = {
 
 }
-
-var getCity = function(ip,cb) {
-    var string = "http://ip.taobao.com/service/getIpInfo.php?ip="+ip
-    var req=http.get(string,function(res){
+var access_token = ""
+var jsapi_ticket = ""
+var appid = "wxd72486a200bde1db"
+var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
+var timer = false
+var local = {}
+module.exports.H5GetData = function(code,cb) {
+    var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
+    +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
+    var req=https.get(string,function(res){
         var data = data
         res.on("data",function(chunk) {
           data += chunk
@@ -15,16 +22,73 @@ var getCity = function(ip,cb) {
         res.on("end",function() {
           data = data.replace("undefined","")
           data = JSON.parse(data)
-          if(cb){
-            cb(data)
-          }
+          cb(data)
         })
     })
     req.on('error', function(e) {
       console.error(e);
     })
 }
-
+module.exports.getTicket = function(cb) {
+  //jsapi_ticket存在直接返回，不存在则开启获取
+  if(jsapi_ticket){
+    cb(null,{flag : true,"jsapi_ticket" : jsapi_ticket})
+  }else{
+    local.getAccess_token(cb)
+    clearInterval(timer)
+    timer = setInterval(local.getAccess_token,10 * 1000)
+  }
+}
+local.getAccess_token = function(cb) {
+    var string = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+appid+"&secret="+secret
+    var req=https.get(string,function(res){
+        var data = data
+        res.on("data",function(chunk) {
+          data += chunk
+        })
+        res.on("end",function() {
+          data = data.replace("undefined","")
+          data = JSON.parse(data)
+          if(data.errcode || !data.access_token){
+            errorLogger.info("获取微信token失败!")
+            errorLogger.info(data.errmsg)
+            access_token = ""
+            if(cb){
+              cb(null,{flag : false})
+            }
+            return
+          }
+          access_token = data.access_token
+          local.getJsapi_ticket(access_token,cb)
+        })
+    })
+}
+local.getJsapi_ticket = function(token,cb){
+    var string = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token="+token+"&type=jsapi"
+    var req=https.get(string,function(res){
+        var data = data
+        res.on("data",function(chunk) {
+          data += chunk
+        })
+        res.on("end",function() {
+          data = data.replace("undefined","")
+          data = JSON.parse(data)
+          if(data.errcode || !data.access_token){
+            errorLogger.info("获取微信ticket失败!")
+            errorLogger.info(data.errmsg)
+            jsapi_ticket = ""
+            if(cb){
+              cb(null,{flag : false})
+            }
+            return
+          }
+          jsapi_ticket = data.ticket
+          if(cb){
+            cb(null,{flag : true,"jsapi_ticket" : jsapi_ticket})
+          }
+        })
+    })
+}
 module.exports.sendLoginHttp = function(notify) {
   //console.log(notify)
   notify.data["uid"] = notify.data["playerId"]
@@ -113,13 +177,15 @@ module.exports.sendGameOver = function(data) {
     req.end()    
 
 }
-var appid = "wxd72486a200bde1db"
-var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
 
-module.exports.H5GetData = function(code,cb) {
-    var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
-    +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
-    var req=https.get(string,function(res){
+
+function md5 (text) {
+  return crypto.createHash('md5').update(text).digest('hex');
+};
+
+var getCity = function(ip,cb) {
+    var string = "http://ip.taobao.com/service/getIpInfo.php?ip="+ip
+    var req=http.get(string,function(res){
         var data = data
         res.on("data",function(chunk) {
           data += chunk
@@ -127,14 +193,12 @@ module.exports.H5GetData = function(code,cb) {
         res.on("end",function() {
           data = data.replace("undefined","")
           data = JSON.parse(data)
-          cb(data)
+          if(cb){
+            cb(data)
+          }
         })
     })
     req.on('error', function(e) {
       console.error(e);
     })
 }
-
-function md5 (text) {
-  return crypto.createHash('md5').update(text).digest('hex');
-};

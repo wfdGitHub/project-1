@@ -143,7 +143,17 @@
         }
       ,"backups": 5,
       "category":"matchStream-log"
-    }
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/ERROR.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"error-log"
+    }    
   ],
 
   "levels": {

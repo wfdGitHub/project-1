@@ -25,6 +25,10 @@ handler.getNotify = function(msg,session,next) {
       next(null,data)
   })
 }
+handler.getTicket = function(msg,session,next) {
+  //获取微信ticket
+  httpConf.getTicket(next)
+}
 handler.getLoginFlag = function(msg,session,next) {
   next(null,true)
 }
