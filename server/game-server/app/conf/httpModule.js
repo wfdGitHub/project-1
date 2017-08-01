@@ -73,7 +73,7 @@ local.getJsapi_ticket = function(token,cb){
         res.on("end",function() {
           data = data.replace("undefined","")
           data = JSON.parse(data)
-          if(data.errcode || !data.access_token){
+          if(data.errmsg !== "ok" || !data.ticket){
             errorLogger.info("获取微信ticket失败!")
             errorLogger.info(data.errmsg)
             jsapi_ticket = ""
