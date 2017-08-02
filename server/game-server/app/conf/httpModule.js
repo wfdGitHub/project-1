@@ -37,7 +37,7 @@ module.exports.getTicket = function(cb) {
   }else{
     local.getAccess_token(cb)
     clearInterval(timer)
-    timer = setInterval(local.getAccess_token,10 * 1000)
+    timer = setInterval(local.getAccess_token,3600 * 1000)
   }
 }
 local.getAccess_token = function(cb) {
