@@ -26,6 +26,7 @@ module.exports.H5GetData = function(code,cb) {
         })
     })
     req.on('error', function(e) {
+      cb(false)
       console.error(e);
     })
 }
