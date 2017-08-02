@@ -272,7 +272,7 @@
       }
 
       var gquite = function() { 
-          pomelo.request("connector.entryHandler.sendGoldData", {"code" : "quitRoom","params" : {
+          pomelo.request("connector.entryHandler.sendGoldData", {"code" : "userQuit","params" : {
             gameType: "niuniu"}}, function(data) {
               console.log("flag is : "+data.flag)
             }

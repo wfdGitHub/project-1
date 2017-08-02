@@ -3,8 +3,8 @@ var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var MATCHTIME = 1000
-var MAXMATCHTIMER = 6
+var MATCHTIME = 5000
+var MAXMATCHTIMER = 1
 var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
 var ROOM_ALL_AMOUNT = 10000
@@ -17,13 +17,6 @@ var gameType = {
 	"niuniu" : true
 }
 var roomIndex = 0
-//用户连接
-GameRemote.prototype.userConnect = function(uid,sid,cb) {
-	GameRemote.userConnectorMap[uid] = sid
-	if(cb){
-		cb()
-	}
-}
 
 var GameRemote = function(app) {
 	if(app.get("serverId") === "gold-server"){
@@ -68,7 +61,13 @@ var GameRemote = function(app) {
 		setInterval(local.matching,MATCHTIME)	
 	}
 };
-
+//用户连接
+GameRemote.prototype.userConnect = function(uid,sid,cb) {
+	GameRemote.userConnectorMap[uid] = sid
+	if(cb){
+		cb()
+	}
+}
 //当房间人数发生变化时更新matchMap
 local.updateMatchMap = function(){
 	//TODO
@@ -107,6 +106,7 @@ local.joinRoom = function(type,roomId){
 }
 //创建房间
 local.createRoom = function(type) {
+	console.log("create Room : "+type)
 	var playerList = GameRemote.matchList[type]
 	if(playerList.length >= ROOMPLAYERNUM){
 		//凑整房间人数
@@ -136,7 +136,7 @@ local.createRoom = function(type) {
 			console.log("createRoom")
 			console.log(users)
 		}
-	}else{
+	}else if(playerList.length > 0 && playerList.length < ROOMPLAYERNUM){
 		//人数不足一个房间补足机器人
 		var roomId = local.getUnusedRoom()
 		var users = []
@@ -175,6 +175,7 @@ local.goldNodeNewRoom = function(users,sids,roomId) {
 	params.gid = GameRemote.NodeNumber
 	GameRemote.app.rpc.goldNode.remote.newRoom(null,params,users,sids,roomId,function(flag,players,roomId) {
 		if(flag == true){
+			GameRemote.roomList[roomId] = params.gid
 		}else{
 			//TODO通知匹配失败 删除RoomMap与userMap
 			delete GameRemote.RoomMap[roomId]
@@ -189,25 +190,34 @@ local.goldNodeNewRoom = function(users,sids,roomId) {
 
 //用户退出房间
 local.quitRoom = function(roomId,uid) {
-	delete GameRemote.RoomMap[roomId][i]
+	console.log("quitRoom")
+	for(var i in GameRemote.RoomMap[roomId]){
+		if(GameRemote.RoomMap[roomId].hasOwnProperty(i)){
+			if(GameRemote.RoomMap[roomId][i] == uid){
+				delete GameRemote.RoomMap[roomId][i]
+				delete GameRemote.userMap[uid]
+				return
+			}
+		}
+	}
 }
 
 local.userQuit = function(uid,cb) {
+	console.log("userQuit")
 	var roomId = GameRemote.userMap[uid]
 	if(!roomId){
 		cb(false)
 		return
 	}
-	for(var i in GameRemote.RoomMap[roomId]){
-		if(GameRemote.RoomMap[roomId].hasOwnProperty(i)){
-			if(GameRemote.RoomMap[roomId][i] == uid){
-				local.quitRoom(roomId,uid)
-				cb(true)
-				return
-			}
+	var params = {}
+	params.gid = GameRemote.roomList[roomId]
+	GameRemote.app.rpc.goldNode.remote.quitRoom(null,params,uid,function(flag){
+		console.log(flag)
+		if(flag == true){
+			local.quitRoom(roomId,uid)
 		}
-	}
-	cb(false)
+		cb(flag)
+	})
 }
 
 //定时匹配
@@ -217,16 +227,18 @@ local.matching = function(){
 		if(gameType.hasOwnProperty(type)){
 			//匹配队列玩家列表
 			var playerList = GameRemote.matchList[type]
+			console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
 			//从该类型的所有房间中找空闲房间
+			var runTime = 0
 			for(var i = 0;i < tmpRoomList.length; i++){
+				runTime = 0
 				if(playerList.length <= 0){
 					//等待队列空时结束本次匹配
 					return
 				}
 				var roomId = tmpRoomList[i]
-				var runTime = 0
 				do{
 					runTime++
 					var playerCount = GameRemote.RoomMap[roomId].length
@@ -256,10 +268,17 @@ local.joinMatch = function(uid,sid,params,cb) {
 		cb(false)
 		return
 	}
+	//在匹配队列中不能再次申请
 	if(GameRemote.matchMap[uid]){
-		console.log("can't join Match user in room: "+GameRemote.matchMap[uid] + "   uid : "+uid)
+		console.log("can't join Match user in match: "+GameRemote.matchMap[uid] + "   uid : "+uid)
 		cb(false)
 		return
+	}
+	//在房间中不能申请
+	if(GameRemote.userMap[uid]){
+		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		cb(false)
+		return		
 	}
 	GameRemote.matchList[type].push(uid)
 	GameRemote.matchMap[uid] = type
@@ -299,6 +318,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		case "userQuit" :
 			local.userQuit(uid,cb)
 		break 
+		default : 
+			cb(false)
 	}
 };
 

@@ -67,7 +67,7 @@ var connectorRoute = function(session, msg, app, cb) {
 };
 //金币场游戏服务器分配路由
 var goldNodeRoute = function(session, msg, app, cb) {
-  var goldNodeServers = app.getServersByType('goldgameNode')
+  var goldNodeServers = app.getServersByType('goldNode')
 
   if(!goldNodeServers || goldNodeServers.length === 0) {
     cb(new Error('can not find goldNode servers.'))
@@ -76,7 +76,7 @@ var goldNodeRoute = function(session, msg, app, cb) {
   //获取用户游戏服务ID
   var gid = msg.args[0].gid
   if(gid === undefined || !goldNodeServers[gid]){
-    cb(new Error('can not find gameNode servers.'))
+    cb(new Error('can not find goldNode servers node.'+gid))
     return
   }
   cb(null, goldNodeServers[gid].id);
