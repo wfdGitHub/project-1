@@ -11,7 +11,7 @@ var appid = "wxd72486a200bde1db"
 var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
 var timer = false
 var local = {}
-module.exports.H5GetData = function(code,cb) {
+module.exports.H5GetData = function(code,count,cb) {
     var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
     +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
     var req=https.get(string,function(res){
@@ -26,8 +26,14 @@ module.exports.H5GetData = function(code,cb) {
         })
     })
     req.on('error', function(e) {
-      cb(null,{"flag" : false,"err" : e})
-      console.error(e);
+      console.log("请求微信失败 : "+count+"  e: ")
+      console.log(e)
+      if(count > 3){
+        cb(null,{"flag" : false,"err" : e})
+        console.error(e);        
+      }else{
+        module.exports.H5GetData(code,count++,cb)
+      }
     })
 }
 module.exports.getTicket = function(cb) {

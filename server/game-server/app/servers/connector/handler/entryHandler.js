@@ -187,7 +187,7 @@ handler.h5Enter = function(msg,session,next) {
     return
   }
   var self = this
-  httpConf.H5GetData(msg.code,function(data) {
+  httpConf.H5GetData(msg.code,0,function(data) {
     if(data.errcode){
       console.log(data.errmsg)
       next(null,{"flag" : false , "err" : data.errmsg})
