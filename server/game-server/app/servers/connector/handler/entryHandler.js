@@ -190,7 +190,7 @@ handler.h5Enter = function(msg,session,next) {
   httpConf.H5GetData(msg.code,function(data) {
     if(data.errcode){
       console.log(data.errmsg)
-      next(false)
+      next(null,{"flag" : false , "err" : data.errmsg})
       return
     }
     msg.openId = data.openid
