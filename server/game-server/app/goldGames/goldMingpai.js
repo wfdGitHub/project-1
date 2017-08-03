@@ -2,21 +2,19 @@ var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
-var MING_CARD_NUM = 4               //明牌数量
-//游戏状态
+var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,gameBegincb,gameEnd,gameOvercb) {
+  module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
-    var roomEnd = gameEnd
     var room = {}
     room.roomId = roomId
     room.roomType = "mingpaiqz"
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
-    room.handle = {}   //玩家操作
+    room.handle = {}                     //玩家操作
     room.gameMode = 2
     room.halfwayEnter = true             //允许中途加入
     room.agencyId = 0                    //代开房玩家ID 
@@ -70,7 +68,6 @@ var MING_CARD_NUM = 4               //明牌数量
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
       room.maxRob = 0                      //抢庄倍数
-      readyCount = 0                       //游戏准备人数
       gameState = conf.GS_FREE             //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
       banker = -1                      //庄家椅子号
@@ -109,83 +106,84 @@ var MING_CARD_NUM = 4               //明牌数量
         room.channel = channelService.getChannel(roomId,true)
         //console.log(room.channel)   
     }
-    local.newRoom = function(uid,sid,param,cb) {
-      //console.log("newRoom")
-      log("newRoom"+uid)
-        //无效条件判断
-      if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
-        log("newRoom error   param.consumeMode : "+param.consumeMode)
-        cb(false)
-        return
-      } 
-      if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
-        (param.bankerMode != 1 && param.bankerMode != 5)){
-        log("newRoom error   param.bankerMode : "+param.bankerMode)
-        cb(false)
-        return
-      }  
-      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
-        log("newRoom error   param.gameNumber : "+param.gameNumber)
-        cb(false)
-        return
-      }    
-      if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
-        log("newRoom error   param.cardMode : "+param.cardMode)
-        cb(false)
-        return
-      } 
-      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 0 || param.basic > 4 || param.basic == 3){
-        log("newRoom error   param.basic : "+param.basic)
-        cb(false)
-        return        
-      }
-      if(!param.allowAllin || param.allowAllin == false){
-        allowAllin = false
-      }
-      //是否允许中途加入
-      if(param.halfwayEnter === false){
-        room.halfwayEnter = false
-      }
-      //房间初始化
-      local.init()
-      basic = param.basic
-      room.state = false
-      room.playerCount  = 0            //房间内玩家人数
-      readyCount = 0                   //游戏准备人数
-      gameState = conf.GS_FREE         //游戏状态
-      room.chairMap = {}               //玩家UID与椅子号映射表
-      roomHost = 0                     //房主椅子号
-      banker = roomHost                //庄家椅子号
-      room.bankerMode = param.bankerMode                 //定庄模式
-      room.gameNumber = param.gameNumber                 //游戏局数
-      room.maxGameNumber = param.gameNumber              //游戏最大局数
-      room.consumeMode = param.consumeMode               //消耗模式
-      room.cardMode = param.cardMode                     //明牌模式
-      room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
-      //设置下注上限
-      maxBet = 10
-      cb(true)
-    }
-    room.handle.agency = function(uid,sid,param,cb) {
-      local.newRoom(uid,sid,param,function(flag) {
-          if(flag){
-            room.needDiamond = 0
-            roomHost = -1
-            room.agencyId = uid
-          }
-          cb(flag)
-      })  
-    }
-    //创建房间
-    room.handle.newRoom = function(uid,sid,param,cb) {
-      local.newRoom(uid,sid,param,function(flag) {
-          if(flag){
-            room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
-          }else{
-            cb(false)
-          }
-      })
-    }
+    // local.newRoom = function(uid,sid,param,cb) {
+    //   //console.log("newRoom")
+    //   log("newRoom"+uid)
+    //     //无效条件判断
+    //   if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
+    //     log("newRoom error   param.consumeMode : "+param.consumeMode)
+    //     cb(false)
+    //     return
+    //   } 
+    //   if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+    //     (param.bankerMode != 1 && param.bankerMode != 5)){
+    //     log("newRoom error   param.bankerMode : "+param.bankerMode)
+    //     cb(false)
+    //     return
+    //   }  
+    //   if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+    //     log("newRoom error   param.gameNumber : "+param.gameNumber)
+    //     cb(false)
+    //     return
+    //   }    
+    //   if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
+    //     log("newRoom error   param.cardMode : "+param.cardMode)
+    //     cb(false)
+    //     return
+    //   } 
+    //   if(!param.basic || typeof(param.basic) !== "number" || param.basic < 0 || param.basic > 4 || param.basic == 3){
+    //     log("newRoom error   param.basic : "+param.basic)
+    //     cb(false)
+    //     return        
+    //   }
+    //   if(!param.allowAllin || param.allowAllin == false){
+    //     allowAllin = false
+    //   }
+    //   //是否允许中途加入
+    //   if(param.halfwayEnter === false){
+    //     room.halfwayEnter = false
+    //   }
+    //   //房间初始化
+    //   local.init()
+    //   basic = param.basic
+    //   room.basic = basic
+    //   room.state = false
+    //   room.playerCount  = 0            //房间内玩家人数
+    //   readyCount = 0                   //游戏准备人数
+    //   gameState = conf.GS_FREE         //游戏状态
+    //   room.chairMap = {}               //玩家UID与椅子号映射表
+    //   roomHost = 0                     //房主椅子号
+    //   banker = roomHost                //庄家椅子号
+    //   room.bankerMode = param.bankerMode                 //定庄模式
+    //   room.gameNumber = param.gameNumber                 //游戏局数
+    //   room.maxGameNumber = param.gameNumber              //游戏最大局数
+    //   room.consumeMode = param.consumeMode               //消耗模式
+    //   room.cardMode = param.cardMode                     //明牌模式
+    //   room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
+    //   //设置下注上限
+    //   maxBet = 10
+    //   cb(true)
+    // }
+    // room.handle.agency = function(uid,sid,param,cb) {
+    //   local.newRoom(uid,sid,param,function(flag) {
+    //       if(flag){
+    //         room.needDiamond = 0
+    //         roomHost = -1
+    //         room.agencyId = uid
+    //       }
+    //       cb(flag)
+    //   })  
+    // }
+    // //创建房间
+    // room.handle.newRoom = function(uid,sid,param,cb) {
+    //   local.newRoom(uid,sid,param,function(flag) {
+    //       if(flag){
+    //         room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+    //       }else{
+    //         cb(false)
+    //       }
+    //   })
+    // }
 
     //玩家加入
     room.handle.join = function(uid,sid,param,cb) {
@@ -745,6 +743,7 @@ var MING_CARD_NUM = 4               //明牌数量
           }
         }
         //牛牛坐庄模式换庄
+        //room.maxResultFlag = false
         var maxResultFlag = false
         var maxResultIndex = -1
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
@@ -796,7 +795,7 @@ var MING_CARD_NUM = 4               //明牌数量
               stream[i] = {
                 "uid" : player[i].uid,
                 "result" : result[i],
-                "handCard" : player[i].handCard,
+                "handCard" : deepCopy(player[i].handCard),
                 "changeScore" : curScores[i]
               }
           }
@@ -887,11 +886,9 @@ var MING_CARD_NUM = 4               //明牌数量
       player[chair].isShowCard = false        //是否开牌
       player[chair].handCard = new Array(5)   //手牌
       player[chair].score = 0                 //当前积分
-      player[chair].bankerCount = 0           //坐庄次数
-      player[chair].cardsList  = {}           //总战绩列表
       player[chair].ip  = undefined           //玩家ip地址
   }
-    //玩家离开
+    //玩家离线
     room.leave = function(uid) {
       //判断是否在椅子上
       // console.log("leave11111 : "+room.chairMap[uid])
@@ -923,14 +920,7 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //积分改变
     local.changeScore = function(chair,score) {
-          player[chair].score += score;
-          // var notify = {
-          //   "cmd" : "changeScore",
-          //   "chair" : chair,
-          //   "difference" : score,
-          //   "score" : player[chair].score
-          // }      
-          // local.sendAll(notify)        
+          player[chair].score += score;       
     }
 
     //广播消息
@@ -992,82 +982,17 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       return notify
     }
-  //房间是否已开始游戏
-  room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
-    }else{
-        return true
-    }
-  } 
-  //房间是否空闲
-  room.isFree = function() {
-    return gameState === conf.GS_FREE
-  }
-  //获取房间人数
-  room.getPlayerCount = function() {
-    var count = 0
-    for(var i = 0;i < GAME_PLAYER;i++){
-      if(player[i].isActive){
-        count++
-      }
-    }
-    return count
-  }
-  //解散游戏
-  room.finishGame = function(flag) {
-    //游戏一局都没开始则不扣钻石
-    if(room.runCount == 0){
-      room.needDiamond = 0
-      room.isRecord = false
-    }
-    room.gameNumber = 0
-    local.gameOver(flag)
-  }
   //用户退出
   room.userQuit = function(uid,cb) {
-    //再次确保游戏未开始
-    if(room.isBegin()){
-      return
-    }
-    var chair = room.chairMap[uid]
-    room.playerCount--
-    //房主退出解散房间
-    if(chair == roomHost){
-        room.finishGame()
-    }else{
-      //清除座位信息
-      local.initChairInfo(chair) 
-      var tsid =  room.channel.getMember(uid)['sid']
-      if(tsid){
-        room.channel.leave(uid,tsid)
-      }
-      delete room.chairMap[uid]
-      var notify = {
-        cmd: "userQuit",
-        uid: uid,
-        chair : chair
-      }
-      local.sendAll(notify)     
-      cb()
-    }
+
   }
-    return room 
+  return room 
 }
 
 
 var log = function(str) {
      console.log("LOG NiuNiu : "+str)
 }
-
-var copyObj = function(obj) {
-  let res = {}
-  for (var key in obj) {
-    res[key] = obj[key]
-  }
-  return res
-}
-
 var deepCopy = function(source) { 
   var result={}
   for (var key in source) {
