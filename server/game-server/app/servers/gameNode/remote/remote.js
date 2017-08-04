@@ -45,7 +45,7 @@ GameRemote.lockState = {}
 //解散请求计时器
 GameRemote.lockTimer = {}
 //新建房间
-GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
+GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 	console.log("rid : "+roomId+"    uid : "+uid)
 	console.log(params)
 	if(!ROOM_FACTORY[params.gameType]){
@@ -53,7 +53,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 		return
 	}
 	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
-    GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
+    GameRemote.roomList[roomId].handle.newRoom(uids,sids,infos,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
 			openRoomLogger.info(info)
@@ -167,12 +167,8 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 }
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
-	var freeState = false
-	if(freeFrame.GameService.roomLock[roomId] === false){
-		freeState = freeFrame.GameService.lockState[roomId]
-	}
-	GameRemote.roomList[roomId].reconnection(uid,sid,freeState,function(flag) {
-		cb(flag)
+	GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
+		cb(data)
 	})
 }
 //玩家离开

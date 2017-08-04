@@ -256,24 +256,24 @@
       }
 
       var gjoin = function() { 
-          pomelo.request("connector.entryHandler.sendGoldData", {"code" : "joinMatch","params" : {
-            gameType: "niuniu"}}, function(data) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "joinMatch","params" : {
+            gameType: "goldMingpai"}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );           
       }
 
       var gleave = function() { 
-          pomelo.request("connector.entryHandler.sendGoldData", {"code" : "leaveMatch","params" : {
-            gameType: "niuniu"}}, function(data) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "leaveMatch","params" : {
+            gameType: "goldMingpai"}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );           
       }
 
       var gquite = function() { 
-          pomelo.request("connector.entryHandler.sendGoldData", {"code" : "userQuit","params" : {
-            gameType: "niuniu"}}, function(data) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "userQuit","params" : {
+            gameType: "goldMingpai"}}, function(data) {
               console.log("flag is : "+data.flag)
             }
           );           

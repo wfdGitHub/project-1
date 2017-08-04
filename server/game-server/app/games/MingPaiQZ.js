@@ -1029,6 +1029,7 @@ var MING_CARD_NUM = 4               //明牌数量
   room.userQuit = function(uid,cb) {
     //再次确保游戏未开始
     if(room.isBegin()){
+      cb(false)
       return
     }
     var chair = room.chairMap[uid]

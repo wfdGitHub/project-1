@@ -15,7 +15,7 @@ var Handler = function(app) {
 }
 
 var handler = Handler.prototype
-
+var local = {}
 var version = "1.2.024&KSAJDGFKJASHDFGASHDGAFDGH"
 //获取公告
 handler.getNotify = function(msg,session,next) {
@@ -144,11 +144,33 @@ handler.visitorEnter = function(msg, session, next) {
         })
       },
       function(cb){
+        //先判断是否在房卡房间，再判断是否在金币场房间
         self.app.rpc.game.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
             if(data){
+              data.area = "cardRoom"
               notify.reconnection = data
+              session.set("area","cardRoom")
+              session.push("area", function(err) {
+                if(err) {
+                  console.error('set area for session failed! error is : %j', err.stack)
+                }
+              })
+              cb(null)
+            }else{
+              self.app.rpc.goldGame.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
+                if(data){
+                  data.area = "goldRoom"
+                  notify.reconnection = data
+                  session.set("area","goldRoom")
+                  session.push("area", function(err) {
+                    if(err) {
+                      console.error('set area for session failed! error is : %j', err.stack)
+                    }
+                  })
+                }
+                cb(null)
+              })
             }
-            cb(null)
         })
       },
       function() {
@@ -303,7 +325,30 @@ handler.enter = function(msg, session, next) {
 
 //接受客户端发送数据
 handler.sendData = function(msg, session, next){
-    console.log("code : "+msg.code)
+  console.log("code : "+msg.code)
+  var uid = session.get("uid")
+    if(!!uid){
+        //joinMatch  leaveMatch属于金币场命令
+        if(msg.code == "joinMatch" || msg.code == "leaveMatch"){
+          var fun = local.sendGoldRoomData.bind(this)
+          fun(msg, session, next)
+        }else{
+          //判断玩家在哪个场
+          var area = session.get("area")
+          if(area === "goldRoom"){
+             var fun = local.sendGoldRoomData.bind(this)
+            fun(msg, session, next)
+          }else{
+            var fun = local.sendCardRoomData.bind(this)
+            fun(msg, session, next)
+          }
+        }
+    }else{
+        next(null,{flag : false})
+    }  
+}
+//发送房卡房间数据
+local.sendCardRoomData = function(msg, session, next) {
     var self = this
     //判断登录
     var uid = session.get("uid")
@@ -315,6 +360,14 @@ handler.sendData = function(msg, session, next){
           }
         }
         self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+            if(flag == true){
+              session.set("area","cardRoom")
+              session.push("area", function(err) {
+                if(err) {
+                  console.error('set area for session failed! error is : %j', err.stack)
+                }
+              })                
+            }
             next(null,{flag : flag,msg : msg})
         }) 
     }else{
@@ -322,19 +375,26 @@ handler.sendData = function(msg, session, next){
     }
 }
 //发送金币场数据
-handler.sendGoldData = function(msg,session,next) {
-    console.log("code : "+msg.code)
+local.sendGoldRoomData = function(msg,session,next) {
     var self = this
     //判断登录
     var uid = session.get("uid")
     //console.log("uid : "+uid)  
     if(!!uid){
-        if(msg.code == "join" || msg.code == "newRoom"){
+        if(msg.code == "joinMatch"){
           if(msg.params){
             msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
           }
         }
         self.app.rpc.goldGame.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+            if(flag == true){
+              session.set("area","goldRoom")
+              session.push("area", function(err) {
+                if(err) {
+                  console.error('set area for session failed! error is : %j', err.stack)
+                }
+              })                
+            }          
             next(null,{flag : flag,msg : msg})
         })
     }else{
