@@ -726,7 +726,7 @@ var MING_CARD_NUM = 4  //明牌数量
         }
         room.MatchStream[room.runCount] = stream
         //j金币场小结算
-        settlementCB(curScores)
+        settlementCB(curScores,player)
 
         //TODO 房间重置
         gameState = conf.GS_FREE

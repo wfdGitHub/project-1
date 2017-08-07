@@ -124,9 +124,10 @@ var finishGameOfTimer = function(index) {
 }
 
 //小结算回调
-local.settlementCB = function(curScores) {
+local.settlementCB = function(curScores,player) {
 	// TODO
 	console.log(curScores)
+	console.log(player)
 }
 
 //房间结束回调
