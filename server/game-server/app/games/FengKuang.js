@@ -878,6 +878,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   }
   //总结算
   local.gameOver = function(flag) {
+    clearTimeout(timer)
     //总结算
     room.state = true
     var notify = {

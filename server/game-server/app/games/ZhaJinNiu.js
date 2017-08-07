@@ -825,6 +825,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }
     }
     local.gameOver = function(flag) {
+      clearTimeout(timer)
       //总结算
       room.state = true
       var notify = {
