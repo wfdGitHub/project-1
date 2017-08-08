@@ -25,7 +25,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"limits",0)
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
-		DBRemote.dbService.setPlayer(uid,"gold",0)
+		DBRemote.dbService.setPlayer(uid,"gold",5000)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -110,8 +110,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			value = parseInt(data) + parseInt(value)
 			//console.log('value :'+value)
 			if(value < 0){
-				cb(false)
-				return
+				value = 0
 			}
 			DBRemote.dbService.setPlayer(uid,name,value,cb)
 			if(name === "diamond"){

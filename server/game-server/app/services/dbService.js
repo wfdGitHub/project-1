@@ -75,7 +75,7 @@ dbService.checkData = function(uid) {
 		//console.log(data)
 		if(!data && data !== 0){
 			console.log("init gold for uid : "+uid)
-			dbService.setPlayer(uid,"gold",0,function() {})
+			dbService.setPlayer(uid,"gold",5000,function() {})
 		}
 	})
 }

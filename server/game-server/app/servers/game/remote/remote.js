@@ -30,7 +30,7 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 					data.List[index].players = GameRemote.GameService.RoomMap[data.List[index].roomId]
 				}
 			}
-		}		
+		}
 	}
 	if(cb){
 		cb(data)

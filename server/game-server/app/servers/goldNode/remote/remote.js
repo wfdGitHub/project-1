@@ -74,19 +74,19 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 		cb(false)
 		return
 	}
+	local.quitRoom(uid,roomId,cb)
+}
+
+//玩家退出房间回调
+local.quitRoom = function(uid,roomId,cb) {
 	GameRemote.roomList[roomId].userQuit(uid,function(flag) {
 		if(flag){
 			console.log("quitRoom : ")
 			console.log(uid)
-			local.quitRoom(uid)
+			delete GameRemote.userMap[uid]
 		}
 		cb(flag)
 	})
-}
-
-//玩家退出房间回调
-local.quitRoom = function(uid) {
-	delete GameRemote.userMap[uid]
 }
 
 //玩家重连
@@ -124,10 +124,34 @@ var finishGameOfTimer = function(index) {
 }
 
 //小结算回调
-local.settlementCB = function(curScores,player) {
-	// TODO
+local.settlementCB = function(roomId,curScores,player) {
+	//TODO
+	console.log("roomId : "+roomId)
 	console.log(curScores)
 	console.log(player)
+	//更改金币
+	for(var index in curScores){
+		if(curScores.hasOwnProperty(index)){
+			player[index].gold += curScores[index]
+			GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],null)
+		}
+	}
+	//金币等于0退出游戏
+	for(var index in player){
+		if(player.hasOwnProperty(index)){
+			if(player[index].isActive){
+				if(player[index].gold <= 0){
+					//退出游戏
+					local.quitRoom(roomId,player[index].uid,function(flag) {
+						if(flag == true){
+							//通知中心服务器
+							GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,player[index].uid)
+						}
+					})
+				}
+			}
+		}
+	}
 }
 
 //房间结束回调

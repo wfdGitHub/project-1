@@ -58,7 +58,7 @@ var GameRemote = function(app) {
 			GameRemote.roomList[i] = false
 		}
 		//开启定时匹配
-		setInterval(local.matching,MATCHTIME)	
+		setInterval(local.matching,MATCHTIME)
 	}
 };
 //用户连接
@@ -192,6 +192,16 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 			}
 		}
 	})
+}
+//用户被踢出房间
+GameRemote.prototype.userOutRoom = function(roomId,uid) {
+	local.quitRoom(roomId,uid)
+	//通知玩家
+	var notify = {
+		"cmd" : "userOutRoom"
+		"reason" "notEnoughGold"
+	}
+	GameRemote.prototype.sendByUid(uid,notify,function(){})
 }
 
 //用户退出房间

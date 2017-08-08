@@ -154,6 +154,7 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].uid = uid
       player[chair].ip = info.ip
       player[chair].playerInfo = info
+      player[chair].gold = info.gold
       //玩家数量增加
       room.playerCount++
 
@@ -726,7 +727,7 @@ var MING_CARD_NUM = 4  //明牌数量
         }
         room.MatchStream[room.runCount] = stream
         //j金币场小结算
-        settlementCB(curScores,player)
+        settlementCB(room.roomId,curScores,player)
 
         //TODO 房间重置
         gameState = conf.GS_FREE
@@ -741,6 +742,7 @@ var MING_CARD_NUM = 4  //明牌数量
       }
     }
     local.gameOver = function(flag) {
+      clearTimeout(timer)
       //总结算
       room.state = true
       var notify = {
@@ -812,6 +814,7 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].handCard = new Array(5)   //手牌
       player[chair].score = 0                 //当前积分
       player[chair].ip  = undefined           //玩家ip地址
+      player[chair].gold = 0                  //
   }
     //玩家离线
     room.leave = function(uid) {
