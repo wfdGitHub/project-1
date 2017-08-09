@@ -14,7 +14,7 @@ remote.sendByUid = function(params,uid,notify,cb) {
 	ConnectorRemote.channelService.pushMessageByUids('onMessage', notify, [{
       uid: uid,
       sid: this.app.get('serverId')
-    }]);  
+    }])
     if(cb){
     	cb() 
     }

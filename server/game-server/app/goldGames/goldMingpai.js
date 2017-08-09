@@ -11,7 +11,7 @@ var MING_CARD_NUM = 4  //明牌数量
     var roomCallBack = gameOvercb
     var room = {}
     room.roomId = roomId
-    room.roomType = "goldMingpai"
+    room.roomType = "mingpaiqz"
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}                     //玩家操作
@@ -154,7 +154,7 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].uid = uid
       player[chair].ip = info.ip
       player[chair].playerInfo = info
-      player[chair].gold = info.gold
+      player[chair].score = info.gold
       //玩家数量增加
       room.playerCount++
 
@@ -363,6 +363,7 @@ var MING_CARD_NUM = 4  //明牌数量
       //统计抢庄人数
       var num = 0
       var robList = {}
+      console.log(robState)
       var maxRob = 1
       for(var i = 0; i < GAME_PLAYER;i++){
         player[i].isBanker = false
@@ -486,11 +487,13 @@ var MING_CARD_NUM = 4  //明牌数量
               return
             }
             log("robBanker")
+            console.log(robState)
             //判断是否已抢庄
             if(robState[chair] != -1){
               cb(false)
               return
             }
+            console.log(1111111111)
             //记录抢庄
             robState[chair] = param.num
            
@@ -736,9 +739,9 @@ var MING_CARD_NUM = 4  //明牌数量
             player[i].isNoGiveUp = true
             player[i].isShowCard = false
         }
-        if(room.gameNumber <= 0){
-            local.gameOver()
-        }
+        // if(room.gameNumber <= 0){
+        //     local.gameOver()
+        // }
       }
     }
     local.gameOver = function(flag) {
@@ -812,9 +815,9 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].isNoGiveUp = false        //是否未放弃游戏  true表示未放弃   false表示已放弃            
       player[chair].isShowCard = false        //是否开牌
       player[chair].handCard = new Array(5)   //手牌
-      player[chair].score = 0                 //当前积分
+      player[chair].score = 0                 //当前金币
       player[chair].ip  = undefined           //玩家ip地址
-      player[chair].gold = 0                  //
+      player[chair].cardsList = {}            //手牌记录
   }
     //玩家离线
     room.leave = function(uid) {
@@ -848,7 +851,7 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     //积分改变
     local.changeScore = function(chair,score) {
-          player[chair].score += score;       
+          player[chair].score = parseInt(player[chair].score) + parseInt(score)  
     }
 
     //广播消息

@@ -83,7 +83,8 @@ local.joinRoom = function(type,roomId){
 		var params = {}
 		params.gid = GameRemote.roomList[roomId]
 		if(!params.gid){
-			cb(false)
+			console.log("error!!!!!!!!!!!!")
+			console.log(GameRemote.roomList)
 			return
 		}
 		var uid = GameRemote.matchList[type][0]
@@ -101,6 +102,7 @@ local.joinRoom = function(type,roomId){
 			if(flag == true){
 				GameRemote.RoomMap[roomId].push(uid)
 				GameRemote.userMap[uid] = roomId
+				delete GameRemote.matchMap[uid]
 			}
 		})
 	}
@@ -118,18 +120,18 @@ local.createRoom = function(type) {
 			var sids = []
 			var infos = []
 			for(var j = 0;j < ROOMPLAYERNUM;j++){
-				users.push(GameRemote.matchList[type][j])
+				users.push(playerList[j])
 				sids.push(GameRemote.userConnectorMap[users[j]])
 				//冗余保护  有玩家在房间中则撤销此操作
 				if(GameRemote.userMap[users[j]]){
-					GameRemote.matchList[type].splice(j,1)
+					playerList.splice(j,1)
 					break;
 				}
 			}
 			for(var j = 0;j < ROOMPLAYERNUM;j++){
 				infos.push(GameRemote.matchMap[users[j]].info)
 				delete GameRemote.matchMap[users[j]]
-				GameRemote.matchList[type].splice(0,1)
+				playerList.splice(0,1)
 				GameRemote.userMap[users[j]] = roomId
 			}
 			//创建金币场
@@ -143,20 +145,20 @@ local.createRoom = function(type) {
 		var users = []
 		var sids = []
 		var infos = []
-		for(var j = 0;j < playerList.length;j++){
-			users.push(GameRemote.matchList[type][j])
+		var playerTmpCount = playerList.length
+		for(var j = 0;j < playerTmpCount;j++){
+			users.push(playerList[j])
 			sids.push(GameRemote.userConnectorMap[users[j]])
-			GameRemote.matchList[type].splice(0,1)
 			//冗余保护  有玩家在房间中则撤销此操作
 			if(GameRemote.userMap[users[j]]){
-				GameRemote.matchList[type].splice(j,1)
+				playerList.splice(j,1)
 				return;
 			}
 		}
 		for(var j = 0;j < users.length;j++){
 			infos.push(GameRemote.matchMap[users[j]].info)
 			delete GameRemote.matchMap[users[j]]
-			GameRemote.matchList[type].splice(0,1)
+			playerList.splice(0,1)
 			GameRemote.userMap[users[j]] = roomId
 		}
 		//创建金币场
@@ -175,8 +177,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 	}
 	params.gid = GameRemote.NodeNumber
 	params.gameType = type
-	console.log("========")
-	console.log(infos)
+	//console.log(infos)
 	GameRemote.app.rpc.goldNode.remote.newRoom(null,params,users,sids,infos,roomId,function(flag,players,roomId) {
 		if(flag == true){
 			GameRemote.roomList[roomId] = params.gid
@@ -198,24 +199,22 @@ GameRemote.prototype.userOutRoom = function(roomId,uid) {
 	local.quitRoom(roomId,uid)
 	//通知玩家
 	var notify = {
-		"cmd" : "userOutRoom"
-		"reason" "notEnoughGold"
+		"cmd" : "userOutRoom",
+		"reason" : "notEnoughGold"
 	}
 	GameRemote.prototype.sendByUid(uid,notify,function(){})
 }
 
 //用户退出房间
 local.quitRoom = function(roomId,uid) {
-	console.log("quitRoom")
-	for(var i in GameRemote.RoomMap[roomId]){
-		if(GameRemote.RoomMap[roomId].hasOwnProperty(i)){
-			if(GameRemote.RoomMap[roomId][i] == uid){
-				delete GameRemote.RoomMap[roomId][i]
-				delete GameRemote.userMap[uid]
-				return
-			}
-		}
+	console.log("quitRoom2222222222")
+	console.log(GameRemote.RoomMap[roomId])
+	for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
+		if(GameRemote.RoomMap[roomId][i] == uid){
+			GameRemote.RoomMap[roomId].splice(i,1)
+		}		
 	}
+	delete GameRemote.userMap[uid]
 }
 
 local.userQuit = function(uid,cb) {
@@ -246,7 +245,7 @@ local.matching = function(){
 			//console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
-			console.log(tmpRoomList)
+			//console.log(tmpRoomList)
 			//从该类型的所有房间中找空闲房间
 			var runTime = 0
 			for(var i = 0;i < tmpRoomList.length; i++){
@@ -259,6 +258,8 @@ local.matching = function(){
 				do{
 					runTime++
 					var playerCount = GameRemote.RoomMap[roomId].length
+					console.log("playerCount : "+playerCount)
+					console.log(GameRemote.RoomMap[roomId])
 					local.joinRoom(type,roomId)
 					GameRemote.matchTimer[type] = 0					
 				}while(playerCount < ROOMPLAYERNUM && playerList.length > 0 && runTime < 100)
@@ -327,7 +328,7 @@ local.leaveMatch = function(uid,cb) {
 			return
 		}
 	}
-	console.log("error leaveMatch can't find target !")
+	console.log("error leaveMatch can't find target ! " + gameType)
 	cb(false)
 }
 

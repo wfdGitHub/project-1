@@ -132,8 +132,9 @@ local.settlementCB = function(roomId,curScores,player) {
 	//更改金币
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
-			player[index].gold += curScores[index]
-			GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],null)
+			if(player[index].isActive){
+				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],null)				
+			}
 		}
 	}
 	//金币等于0退出游戏
