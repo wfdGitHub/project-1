@@ -1,5 +1,10 @@
 var frame =   module.exports
 var conf = require("../../conf/niuniuConf.js").niuConf
+frame.waitFlag = true   //离线等待
+
+frame.start = function(isWait) {
+  frame.waitFlag = isWait
+}
 
 frame.ready = function (uid,chair,player,gameState,local,nextcb,banker,cb) {
    //游戏状态为空闲时才能准备
@@ -25,9 +30,16 @@ frame.ready = function (uid,chair,player,gameState,local,nextcb,banker,cb) {
     			if(player[index].isReady){
     				readyCount++
     			}
-          //在线玩家中有人未准备则不开始
-          if(player[index].isReady == false && player[index].isOnline){
-            readyFlag = false
+          if(frame.waitFlag){
+            //全部玩家中有人未准备则不开始
+            if(player[index].isReady == false){
+              readyFlag = false
+            }            
+          }else{
+            //在线玩家中有人未准备则不开始
+            if(player[index].isReady == false && player[index].isOnline){
+              readyFlag = false
+            }            
           }
     		}
     	}
@@ -66,9 +78,16 @@ frame.disconnect = function(chair,player,gameState,local,nextcb) {
         if(player[index].isReady){
           readyCount++
         }
-        //在线玩家中有人未准备则不开始
-        if(player[index].isReady == false && player[index].isOnline){
-          readyFlag = false
+        if(frame.waitFlag){
+          //全部玩家中有人未准备则不开始
+          if(player[index].isReady == false){
+            readyFlag = false
+          }            
+        }else{
+          //在线玩家中有人未准备则不开始
+          if(player[index].isReady == false && player[index].isOnline){
+            readyFlag = false
+          }            
         }
       }
     }

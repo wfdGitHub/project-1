@@ -103,6 +103,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
+    if(typeof(param.isWait) !== "boolean"){
+        param.isWait = true
+    }
+    frame.start(param.isWait)    
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
     }
@@ -1153,6 +1157,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   }
   //总结算
   local.gameOver = function(flag) {
+    clearTimeout(timer)
     //斗公牛模式庄家积分需加上积分池
     if(room.gameMode === conf.MODE_GAME_BULL){
       player[banker].score += bonusPool

@@ -138,6 +138,10 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return        
       }
+      if(typeof(param.isWait) !== "boolean"){
+          param.isWait = true
+      }
+      frame.start(param.isWait)      
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }
@@ -582,7 +586,7 @@ var MING_CARD_NUM = 4               //明牌数量
             var flag = true
             for(var index in robState){
               if(robState.hasOwnProperty(index)){
-                if(player[index].isActive){
+                if(player[index].isActive && player[index].isReady){
                   if(robState[index] == -1){
                     flag = false
                   }
@@ -817,6 +821,7 @@ var MING_CARD_NUM = 4               //明牌数量
       }
     }
     local.gameOver = function(flag) {
+      clearTimeout(timer)
       //总结算
       room.state = true
       var notify = {

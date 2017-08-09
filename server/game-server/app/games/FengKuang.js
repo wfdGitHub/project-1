@@ -94,6 +94,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
+    if(typeof(param.isWait) !== "boolean"){
+      param.isWait = true
+    }
+    frame.start(param.isWait)
     if(typeof(param.limitAward) !== "boolean"){
       param.limitAward = true
     }
@@ -874,6 +878,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   }
   //总结算
   local.gameOver = function(flag) {
+    clearTimeout(timer)
     //总结算
     room.state = true
     var notify = {

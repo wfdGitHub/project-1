@@ -8,6 +8,7 @@ module.exports = function(app) {
 
 var Handler = function(app) {
   this.app = app
+  Handler.app = app
   this.sessionService = this.app.get('sessionService')
   this.channelService = this.app.get('channelService')
   this.gameChanel = this.channelService.getChannel("GameChannel",true)
@@ -23,6 +24,10 @@ handler.getNotify = function(msg,session,next) {
   self.app.rpc.db.remote.getNotify(session,function(data) {
       next(null,data)
   })
+}
+handler.getTicket = function(msg,session,next) {
+  //获取微信ticket
+  httpConf.getTicket(next)
 }
 handler.getLoginFlag = function(msg,session,next) {
   next(null,true)
@@ -198,6 +203,25 @@ handler.visitorEnter = function(msg, session, next) {
   )
   next(null,{"flag" : true})
 }
+//H5登录
+handler.h5Enter = function(msg,session,next) {
+  if(!msg.code || typeof(msg.code) !== "string"){
+    next(false)
+    return
+  }
+  var self = this
+  httpConf.H5GetData(msg.code,0,function(data) {
+    if(data.errcode){
+      console.log(data.errmsg)
+      next(null,{"flag" : false , "err" : data.errmsg})
+      return
+    }
+    msg.openId = data.data.open_id
+    msg.token = data.data.access_token
+    var enterFun = handler.enter.bind(self)
+    enterFun(msg,session,next)
+  })
+}
 //登录
 handler.enter = function(msg, session, next) {
   var self = this
@@ -205,11 +229,11 @@ handler.enter = function(msg, session, next) {
   var token = msg.token
   var sessionService = self.app.get('sessionService')
   if(!openId || !token){
-    next(null,{code: -100})
+    next(null,{flag : false,code: -100})
     return
   }
   if(!msg.version || msg.version !== version){
-    next(null,{code : -120})
+    next(null,{flag : false,code : -120})
     return
   }
   //登陆验证
