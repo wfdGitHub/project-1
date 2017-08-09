@@ -312,7 +312,8 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"gameNumber" : GameRemote.roomList[roomId].maxGameNumber,
 			"cardMode" : GameRemote.roomList[roomId].cardMode,
 			"consumeMode" : GameRemote.roomList[roomId].consumeMode,
-			"basic" : GameRemote.roomList[roomId].basic
+			"basic" : GameRemote.roomList[roomId].basic,
+			"room_uid" : GameRemote.roomList[roomId].agencyId || players[0].uid
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
