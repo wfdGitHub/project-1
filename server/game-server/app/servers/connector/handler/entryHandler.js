@@ -193,8 +193,8 @@ handler.h5Enter = function(msg,session,next) {
       next(null,{"flag" : false , "err" : data.errmsg})
       return
     }
-    msg.openId = data.open_id
-    msg.token = data.access_token
+    msg.openId = data.data.open_id
+    msg.token = data.data.access_token
     var enterFun = handler.enter.bind(self)
     enterFun(msg,session,next)
   })
@@ -206,11 +206,11 @@ handler.enter = function(msg, session, next) {
   var token = msg.token
   var sessionService = self.app.get('sessionService')
   if(!openId || !token){
-    next(null,{code: -100})
+    next(null,{flag : false,code: -100})
     return
   }
   if(!msg.version || msg.version !== version){
-    next(null,{code : -120})
+    next(null,{flag : false,code : -120})
     return
   }
   //登陆验证
