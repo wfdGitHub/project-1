@@ -414,9 +414,13 @@ GameRemote.prototype.kick = function(uid,cb) {
 GameRemote.prototype.reconnection = function(uid, sid,cb) {
 	if(GameRemote.userMap[uid] !== undefined){
 		var roomId = GameRemote.userMap[uid]
+		if(!roomId){
+			cb()
+			return
+		}
 		var params = {}
 		params.gid = GameRemote.roomList[roomId]
-		this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (data){
+		this.app.rpc.goldNode.remote.reconnection(null,params,uid,sid,roomId,function (data){
 			cb(data)
 		})
 	}else{

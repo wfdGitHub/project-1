@@ -150,7 +150,7 @@ handler.visitorEnter = function(msg, session, next) {
       },
       function(cb){
         //先判断是否在房卡房间，再判断是否在金币场房间
-        self.app.rpc.game.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
+        self.app.rpc.game.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
             if(data){
               data.area = "cardRoom"
               notify.reconnection = data
@@ -162,7 +162,7 @@ handler.visitorEnter = function(msg, session, next) {
               })
               cb(null)
             }else{
-              self.app.rpc.goldGame.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
+              self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
                 if(data){
                   data.area = "goldRoom"
                   notify.reconnection = data
@@ -313,11 +313,33 @@ handler.enter = function(msg, session, next) {
         })
       },
       function(cb){
-        self.app.rpc.game.remote.reconnection(session,playerId,self.app.get('serverId'),function(data) {
+        //先判断是否在房卡房间，再判断是否在金币场房间
+        self.app.rpc.game.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
             if(data){
+              data.area = "cardRoom"
               notify.reconnection = data
+              session.set("area","cardRoom")
+              session.push("area", function(err) {
+                if(err) {
+                  console.error('set area for session failed! error is : %j', err.stack)
+                }
+              })
+              cb(null)
+            }else{
+              self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
+                if(data){
+                  data.area = "goldRoom"
+                  notify.reconnection = data
+                  session.set("area","goldRoom")
+                  session.push("area", function(err) {
+                    if(err) {
+                      console.error('set area for session failed! error is : %j', err.stack)
+                    }
+                  })
+                }
+                cb(null)
+              })
             }
-            cb(null)
         })
       },
       function() {

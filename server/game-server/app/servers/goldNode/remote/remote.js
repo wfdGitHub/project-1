@@ -91,11 +91,7 @@ local.quitRoom = function(uid,roomId,cb) {
 
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
-	var freeState = false
-	if(freeFrame.GameService.roomLock[roomId] === false){
-		freeState = freeFrame.GameService.lockState[roomId]
-	}
-	GameRemote.roomList[roomId].reconnection(uid,sid,freeState,function(data) {
+	GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
 		cb(data)
 	})
 }

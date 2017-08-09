@@ -163,7 +163,7 @@
         }
       ,"backups": 5,
       "category":"error-log"
-    },
+    }
   ],
 
   "levels": {
