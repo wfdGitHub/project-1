@@ -645,6 +645,7 @@ var MING_CARD_NUM = 4  //明牌数量
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
+        gameState = conf.GS_FREE
         room.runCount++
         readyCount = 0
         clearTimeout(timer)
@@ -661,14 +662,60 @@ var MING_CARD_NUM = 4  //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  curScores[i] += betList[i] * result[i].award * room.maxRob
-                  curScores[banker] -= betList[i] * result[i].award * room.maxRob
+                  var tmpScore = betList[i] * result[i].award * room.maxRob
+                  curScores[banker] -= tmpScore
+                  curScores[i] += tmpScore
               }else{
                   //庄家赢
-                  curScores[i] -= betList[i] * result[banker].award * room.maxRob
-                  curScores[banker] += betList[i] * result[banker].award * room.maxRob
-              }              
+                  var tmpScore = betList[i] * result[banker].award * room.maxRob
+                  //闲家输的钱不能大于自身金钱
+                  if(player[i].score < tmpScore){
+                    tmpScore = player[i].score
+                  }
+                  curScores[i] -= tmpScore
+                  curScores[banker] += tmpScore
+              }
           }
+        }
+        //庄家输的钱不能大于自身金钱
+        if(curScores[banker] < 0 && player[banker].score + curScores[banker] < 0){
+          console.log(curScores)
+          var tmpScore = -(curScores[banker] + player[banker].score)
+          console.log("tmpScore : "+tmpScore)
+          curScores[banker] += tmpScore
+          //排序玩家牌型大小  按牌型从小到大扣除闲家分数
+          var indexs = []
+          for(var i = 0;i < GAME_PLAYER;i++){
+              indexs[i] = i
+          }
+          for(var i = 0;i < GAME_PLAYER;i++){
+            for(var j = i + 1; j < GAME_PLAYER;j++){
+              if(!player[i].isReady || (player[j].isReady && logic.compare(result[i],result[j]))){
+                var tmpindex = j
+                indexs[j] = i
+                indexs[i] = tmpindex
+              }
+            }
+          }
+          console.log(indexs)
+          for(var i = 0;i < GAME_PLAYER;i++){
+            if(tmpScore <= 0){
+              break
+            }
+            var tmpIndex = indexs[i]
+            if(tmpIndex != banker){
+              if(player[tmpIndex].isReady){
+                if(curScores[tmpIndex] > tmpScore){
+                  curScores[tmpIndex] -= tmpScore
+                  tmpScore = 0
+                }else{
+                  curScores[tmpIndex] = 0
+                  tmpScore -= curScores[tmpIndex]
+                }
+              }              
+            }
+          }
+          console.log(curScores)
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
@@ -733,7 +780,6 @@ var MING_CARD_NUM = 4  //明牌数量
         settlementCB(room.roomId,curScores,player)
 
         //TODO 房间重置
-        gameState = conf.GS_FREE
         for(var i = 0;i < GAME_PLAYER; i++){
             player[i].isReady = false
             player[i].isNoGiveUp = true
@@ -938,7 +984,9 @@ var MING_CARD_NUM = 4  //明牌数量
       chair : chair
     }
     local.sendAll(notify)     
-    cb(true)    
+    frame.disconnect(chair,player,gameState,local,local.gameBegin)
+    console.log("uid : "+uid)
+    cb(true,uid)
   }
   //房间是否空闲
   room.isFree = function(){

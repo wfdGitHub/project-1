@@ -164,13 +164,14 @@ local.createRoom = function(type) {
 		//创建金币场
 		local.goldNodeNewRoom(users,sids,infos,roomId,type)
 		console.log("createRoom")
-		console.log(users)		
-	}		
+		console.log(users)
+	}
 }
 //通知游戏服务器创建房间创建成功
 local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 	var params = {}
 	GameRemote.NodeNumber++
+	GameRemote.roomState[roomId] = false
 	var nodeLength = GameRemote.app.getServersByType('goldNode').length
 	if(GameRemote.NodeNumber >= nodeLength){
 		GameRemote.NodeNumber = 0
@@ -186,6 +187,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 		}else{
 			//TODO通知匹配失败 删除RoomMap与userMap
 			delete GameRemote.RoomMap[roomId]
+			GameRemote.roomState[roomId] = true
 			for(var z in players){
 				if(players.hasOwnProperty(z)){
 					delete GameRemote.userMap[players[z]]
@@ -195,7 +197,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 	})
 }
 //用户被踢出房间
-GameRemote.prototype.userOutRoom = function(roomId,uid) {
+GameRemote.prototype.userOutRoom = function(roomId,uid,cb) {
 	local.quitRoom(roomId,uid)
 	//通知玩家
 	var notify = {
@@ -203,11 +205,15 @@ GameRemote.prototype.userOutRoom = function(roomId,uid) {
 		"reason" : "notEnoughGold"
 	}
 	GameRemote.prototype.sendByUid(uid,notify,function(){})
+	if(cb){
+		cb()
+	}
 }
 
 //用户退出房间
 local.quitRoom = function(roomId,uid) {
-	console.log("quitRoom2222222222")
+	console.log("roomId222 : "+roomId)
+	console.log("quitRoom222 : "+uid)
 	console.log(GameRemote.RoomMap[roomId])
 	for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
 		if(GameRemote.RoomMap[roomId][i] == uid){
@@ -215,6 +221,7 @@ local.quitRoom = function(roomId,uid) {
 		}		
 	}
 	delete GameRemote.userMap[uid]
+	console.log(GameRemote.userMap)
 }
 
 local.userQuit = function(uid,cb) {
@@ -296,12 +303,16 @@ local.joinMatch = function(uid,sid,params,cb) {
 	if(GameRemote.userMap[uid]){
 		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
 		cb(false)
-		return		
+		return
 	}
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
-			//j检测金币
+			//检测金币
+			if(data.gold < 10){
+				cb(false,{"msg" : tips.NO_GOLD})
+				return
+			}
 			GameRemote.matchList[type].push(uid)
 			data.ip = params.ip
 			GameRemote.matchMap[uid] = {"type" : type,"info" : data}
@@ -368,7 +379,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 };
 
 //游戏结束回调
-GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNumber,cb) {
+GameRemote.prototype.gameOver = function(roomId,players,cb) {
 	//解锁房间内玩家   清理房间  更新代开房记录
 	var roomPlayerCount = 0
 	for(var index in players){

@@ -79,13 +79,14 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 
 //玩家退出房间回调
 local.quitRoom = function(uid,roomId,cb) {
-	GameRemote.roomList[roomId].userQuit(uid,function(flag) {
+	console.log("quitRoom : "+uid)
+	GameRemote.roomList[roomId].userQuit(uid,function(flag,uid) {
 		if(flag){
 			console.log("quitRoom : ")
 			console.log(uid)
 			delete GameRemote.userMap[uid]
 		}
-		cb(flag)
+		cb(flag,uid)
 	})
 }
 
@@ -124,7 +125,7 @@ local.settlementCB = function(roomId,curScores,player) {
 	//TODO
 	console.log("roomId : "+roomId)
 	console.log(curScores)
-	console.log(player)
+	//console.log(player)
 	//更改金币
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
@@ -137,21 +138,44 @@ local.settlementCB = function(roomId,curScores,player) {
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive){
-				if(player[index].gold <= 0){
+				if(player[index].score <= 0){
 					//退出游戏
-					local.quitRoom(roomId,player[index].uid,function(flag) {
+					local.quitRoom(player[index].uid,roomId,function(flag,uid) {
 						if(flag == true){
 							//通知中心服务器
-							GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,player[index].uid)
+							console.log("roomId111 : "+roomId)
+							console.log("index : "+index)
+							console.log("quitRoom111 : "+uid)
+							GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
 						}
 					})
 				}
 			}
 		}
 	}
+	//没有玩家则关闭房间
+	var flag = true
+	for(var index in player){
+		if(player.hasOwnProperty(index)){
+			if(player[index].isActive){
+				flag = false
+				return
+			}
+		}
+	}
+	if(flag){
+		local.gemeOver(roomId,player)
+	}
 }
 
 //房间结束回调
-local.gemeOver = function() {
-	// body...
+local.gemeOver = function(roomId,players) {
+	clearTimeout(GameRemote.liveTimer[roomId])
+	GameRemote.roomList[roomId] = false
+	for(var i = 0;i < players.length;i++){
+		if(players[i].isActive){
+			delete GameRemote.userMap[players[i].uid]
+		}
+	}
+	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,function(){})
 }
