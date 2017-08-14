@@ -129,7 +129,7 @@ local.settlementCB = function(roomId,curScores,player) {
 	//更改金币
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
-			if(player[index].isActive){
+			if(player[index].isActive && !player[index].isRobot){
 				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],null)				
 			}
 		}
@@ -157,7 +157,7 @@ local.settlementCB = function(roomId,curScores,player) {
 	var flag = true
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
-			if(player[index].isActive){
+			if(player[index].isActive && !player[index].isRobot){
 				flag = false
 				return
 			}
@@ -171,11 +171,12 @@ local.settlementCB = function(roomId,curScores,player) {
 //房间结束回调
 local.gemeOver = function(roomId,players) {
 	clearTimeout(GameRemote.liveTimer[roomId])
-	GameRemote.roomList[roomId] = false
 	for(var i = 0;i < players.length;i++){
 		if(players[i].isActive){
 			delete GameRemote.userMap[players[i].uid]
 		}
 	}
-	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,function(){})
+	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,"goldMingpai",function(){})
+	GameRemote.roomList[roomId].gameOver()
+	GameRemote.roomList[roomId] = false
 }

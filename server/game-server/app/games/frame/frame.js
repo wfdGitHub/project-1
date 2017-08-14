@@ -34,7 +34,7 @@ frame.ready = function (uid,chair,player,gameState,local,nextcb,banker,cb) {
             //全部玩家中有人未准备则不开始
             if(player[index].isReady == false){
               readyFlag = false
-            }            
+            }
           }else{
             //在线玩家中有人未准备则不开始
             if(player[index].isReady == false && player[index].isOnline){

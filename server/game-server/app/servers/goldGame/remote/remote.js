@@ -1,10 +1,11 @@
 //var gameHandle = require('../handler/handle');
 var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
+var robotManager = require("../../../conf/robotManager.js")
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var MATCHTIME = 5000
-var MAXMATCHTIMER = 1
+var MATCHTIME = 500
+var MAXMATCHTIMER = 6
 var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
 var ROOM_ALL_AMOUNT = 10000
@@ -75,16 +76,16 @@ local.updateMatchMap = function(){
 
 //将队首玩家加入房间
 local.joinRoom = function(type,roomId){
-	console.log("joinRoom")
-	console.log("type : "+type)
-	console.log("roomId : "+roomId)
+	// console.log("joinRoom")
+	// console.log("type : "+type)
+	// console.log("roomId : "+roomId)
 	//TODO    玩家加入房间
 	if(GameRemote.RoomMap[roomId].length < ROOMPLAYERNUM){
 		var params = {}
 		params.gid = GameRemote.roomList[roomId]
 		if(!params.gid){
-			console.log("error!!!!!!!!!!!!")
-			console.log(GameRemote.roomList)
+			// console.log("error!!!!!!!!!!!!")
+			// console.log(GameRemote.roomList)
 			return
 		}
 		var uid = GameRemote.matchList[type][0]
@@ -136,8 +137,8 @@ local.createRoom = function(type) {
 			}
 			//创建金币场
 			local.goldNodeNewRoom(users,sids,infos,roomId,type)
-			console.log("createRoom")
-			console.log(users)
+			// console.log("createRoom")
+			// console.log(users)
 		}
 	}else if(playerList.length > 0 && playerList.length < ROOMPLAYERNUM){
 		//人数不足一个房间补足机器人
@@ -163,8 +164,8 @@ local.createRoom = function(type) {
 		}
 		//创建金币场
 		local.goldNodeNewRoom(users,sids,infos,roomId,type)
-		console.log("createRoom")
-		console.log(users)
+		// console.log("createRoom")
+		// console.log(users)
 	}
 }
 //通知游戏服务器创建房间创建成功
@@ -218,7 +219,8 @@ local.quitRoom = function(roomId,uid) {
 	for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
 		if(GameRemote.RoomMap[roomId][i] == uid){
 			GameRemote.RoomMap[roomId].splice(i,1)
-		}		
+			break
+		}
 	}
 	delete GameRemote.userMap[uid]
 	console.log(GameRemote.userMap)
@@ -280,11 +282,41 @@ local.matching = function(){
 					GameRemote.matchTimer[type] = 0
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
+				}else{
+					//加一个机器人到队列中
+					var robotData = robotManager.getRobotInfo()
+					var params = {"gameType" : type,"ip" : "0.0.0.0"}
+					local.robotJoinMatch(robotData.uid,params,robotData)
 				}
 			}
 		}
 	}
 }
+//机器人加入匹配队列
+local.robotJoinMatch = function(uid,params,robotData) {
+	var type = params.gameType
+	if(!type || typeof(type) != "string" || !gameType[type]){
+		console.log("params.gameType error : "+type)
+		return
+	}
+	//在匹配队列中不能再次申请
+	if(GameRemote.matchMap[uid]){
+		console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		return
+	}
+	//在房间中不能申请
+	if(GameRemote.userMap[uid]){
+		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		return
+	}
+	//检测金币
+	if(robotData.gold < 10){
+		return
+	}
+	GameRemote.matchList[type].push(uid)
+	GameRemote.matchMap[uid] = {"type" : type,"info" : robotData}
+}
+
 //加入匹配队列
 local.joinMatch = function(uid,sid,params,cb) {
 	var type = params.gameType
@@ -379,13 +411,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 };
 
 //游戏结束回调
-GameRemote.prototype.gameOver = function(roomId,players,cb) {
+GameRemote.prototype.gameOver = function(roomId,players,type,cb) {
 	//解锁房间内玩家   清理房间  更新代开房记录
-	var roomPlayerCount = 0
 	for(var index in players){
 		if(players.hasOwnProperty(index)){
 			if(players[index].isActive){		
-                roomPlayerCount++
                 delete GameRemote.userMap[players[index].uid]
 			}
 		}
@@ -393,6 +423,12 @@ GameRemote.prototype.gameOver = function(roomId,players,cb) {
 	GameRemote.roomState[roomId] = true
 	GameRemote.roomList[roomId] = false
 	delete GameRemote.RoomMap[roomId]
+	for(var i = 0; i < GameRemote.typeRoomMap[type].length;i++){
+		if(GameRemote.typeRoomMap[type][i] == roomId){
+			GameRemote.typeRoomMap[type].splice(i,1)
+			break
+		}
+	}
 	if(cb){
 		cb()
 	}
@@ -400,7 +436,7 @@ GameRemote.prototype.gameOver = function(roomId,players,cb) {
 
 //游戏开始回调
 GameRemote.prototype.gameBeginCB = function(roomId,agencyId,cb) {
-	console.log("gameBeginCB========== agencyId : "+agencyId)
+	//console.log("gameBeginCB========== agencyId : "+agencyId)
 	if(cb){
 		cb()
 	}
