@@ -15,7 +15,8 @@ module.exports = function(app) {
 };
 var local = {}
 var gameType = {
-	"goldMingpai" : true
+	"goldMingpai" : true,
+	"goldNiuNiu" : true
 }
 var roomIndex = 0
 
@@ -266,6 +267,7 @@ local.matching = function(){
 				var roomId = tmpRoomList[i]
 				do{
 					runTime++
+					console.log(GameRemote.typeRoomMap[type])
 					var playerCount = GameRemote.RoomMap[roomId].length
 					console.log("playerCount : "+playerCount)
 					console.log(GameRemote.RoomMap[roomId])
@@ -319,7 +321,7 @@ local.robotJoinMatch = function(uid,params,robotData) {
 
 //加入匹配队列
 local.joinMatch = function(uid,sid,params,cb) {
-	var type = params.gameType
+	var type = "goldNiuNiu"
 	if(!type || typeof(type) != "string" || !gameType[type]){
 		console.log("params.gameType error : "+type)
 		cb(false)

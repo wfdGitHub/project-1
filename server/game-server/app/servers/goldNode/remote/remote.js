@@ -1,11 +1,13 @@
 var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var goldMingpai = require("../../../goldGames/goldMingpai.js")
+var goldNiuNiu = require("../../../goldGames/niuniu.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
 var async = require("async")
 
 var ROOM_FACTORY = {
-	"goldMingpai" : goldMingpai
+	"goldMingpai" : goldMingpai,
+	"goldNiuNiu" : goldNiuNiu
 }
 
 module.exports = function(app) {
@@ -176,7 +178,7 @@ local.gemeOver = function(roomId,players) {
 			delete GameRemote.userMap[players[i].uid]
 		}
 	}
-	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,"goldMingpai",function(){})
+	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,"goldNiuNiu",function(){})
 	GameRemote.roomList[roomId].gameOver()
 	GameRemote.roomList[roomId] = false
 }
