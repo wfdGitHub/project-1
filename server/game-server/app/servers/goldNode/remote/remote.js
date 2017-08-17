@@ -123,7 +123,7 @@ var finishGameOfTimer = function(index) {
 }
 
 //小结算回调
-local.settlementCB = function(roomId,curScores,player) {
+local.settlementCB = function(roomId,curScores,player,type) {
 	//TODO
 	console.log("roomId : "+roomId)
 	console.log(curScores)
@@ -166,19 +166,19 @@ local.settlementCB = function(roomId,curScores,player) {
 		}
 	}
 	if(flag){
-		local.gemeOver(roomId,player)
+		local.gemeOver(roomId,player,type)
 	}
 }
 
 //房间结束回调
-local.gemeOver = function(roomId,players) {
+local.gemeOver = function(roomId,players,type) {
 	clearTimeout(GameRemote.liveTimer[roomId])
 	for(var i = 0;i < players.length;i++){
 		if(players[i].isActive){
 			delete GameRemote.userMap[players[i].uid]
 		}
 	}
-	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,"goldNiuNiu",function(){})
+	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,type,function(){})
 	GameRemote.roomList[roomId].gameOver()
 	GameRemote.roomList[roomId] = false
 }

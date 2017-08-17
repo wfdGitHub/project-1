@@ -95,16 +95,16 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,function(err,data) {
 		if(!err){
 			var notify = {}
-			notify["diamond"] = data[0]
-			notify["uid"] = data[1]
+			notify["diamond"] = parseInt(data[0])
+			notify["uid"] = parseInt(data[1])
 			notify["nickname"] = data[2]
 			notify["head"] = data[3]
 			notify["history"] = JSON.parse(data[4])
-			notify["sex"] = data[5]
-			notify["limits"] = data[6]
-			notify["freeze"] = data[7]
-			notify["useDiamond"] = data[8] || 0
-			notify["gold"] = data[9] || 0
+			notify["sex"] = parseInt(data[5])
+			notify["limits"] = parseInt(data[6])
+			notify["freeze"] = parseInt(data[7])
+			notify["useDiamond"] = parseInt(data[8] || 0)
+			notify["gold"] = parseInt(data[9] || 0)
 			notify["playerId"] = uid
 			cb(notify)
 		}else{

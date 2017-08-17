@@ -11,7 +11,7 @@ var MING_CARD_NUM = 4  //明牌数量
     var settlementCB = settlementCB
     var room = {}
     room.roomId = roomId
-    room.roomType = "niuniu"
+    room.roomType = "goldNiuNiu"
     room.gameMode = conf.MODE_GAME_NORMAL
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
@@ -174,13 +174,14 @@ var MING_CARD_NUM = 4  //明牌数量
         player[chair].isRobot = true
         //初始化机器人
         robots[chair] = robotFactory.createRobot(notify,player[chair],room.handle,conf)
+        console.log(robots)
       }else{
         if(!room.channel.getMember(uid)){
           room.channel.add(uid,sid)
         }
       }
       
-      local.sendUid(uid,notify)   
+      local.sendUid(uid,notify)
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -682,7 +683,7 @@ var MING_CARD_NUM = 4  //明牌数量
         //庄家输的钱不能大于自身金钱
         //console.log("banekr : "+banker)
         if(curScores[banker] < 0 && player[banker].score + curScores[banker] < 0){
-          //console.log(curScores)
+          console.log(curScores)
           var tmpScore = -(curScores[banker] + player[banker].score)
           //console.log("tmpScore : "+tmpScore)
           while(tmpScore > 0){
@@ -693,7 +694,11 @@ var MING_CARD_NUM = 4  //明牌数量
                   tmpMin = i
               }
             }
-            //console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
+            console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
+            if(tmpMin == -1){
+              console.log(player)
+              console.log(result)
+            }
             if(curScores[tmpMin] > 0){
               if(curScores[tmpMin] >= tmpScore){
                 curScores[tmpMin] -= tmpScore
@@ -706,7 +711,7 @@ var MING_CARD_NUM = 4  //明牌数量
               }
             }
           }
-          //console.log(curScores)
+          console.log(curScores)
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
@@ -761,7 +766,7 @@ var MING_CARD_NUM = 4  //明牌数量
             player[i].isShowCard = false
         }
         //金币场小结算
-        settlementCB(room.roomId,curScores,player)
+        settlementCB(room.roomId,curScores,player,room.roomType)
       }
     }
     room.gameOver = function() {

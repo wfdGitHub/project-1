@@ -8,7 +8,7 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 	robot.timer = 0
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
-		console.log("cmd : "+cmd)
+		//console.log("cmd : "+cmd)
 		switch(cmd){
 			case "userJoin":
 				break

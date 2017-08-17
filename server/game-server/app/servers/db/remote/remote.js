@@ -25,7 +25,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"limits",0)
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
-		DBRemote.dbService.setPlayer(uid,"gold",10)
+		DBRemote.dbService.setPlayer(uid,"gold",5000)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -114,15 +114,23 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 				value = 0
 			}
 			DBRemote.dbService.setPlayer(uid,name,value,cb)
-			if(name === "diamond"){
-				//通知钻石更新
-				var notify = {
-					"cmd" : "updateDiamond",
-					"data" : value
-				}
-				DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})		
-				//通知后台
-				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")				
+			switch(name){
+				case "diamond":
+					//通知钻石更新
+					var notify = {
+						"cmd" : "updateDiamond",
+						"data" : value
+					}
+					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})		
+					//通知后台
+					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")	
+				break
+				case "gold":
+					//触发破产保护
+					if(value == 0){
+						
+					}
+				break
 			}
 		}else{
 			if(cb){
