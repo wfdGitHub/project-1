@@ -2,13 +2,15 @@ var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var robotFactory = require("./robot/mingpaiRobot.js")
-var frame = require("./frame/frame.js")
+//var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,settlementCB) {
+  module.exports.createRoom = function(roomId,channelService,settlementCB,quitRoom,gemeOver) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
+    var quitRoomFun = quitRoom
+    var gameOverCB = gemeOver
     var room = {}
     room.roomId = roomId
     room.roomType = "goldMingpai"
@@ -123,6 +125,7 @@ var MING_CARD_NUM = 4  //明牌数量
         })
       }
       cb(true)
+      local.readyBegin()
     }
     
     //玩家加入
@@ -183,23 +186,62 @@ var MING_CARD_NUM = 4  //明牌数量
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
-      if(gameState !== conf.GS_FREE){
-        cb(false)
-        return        
-      }
-      var chair = room.chairMap[uid]
-      if(chair === undefined){
-        cb(false)
-        return
-      }
-      var tmpBanker = -1
-      if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
-        tmpBanker = banker
-      }
-      frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
+      // if(gameState !== conf.GS_FREE){
+      //   cb(false)
+      //   return        
+      // }
+      // var chair = room.chairMap[uid]
+      // if(chair === undefined){
+      //   cb(false)
+      //   return
+      // }
+      // var tmpBanker = -1
+      // if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+      //   tmpBanker = banker
+      // }
+      // frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
+      cb(false)
+    }
+    local.readyBegin = function() {
+      console.log("readyBegin")
+      //准备开始游戏    在场玩家自动准备  离线玩家踢出
+      timer = setTimeout(function() {
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive){
+            if(player[i].isOnline){
+              player[i].isReady = true
+            }else{
+              console.log("======================11111")
+              quitRoomFun(player[i].uid,room.roomId)
+            }
+          }
+        }
+        cb(true,uid)
+          //没有玩家则关闭房间
+        var flag = true
+        for(var index in player){
+          if(player.hasOwnProperty(index)){
+            if(player[index].isActive && !player[index].isRobot){
+              flag = false
+              return
+            }
+          }
+        }
+        console.log("flag : "+flag)
+        if(flag){
+          gameOverCB(room.roomId,player,room.roomType)
+        }else{
+          //游戏开始
+          notify = {
+            "cmd" : "gameStart"
+          }
+          local.sendAll(notify)
+          local.gameBegin()          
+        }
+      },8000)
     }
     //游戏开始
-    local.gameBegin = function(argument) {
+    local.gameBegin = function() {
       log("gameBegin")
       gameState = conf.GS_GAMEING     
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
@@ -805,6 +847,7 @@ var MING_CARD_NUM = 4  //明牌数量
         }
         //金币场小结算
         settlementCB(room.roomId,curScores,player,room.roomType)
+        local.readyBegin()
       }
     }
     room.gameOver = function() {
@@ -912,7 +955,7 @@ var MING_CARD_NUM = 4  //明牌数量
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU && banker == chair){
           return
         }
-        frame.disconnect(chair,player,gameState,local,local.gameBegin)
+        //frame.disconnect(chair,player,gameState,local,local.gameBegin)
       }
     }
     //积分改变
@@ -1020,8 +1063,6 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     local.sendAll(notify)
     local.initChairInfo(chair)
-    cb(true,uid)
-    frame.disconnect(chair,player,gameState,local,local.gameBegin)
   }
   //房间是否空闲
   room.isFree = function(){

@@ -471,7 +471,7 @@ GameRemote.prototype.kick = function(uid,cb) {
 		var roomId = GameRemote.userMap[uid]
 		var params = {}
 		params.gid = GameRemote.roomList[roomId]
-		this.app.rpc.gameNode.remote.disconnect(null,params,uid,null,roomId,function (flag){
+		this.app.rpc.goldNode.remote.disconnect(null,params,uid,null,roomId,function (flag){
 			cb(flag)
 		})
 	}

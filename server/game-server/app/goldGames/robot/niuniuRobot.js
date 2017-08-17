@@ -21,13 +21,13 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 			case "roomPlayer":
 				//加入游戏
 				//console.log("roomPlayer   state : "+robot.conf.GS_FREE + " notify state : "+notify.state)
-				if(notify.state == robot.conf.GS_FREE){
-					local.delaySend(uid,"ready",{},function(flag) {
-						if(flag == false){
-							console.log("ready error")
-						}
-					})
-				}
+				// if(notify.state == robot.conf.GS_FREE){
+				// 	local.delaySend(uid,"ready",{},function(flag) {
+				// 		if(flag == false){
+				// 			console.log("ready error")
+				// 		}
+				// 	})
+				// }
 				break
 			case "gameBegin":
 				//开始游戏
@@ -70,13 +70,13 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 				break
 			case "settlement":
 				//小结算
-				console.log("settlement")
-				local.delaySend(uid,"ready",{},function(flag) {
-					if(flag == false){
-						console.log("settlement error : ")
-						console.log(robot.player)
-					}
-				})
+				// console.log("settlement")
+				// local.delaySend(uid,"ready",{},function(flag) {
+				// 	if(flag == false){
+				// 		console.log("settlement error : ")
+				// 		console.log(robot.player)
+				// 	}
+				// })
 				break
 			case "showCard":
 				//

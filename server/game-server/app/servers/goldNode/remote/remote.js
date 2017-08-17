@@ -30,7 +30,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,local.settlementCB,local.gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uids,sids,infos,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
@@ -80,15 +80,15 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 }
 
 //玩家退出房间回调
-local.quitRoom = function(uid,roomId,cb) {
+local.quitRoom = function(uid,roomId) {
 	console.log("quitRoom : "+uid)
 	GameRemote.roomList[roomId].userQuit(uid,function(flag,uid) {
 		if(flag){
 			console.log("quitRoom : ")
 			console.log(uid)
 			delete GameRemote.userMap[uid]
+			GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
 		}
-		cb(flag,uid)
 	})
 }
 
@@ -97,6 +97,11 @@ GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
 		cb(data)
 	})
+}
+//玩家离开
+GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
+	GameRemote.roomList[roomId].leave(uid)
+	cb(true)
 }
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
@@ -142,31 +147,10 @@ local.settlementCB = function(roomId,curScores,player,type) {
 			if(player[index].isActive){
 				if(player[index].score <= 0){
 					//退出游戏
-					local.quitRoom(player[index].uid,roomId,function(flag,uid) {
-						if(flag == true){
-							//通知中心服务器
-							console.log("roomId111 : "+roomId)
-							console.log("index : "+index)
-							console.log("quitRoom111 : "+uid)
-							GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
-						}
-					})
+					local.quitRoom(player[index].uid,roomId)
 				}
 			}
 		}
-	}
-	//没有玩家则关闭房间
-	var flag = true
-	for(var index in player){
-		if(player.hasOwnProperty(index)){
-			if(player[index].isActive && !player[index].isRobot){
-				flag = false
-				return
-			}
-		}
-	}
-	if(flag){
-		local.gemeOver(roomId,player,type)
 	}
 }
 

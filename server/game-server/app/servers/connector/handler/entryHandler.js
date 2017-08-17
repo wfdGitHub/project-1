@@ -464,14 +464,18 @@ handler.sendFrame = function(msg, session, next) {
 }
 //用户离开事件处理
 var onUserLeave = function(self, session) {
-  //console.log(self)
-  //console.log(session.uid)
-  //console.log(session)
+  // console.log(self)
+  // console.log(session)
   if(!session || !session.uid) {
     return
   }
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
-  self.app.rpc.game.remote.kick(session,session.uid,null)
+  var area = session.get("area")
+  if(area === "goldRoom"){
+    self.app.rpc.goldGame.remote.kick(session,session.uid,null)
+  }else{
+    self.app.rpc.game.remote.kick(session,session.uid,null)
+  }  
 }
 
 
