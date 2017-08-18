@@ -80,7 +80,8 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 }
 
 //玩家退出房间回调
-local.quitRoom = function(uid,roomId) {
+local.quitRoom = function(uid,roomId,cb) {
+	console.log("================")
 	console.log("quitRoom : "+uid)
 	GameRemote.roomList[roomId].userQuit(uid,function(flag,uid) {
 		if(flag){
@@ -89,6 +90,7 @@ local.quitRoom = function(uid,roomId) {
 			delete GameRemote.userMap[uid]
 			GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
 		}
+		cb(flag)
 	})
 }
 
@@ -147,7 +149,7 @@ local.settlementCB = function(roomId,curScores,player,type) {
 			if(player[index].isActive){
 				if(player[index].score <= 0){
 					//退出游戏
-					local.quitRoom(player[index].uid,roomId)
+					local.quitRoom(player[index].uid,roomId,function(){})
 				}
 			}
 		}

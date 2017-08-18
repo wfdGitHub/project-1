@@ -211,19 +211,16 @@ var MING_CARD_NUM = 4  //明牌数量
             if(player[i].isOnline){
               player[i].isReady = true
             }else{
-              console.log("======================11111")
-              quitRoomFun(player[i].uid,room.roomId)
+              quitRoomFun(player[i].uid,room.roomId,"notInOnline",function(argument) {})
             }
           }
         }
-        cb(true,uid)
-          //没有玩家则关闭房间
+        //没有玩家则关闭房间
         var flag = true
         for(var index in player){
           if(player.hasOwnProperty(index)){
             if(player[index].isActive && !player[index].isRobot){
               flag = false
-              return
             }
           }
         }
@@ -364,7 +361,7 @@ var MING_CARD_NUM = 4  //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]           
           }
       }
       console.log(result)
@@ -1063,6 +1060,7 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     local.sendAll(notify)
     local.initChairInfo(chair)
+    cb(true,uid)
   }
   //房间是否空闲
   room.isFree = function(){

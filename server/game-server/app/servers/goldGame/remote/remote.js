@@ -206,8 +206,7 @@ GameRemote.prototype.userOutRoom = function(roomId,uid,cb) {
 	local.quitRoom(roomId,uid)
 	//通知玩家
 	var notify = {
-		"cmd" : "userOutRoom",
-		"reason" : "notEnoughGold"
+		"cmd" : "userOutRoom"
 	}
 	GameRemote.prototype.sendByUid(uid,notify,function(){})
 	if(cb){

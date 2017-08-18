@@ -30,6 +30,12 @@ var createAccount = function(result,cb) {
 		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
+		var refreshList = {}
+		refreshList.lottoTime = 0
+		refreshList.lottoCount = 0
+		refreshList.bankruptTime = 0
+		refreshList.bankruptTimeCount = 0
+		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
 		cb(false)
 	})
 }
@@ -126,10 +132,12 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")	
 				break
 				case "gold":
-					//触发破产保护
-					if(value == 0){
-						
+					//通知金币更新
+					var notify = {
+						"cmd" : "updateGold",
+						"data" : value
 					}
+					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})	
 				break
 			}
 		}else{
@@ -169,51 +177,15 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 		}
 	})
 }
-//设置代开房记录
-// DBRemote.prototype.setAgencyRoom = function(uid,agencyRoom,cb) {
-// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-// 		for(var i = 9;i > 0;i--){
-// 			if(data.List[i - 1]){
-// 				data.List[i] = data.List[i - 1]
-// 			}
-// 		}
-// 		data.List[0] = agencyRoom
-// 		DBRemote.dbService.setAgencyRoom(uid,data)
-// 		if(cb){
-// 			cb()
-// 		}
-// 	})
-// }
-
-//更新代开房记录
-// DBRemote.prototype.updateAgencyRoom = function(uid,agencyRoom,cb) {
-// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-// 		for(var i = 9;i >= 0;i--){
-// 			if(data.List[i]){
-// 				//找到并修改代开房记录
-// 				if(data.List[i].roomId === agencyRoom.roomId){
-// 					data.List[i] = agencyRoom
-// 					DBRemote.dbService.setAgencyRoom(uid,data)
-// 					if(cb){
-// 						cb()
-// 					}
-// 					return
-// 				}
-// 			}
-// 		}
-// 		if(cb){
-// 			cb()
-// 		}
-// 	})
-// }
-//获取代开房信息记录
-// DBRemote.prototype.getAgencyRoom = function(uid,cb) {
-// 	DBRemote.dbService.getAgencyRoom(uid,function(data) {
-// 		cb(data)
-// 	})
-// }
-
 
 DBRemote.prototype.getValue = function(uid,name,cb) {
 	DBRemote.dbService.getPlayer(uid,name,cb)
+}
+
+DBRemote.prototype.getPlayerObject = function(uid,name,cb) {
+	DBRemote.dbService.getPlayerObject(uid,name,cb)
+}
+
+DBRemote.prototype.setPlayerObject = function(uid,name,value,cb) {
+	DBRemote.dbService.setPlayerObject(uid,name,value,cb)
 }

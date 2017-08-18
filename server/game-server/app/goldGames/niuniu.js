@@ -364,7 +364,7 @@ var MING_CARD_NUM = 4  //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]           
           }
       }
       console.log(result)
@@ -385,7 +385,7 @@ var MING_CARD_NUM = 4  //明牌数量
         }
       }
       //进入下注
-      local.betting()
+      local.chooseBanker()
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
@@ -450,7 +450,7 @@ var MING_CARD_NUM = 4  //明牌数量
     banker = num
 
 
-    local.gameBegin()
+    local.betting()
     }
     //下注阶段
     local.betting = function() {

@@ -94,7 +94,7 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 		clearTimeout(robot.timer)
 	}
 	local.delaySend = function(uid,cmd,param,cb) {
-		var time = Math.random() * 3000 + 1000
+		var time = Math.random() * 3000 + 3000
 		robot.timer = setTimeout(function() {
 			local.send(uid,cmd,param,cb)
 		},time)

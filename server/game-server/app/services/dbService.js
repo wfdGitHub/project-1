@@ -81,7 +81,7 @@ dbService.checkData = function(uid) {
 }
 
 dbService.getPlayerInfoByUid = function(uid,cb) {
-	dbService.checkData(uid)
+	//dbService.checkData(uid)
 	var cmd1 = "nn:acc:"+uid+":"+"diamond"
 	var cmd2 = "nn:acc:"+uid+":"+"uid"
 	var cmd3 = "nn:acc:"+uid+":"+"nickname"
@@ -92,7 +92,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd8 = "nn:acc:"+uid+":"+"freeze"
 	var cmd9 = "nn:acc:"+uid+":"+"useDiamond"
 	var cmd10 = "nn:acc:"+uid+":"+"gold"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,function(err,data) {
+	var cmd11 = "nn:acc:"+uid+":"+"refreshList" 		//每日触发效果，如每日领破产保护，抽奖等
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = parseInt(data[0])
@@ -105,6 +106,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["freeze"] = parseInt(data[7])
 			notify["useDiamond"] = parseInt(data[8] || 0)
 			notify["gold"] = parseInt(data[9] || 0)
+			notify["refreshList"] = JSON.parse(data[10])
 			notify["playerId"] = uid
 			cb(notify)
 		}else{
@@ -158,8 +160,8 @@ dbService.getPlayer = function(uid,name,cb) {
 }
 dbService.setPlayerObject = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	//console.log(cmd)
-	//console.log(value)
+	console.log(cmd)
+	console.log(value)
 	value = JSON.stringify(value)
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
@@ -217,13 +219,6 @@ dbService.setAgencyRoom = function(uid,agencyRoom) {
 	dbService.setPlayerObject(uid,"agencyRoom",agencyRoom)
 }
 
-dbService.getAgencyRoom = function(uid,cb) {
-	dbService.getPlayerObject(uid,"agencyRoom",function(data) {
-		if(cb){
-			cb(data)
-		}
-	})
-}
 
 dbService.setUserId = function(uid,cb) {
 	dbService.db.get("nn:acc:lastid",function(err,data) {
