@@ -290,6 +290,12 @@
             }
           );  
       }
+      var ranklist = function() {
+          pomelo.request("connector.ranklist.getRanklist",null, function(data) {
+              console.log(data)
+            }
+          );  
+      }
     </script>
   </head>
   <body>

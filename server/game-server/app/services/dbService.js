@@ -10,6 +10,10 @@ module.exports = function(app) {
 var dbService = function(app) {
 	this.app = app
 }
+var local = {}
+var refreshTime = 0
+var goldAllRanklist = [] 
+var goldDayRanklist = []
 
 dbService.prototype.start = function(cb){
 	var db = redis.createClient(RDS_PORT,RDS_HOST,RDS_OPTS)
@@ -36,9 +40,126 @@ dbService.prototype.start = function(cb){
 		        db.set("nn:notifys",JSON.stringify(notify));
     		}
 		})
+		local.refreshRanklist()
 	})
 	cb()
 }
+
+dbService.getRanklist = function(cb) {
+	var data = {}
+	data.allGoldRanklist = deepCopy(goldAllRanklist)
+	data.dayGoldRanklist = deepCopy(goldDayRanklist)
+	cb(data)
+}
+
+local.refreshRanklist = function() {
+	//console.log("refreshRanklist")
+	clearTimeout(refreshTime)
+	//先收集数据，再处理排行榜
+	var lastid = 0
+	var curid = 0
+	var players = {}
+	dbService.db.get("nn:acc:lastid",function(err,data) {
+		if(data === null){
+			return
+		}
+		lastid = data
+		//console.log("lastid : "+lastid)
+		for(var i = 10001; i <= lastid;i++){
+			dbService.getPlayerInfoByUid(i,function(data) {
+				//console.log(players)
+				players[data.uid] = data
+				curid++
+				//console.log("curid : "+curid)
+				if((curid + 10000) == lastid){
+					local.changeRanklist(players)
+				}
+			})
+		}
+	})
+}
+
+local.changeRanklist = function(players) {
+	//console.log(players)
+	goldAllRanklist = []
+	goldDayRanklist = []
+	for(var i in players){
+		if(players.hasOwnProperty(i)){
+			//总金币榜
+			//若玩家金币大于总金币榜中最低值则加入榜单
+			if(goldAllRanklist.length > 0){
+				if(players[i].gold > goldAllRanklist[goldAllRanklist.length-1].gold){
+					//寻找合适位置加入
+					for(var index = 0; index < goldAllRanklist.length;index++){
+						if(players[i].gold > goldAllRanklist[index].gold && players[i].gold > 0){
+							var data = {}
+							data.uid = players[i].uid
+							data.nickname = players[i].nickname
+							data.head = players[i].head
+							data.gold = players[i].gold
+							goldAllRanklist.splice(index,0,data)
+							if(goldAllRanklist.length >= 20){
+								goldAllRanklist.splice(20,1)
+							}
+							break
+						}
+					}
+				}
+			}else{
+				if(players[i].gold > 0){
+					var data = {}
+					data.uid = players[i].uid
+					data.nickname = players[i].nickname
+					data.head = players[i].head
+					data.gold = players[i].gold
+					goldAllRanklist.push(data)				
+				}
+			}
+		}
+	}
+	for(var i in players){
+		if(players.hasOwnProperty(i)){
+			//今日金币榜
+	  		var myDate = new Date()
+	  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+			if(goldDayRanklist.length > 0){
+				if(players[i].refreshList.dayGoldTime !== dateString){
+					break
+				}
+				if(players[i].refreshList.dayGoldValue > goldDayRanklist[goldDayRanklist.length-1].gold){
+					//寻找合适位置加入
+					for(var index = 0; index < goldDayRanklist.length;index++){
+						if(players[i].refreshList.dayGoldValue > goldDayRanklist[index].gold && players[i].refreshList.dayGoldValue > 0){
+							var data = {}
+							data.uid = players[i].uid
+							data.nickname = players[i].nickname
+							data.head = players[i].head
+							data.gold = players[i].refreshList.dayGoldValue
+							goldDayRanklist.splice(index,0,data)
+							if(goldDayRanklist.length >= 20){
+								goldDayRanklist.splice(20,1)
+							}
+							break
+						}
+					}
+				}				
+			}else{
+				if(players[i].refreshList.dayGoldValue > 0){
+					var data = {}
+					data.uid = players[i].uid
+					data.nickname = players[i].nickname
+					data.head = players[i].head
+					data.gold = players[i].refreshList.dayGoldValue
+					goldDayRanklist.push(data)					
+				}
+			}
+		}
+	}
+	// console.log(goldAllRanklist)
+	// console.log(goldDayRanklist)
+	refreshTime = setTimeout(local.refreshRanklist,5000)
+}
+
 dbService.updateDiamond = function(value) {
 	var cmd = "nn:acc:addDiamond"
 	dbService.db.get(cmd,function(err,data) {
@@ -56,7 +177,7 @@ dbService.getPlayerInfo = function(uid,cb) {
 		}else{
 			dbService.getPlayerInfoByUid(data,cb)
 		}
-	})	
+	})
 }
 
 //检查部分数据   若没有则初始化
@@ -231,4 +352,13 @@ dbService.setUserId = function(uid,cb) {
 	        cb(playerId)
 		}
 	})
+}
+
+
+var deepCopy = function(source) {
+  var result={}
+  for (var key in source) {
+        result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
+     } 
+  return result;
 }

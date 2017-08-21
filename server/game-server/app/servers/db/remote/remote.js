@@ -4,6 +4,8 @@ module.exports = function(app) {
 	return new DBRemote(app);
 };
 
+var local = {}
+
 var DBRemote = function(app) {
 	this.app = app
 	DBRemote.app = app
@@ -31,10 +33,12 @@ var createAccount = function(result,cb) {
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
 		var refreshList = {}
-		refreshList.lottoTime = 0
-		refreshList.lottoCount = 0
-		refreshList.bankruptTime = 0
-		refreshList.bankruptTimeCount = 0
+		refreshList.lottoTime = 0 					//抽奖
+		refreshList.lottoCount = 0 				
+		refreshList.bankruptTime = 0				//破产保护
+		refreshList.bankruptTimeCount = 0			
+		refreshList.dayGoldTime = 0					//每日金币输赢
+		refreshList.dayGoldValue = 0
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
 		cb(false)
 	})
@@ -107,14 +111,16 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 		}
 	})
 }
+
+
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	DBRemote.dbService.getPlayer(uid,name,function(data) {
 		if(data != null){
 			//console.log("data : "+data)
 			//console.log('value :'+value)
-			var oldValue = value
-			value = parseInt(data) + parseInt(value)
+			var oldValue = parseInt(value)
+			value = parseInt(data) + oldValue
 			//console.log('value :'+value)
 			if(value < 0){
 				value = 0
@@ -137,7 +143,22 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 						"cmd" : "updateGold",
 						"data" : value
 					}
-					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})	
+					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+					//每日金币输赢更新
+					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
+						console.log(data)
+						if(data.dayGoldTime){
+					  		var myDate = new Date()
+					  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+					  		//隔日更新refreshList
+					  		if(data.dayGoldTime < dateString){
+					  			data.dayGoldValue = 0
+					  			data.dayGoldTime = dateString
+					  		}
+					  		data.dayGoldValue += oldValue
+					  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
+						}
+					})
 				break
 			}
 		}else{
@@ -147,7 +168,9 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 		}
 	})
 }
-
+DBRemote.prototype.getRanklist = function(cb) {
+	DBRemote.dbService.getRanklist(cb)
+}
 DBRemote.prototype.changeValue = function(uid,name,value,cb) {
 	DBRemote.dbService.setPlayer(uid,name,value,cb)
 }

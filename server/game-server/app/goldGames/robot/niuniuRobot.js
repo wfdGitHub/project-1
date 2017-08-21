@@ -57,7 +57,7 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 							console.log("beginBetting error : max : ")
 							console.log(robot.player)
 						}
-					})					
+					})
 				}
 				break
 			case "deal":
