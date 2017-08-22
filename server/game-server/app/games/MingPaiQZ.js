@@ -36,7 +36,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
     var result = {}                      //牌型
-    var basic = 0                        //房间底分
+    var basicType = 0                    //房间底分类型
     var actionFlag = true                //行动标志
     var lastScore = {}                   //上一局输赢
     var allowAllin = true                //是否允许推注
@@ -49,7 +49,13 @@ var MING_CARD_NUM = 4               //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
-
+    var betType = {
+      "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
+      "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
+      "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
+      "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
+      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
+    }
     //下注上限
     var maxBet = 0
 
@@ -133,15 +139,15 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       } 
-      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 0 || param.basic > 4 || param.basic == 3){
-        log("newRoom error   param.basic : "+param.basic)
+      if(!param.basicType || typeof(param.basicType) !== "number" || !betType[param.basicType]){
+        log("newRoom error   param.basicType : "+param.basicType)
         cb(false)
         return        
       }
       if(typeof(param.isWait) !== "boolean"){
           param.isWait = true
       }
-      frame.start(param.isWait)      
+      frame.start(param.isWait)
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }
@@ -151,8 +157,8 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       //房间初始化
       local.init()
-      basic = param.basic
-      room.basic = basic
+      basicType = param.basicType
+      room.basic = basicType
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
@@ -166,8 +172,6 @@ var MING_CARD_NUM = 4               //明牌数量
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
-      //设置下注上限
-      maxBet = 10
       cb(true)
     }
     room.handle.agency = function(uid,sid,param,cb) {
@@ -619,8 +623,8 @@ var MING_CARD_NUM = 4               //明牌数量
               cb(false)
               return
             }
-            //下注只能下底分或底分两倍
-            if(!param || typeof(param.bet) !== "number" || (param.bet !== basic && param.bet !== 2 * basic)){
+            //下注只能按预设的分下
+            if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
               cb(false)
               return
             }
@@ -656,8 +660,8 @@ var MING_CARD_NUM = 4               //明牌数量
               cb(false)
               return
             }
-            var tmpBet = basic + lastScore[chair]
-            var maxBet = basic * 4
+            var tmpBet = betType[basicType]["default"] + lastScore[chair]
+            var maxBet = betType[basicType]["max"]
             if(tmpBet > maxBet){
               tmpBet = maxBet
             }
@@ -694,8 +698,8 @@ var MING_CARD_NUM = 4               //明牌数量
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
-            betList[i] = basic
-            local.betMessege(i,basic)  
+            betList[i] = betType[basicType]["default"]
+            local.betMessege(i,betList[i])
           }
       }  
       var tmpCards = {}
@@ -769,7 +773,6 @@ var MING_CARD_NUM = 4               //明牌数量
           }
           if(maxResultFlag){
             banker = maxResultIndex
-            //room.maxResultFlag = true
           }
         }        
         //积分改变
@@ -984,7 +987,7 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basic : basic,
+        basicType : basicType,
         maxRob : room.maxRob,
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
