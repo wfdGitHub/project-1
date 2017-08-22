@@ -290,10 +290,12 @@ local.matching = function(){
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					//加一个机器人到队列中
-					var robotData = robotManager.getRobotInfo()
-					var params = {"gameType" : type,"ip" : "0.0.0.0"}
-					local.robotJoinMatch(robotData.uid,params,robotData)
+					if(Math.random() < 0.3){
+						//加一个机器人到队列中
+						var robotData = robotManager.getRobotInfo()
+						var params = {"gameType" : type,"ip" : "0.0.0.0"}
+						local.robotJoinMatch(robotData.uid,params,robotData)						
+					}
 				}
 			}
 
@@ -302,7 +304,7 @@ local.matching = function(){
 				runTime = 0
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
-				if(playerCount < ROOMPLAYERNUM && Math.random() < 0.2){
+				if(playerCount < ROOMPLAYERNUM && Math.random() < 0.05){
 					var robotData = robotManager.getRobotInfo()
 					var params = {"gameType" : type,"ip" : "0.0.0.0"}
 					local.robotJoinMatch(robotData.uid,params,robotData)

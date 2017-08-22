@@ -175,7 +175,7 @@ var MING_CARD_NUM = 4  //明牌数量
       if(info.isRobot == true){
         player[chair].isRobot = true
         //初始化机器人
-        robots[chair] = robotFactory.createRobot(notify,player[chair],room.handle,conf)
+        robots[chair] = robotFactory.createRobot(notify,player[chair],room.handle,quitRoomFun,conf)
       }else{
         if(!room.channel.getMember(uid)){
           room.channel.add(uid,sid)

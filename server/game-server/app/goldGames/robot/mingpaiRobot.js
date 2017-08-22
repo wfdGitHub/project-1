@@ -1,4 +1,4 @@
-module.exports.createRobot = function(roomInfo,player,handler,conf) {
+module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	var local = {}
 	var robot = {}
 	robot.handler = handler
@@ -6,6 +6,8 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 	robot.player = player
 	robot.roomInfo = roomInfo
 	robot.timer = 0
+	var quitRoomFun = quitRoom
+	var gameCount = 0
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
 		//console.log("cmd : "+cmd)
@@ -36,13 +38,13 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 				//开始抢庄
 				if(Math.random() > 0.3){
 					var max = Math.floor(Math.random() * 1024) % 4 + 1
-					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},function(flag) {
+					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},3000,function(flag) {
 						if(flag == false){
 							console.log("beginRob error")
 						}
 					})					
 				}else{
-					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : 0},function(flag) {
+					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : 0},3000,function(flag) {
 						if(flag == false){
 							console.log("beginRob error")
 						}
@@ -53,7 +55,7 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 				//开始下注
 				var max = Math.random() > 0.5 ? 1 : 2
 				max *= robot.roomInfo.basic
-				local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : max},function(flag) {
+				local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : max},5000,function(flag) {
 					if(flag == false){
 						console.log("beginBetting error : max : "+max)
 					}
@@ -61,21 +63,18 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 				break
 			case "deal":
 				//开始发牌
-				local.delaySend(uid,"showCard",{},function(flag) {
+				local.delaySend(uid,"showCard",{},5000,function(flag) {
 					if(flag == false){
 						console.log("deal error")
 					}
 				})
 				break
 			case "settlement":
-				//小结算
-				// console.log("settlement")
-				// local.delaySend(uid,"ready",{},function(flag) {
-				// 	if(flag == false){
-				// 		console.log("settlement error : ")
-				// 		console.log(robot.player)
-				// 	}
-				// })
+				gameCount++
+				//概率离开
+				if(gameCount > 5 && Math.random() < 0.15){
+					quitRoomFun(robot.player.uid,robot.roomInfo.roomId)
+				}
 				break
 			case "showCard":
 				//
@@ -92,11 +91,11 @@ module.exports.createRobot = function(roomInfo,player,handler,conf) {
 	robot.destroy = function() {
 		clearTimeout(robot.timer)
 	}
-	local.delaySend = function(uid,cmd,param,cb) {
-		var time = Math.random() * 3000 + 3000
+	local.delaySend = function(uid,cmd,param,time,cb) {
+		var newtime = Math.random() * time + 2000
 		robot.timer = setTimeout(function() {
 			local.send(uid,cmd,param,cb)
-		},time)
+		},newtime)
 	}
 	local.send = function(uid,cmd,param,cb) {
 		robot.handler[cmd](uid,null,param,cb)

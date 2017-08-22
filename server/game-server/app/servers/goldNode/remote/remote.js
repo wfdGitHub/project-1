@@ -90,7 +90,9 @@ local.quitRoom = function(uid,roomId,cb) {
 			delete GameRemote.userMap[uid]
 			GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
 		}
-		cb(flag)
+		if(cb){
+			cb(flag)
+		}
 	})
 }
 
