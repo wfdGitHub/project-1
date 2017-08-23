@@ -773,6 +773,10 @@ var MING_CARD_NUM = 4               //明牌数量
           }
           if(maxResultFlag){
             banker = maxResultIndex
+          }else{
+            do{
+              banker = (banker + 1) % GAME_PLAYER
+            }while(!player[banker].isActive)
           }
         }        
         //积分改变
