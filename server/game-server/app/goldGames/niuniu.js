@@ -170,6 +170,7 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].ip = info.ip
       player[chair].playerInfo = info
       player[chair].score = parseInt(info.gold)
+      player[chair].charm = info.charm
       player[chair].isRobot = false
       //玩家数量增加
       room.playerCount++

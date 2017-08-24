@@ -214,7 +214,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd9 = "nn:acc:"+uid+":"+"useDiamond"
 	var cmd10 = "nn:acc:"+uid+":"+"gold"
 	var cmd11 = "nn:acc:"+uid+":"+"refreshList" 		//每日触发效果，如每日领破产保护，抽奖等
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,function(err,data) {
+	var cmd12 = "nn:acc:"+uid+":"+"charm"				//魅力值
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = parseInt(data[0])
@@ -228,6 +229,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["useDiamond"] = parseInt(data[8] || 0)
 			notify["gold"] = parseInt(data[9] || 0)
 			notify["refreshList"] = JSON.parse(data[10])
+			notify["charm"] = parseInt(data[11] || 0)
 			notify["playerId"] = uid
 			cb(notify)
 		}else{

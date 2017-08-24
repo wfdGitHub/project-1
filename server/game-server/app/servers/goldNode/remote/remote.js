@@ -148,16 +148,22 @@ local.give = function(uid,targetChair,roomId,giveId,cb) {
 			GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
 				//增加目标金币及魅力值
 				var gold = giveCfg[giveId].gold
+				var charm = giveCfg[giveId].charm
 				if(!player[targetChair].isRobot){
 					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function() {})
+					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function() {})
 				}
 				player[targetChair].score += gold
+				player[targetChair].charm += charm
+				//今日魅力值更新
+				player[targetChair].playerInfo.refreshList.charmValue += charm
 				var notify = {
 					"cmd" : "give",
 					"chair" : chair,
 					"targetChair" : targetChair,
 					"giveId" : giveId,
-					"gold" : gold
+					"gold" : gold,
+					"dayCharm" : player[targetChair].playerInfo.refreshList.charmValue
 				}
 				room.sendAll(notify)
 			})
