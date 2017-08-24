@@ -6,10 +6,13 @@ var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
 var async = require("async")
 
 var ROOM_FACTORY = {
-	"goldMingpai" : goldMingpai,
-	"goldNiuNiu" : goldNiuNiu
+	"goldMingpai-1" : goldMingpai,
+	"goldMingpai-2" : goldMingpai,
+	"goldMingpai-3" : goldMingpai,
+	"goldNiuNiu-1" : goldNiuNiu,
+	"goldNiuNiu-2" : goldNiuNiu,
+	"goldNiuNiu-3" : goldNiuNiu
 }
-
 module.exports = function(app) {
 	return new GameRemote(app);
 }
@@ -30,7 +33,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uids,sids,infos,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
@@ -81,12 +84,9 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 
 //玩家退出房间回调
 local.quitRoom = function(uid,roomId,cb) {
-	console.log("================")
-	console.log("quitRoom : "+uid)
+	uid = parseInt(uid)
 	GameRemote.roomList[roomId].userQuit(uid,function(flag,uid) {
 		if(flag){
-			console.log("quitRoom : ")
-			console.log(uid)
 			delete GameRemote.userMap[uid]
 			GameRemote.app.rpc.goldGame.remote.userOutRoom(null,roomId,uid,function(){})
 		}
@@ -132,7 +132,7 @@ var finishGameOfTimer = function(index) {
 }
 
 //小结算回调
-local.settlementCB = function(roomId,curScores,player,type) {
+local.settlementCB = function(roomId,curScores,player,rate) {
 	//TODO
 	console.log("roomId : "+roomId)
 	console.log(curScores)
@@ -149,7 +149,7 @@ local.settlementCB = function(roomId,curScores,player,type) {
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive){
-				if(player[index].score <= 0){
+				if(player[index].score < rate * 10){
 					//退出游戏
 					local.quitRoom(player[index].uid,roomId,function(){})
 				}

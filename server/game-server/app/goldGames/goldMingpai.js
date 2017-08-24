@@ -6,14 +6,14 @@ var robotFactory = require("./robot/mingpaiRobot.js")
 var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,settlementCB,quitRoom,gemeOver) {
+  module.exports.createRoom = function(gameType,roomId,channelService,settlementCB,quitRoom,gemeOver) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
     var gameOverCB = gemeOver
     var room = {}
     room.roomId = roomId
-    room.roomType = "goldMingpai"
+    room.roomType = gameType
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}                     //玩家操作
@@ -23,6 +23,18 @@ var MING_CARD_NUM = 4  //明牌数量
     room.beginTime = (new Date()).valueOf()
     room.MatchStream = {}
     room.maxResultFlag = false
+    room.rate = 10
+    switch(gameType){
+      case "goldMingpai-1":
+        room.rate = 10
+      break
+      case "goldMingpai-2":
+        room.rate = 30
+      break
+      case "goldMingpai-3":
+        room.rate = 100
+      break            
+    }
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -98,9 +110,6 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     //初始化房间
     room.handle.newRoom = function(uids,sids,infos,cb) {
-      console.log(uids)
-      console.log(sids)
-      console.log(infos)
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -211,30 +220,47 @@ var MING_CARD_NUM = 4  //明牌数量
             if(player[i].isOnline){
               player[i].isReady = true
             }else{
-              quitRoomFun(player[i].uid,room.roomId,"notInOnline",function(argument) {})
+              quitRoomFun(player[i].uid,room.roomId)
             }
           }
         }
-        //没有玩家则关闭房间
+        //没有真实玩家则退出一个机器人，机器人只剩一个时结束游戏
         var flag = true
+        var robotCount = 0
         for(var index in player){
           if(player.hasOwnProperty(index)){
-            if(player[index].isActive && !player[index].isRobot){
-              flag = false
+            if(player[index].isActive){
+              if(player[index].isRobot){
+                robotCount++
+              }else{
+                flag = false
+              }
             }
           }
         }
-        console.log("flag : "+flag)
         if(flag){
-          gameOverCB(room.roomId,player,room.roomType)
-        }else{
-          //游戏开始
-          notify = {
-            "cmd" : "gameStart"
+          //随机退出一个机器人
+          var rand = Math.floor(Math.random() * 1000) % GAME_PLAYER
+          if(robotCount > 1){
+            for(var i = rand;i < GAME_PLAYER + rand;i++){
+              var chair = i % GAME_PLAYER
+              if(player[chair].isActive){
+                player[chair].isReady = false
+                quitRoomFun(player[chair].uid,room.roomId)
+                break
+              }
+            }
+          }else{
+            gameOverCB(room.roomId,player,room.roomType)
+            return
           }
-          local.sendAll(notify)
-          local.gameBegin()          
         }
+        //游戏开始
+        notify = {
+          "cmd" : "gameStart"
+        }
+        local.sendAll(notify)
+        local.gameBegin()
       },8000)
     }
     //游戏开始
@@ -364,7 +390,6 @@ var MING_CARD_NUM = 4  //明牌数量
             //player[i].cardsList[room.runCount] = result[i]           
           }
       }
-      console.log(result)
       for(var index = 0;index < GAME_PLAYER;index++){
         var newPlayer = deepCopy(player)
         //明牌模式所有人四张牌可见  暗牌自己四张牌可见
@@ -415,7 +440,6 @@ var MING_CARD_NUM = 4  //明牌数量
       //统计抢庄人数
       var num = 0
       var robList = {}
-      console.log(robState)
       var maxRob = 1
       for(var i = 0; i < GAME_PLAYER;i++){
         player[i].isBanker = false
@@ -539,13 +563,11 @@ var MING_CARD_NUM = 4  //明牌数量
               return
             }
             log("robBanker")
-            console.log(robState)
             //判断是否已抢庄
             if(robState[chair] != -1){
               cb(false)
               return
             }
-            console.log(1111111111)
             //记录抢庄
             robState[chair] = param.num
            
@@ -598,7 +620,8 @@ var MING_CARD_NUM = 4  //明牌数量
               return
             }
             //下注只能下底分或底分两倍
-            if(!param || typeof(param.bet) !== "number" || (param.bet !== basic && param.bet !== 2 * basic)){
+            if(!param || typeof(param.bet) !== "number" || (param.bet !== basic && param.bet !== 2 * basic) 
+              || (param.bet + betList[chair]) * room.rate > player[chair].score){
               console.log("bet5 " +param.bet)
               cb(false)
               return
@@ -719,35 +742,35 @@ var MING_CARD_NUM = 4  //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  var tmpScore = betList[i] * result[i].award * room.maxRob
+                  var tmpScore = betList[i] * result[i].award * room.maxRob * room.rate
                   curScores[banker] -= tmpScore
                   curScores[i] += tmpScore
-                  console.log("tmpScore : "+tmpScore)
-                  console.log("betList[i] : "+betList[i])
-                  console.log("result[i].award : "+result[i].award)
-                  console.log("room.maxRob : "+room.maxRob)
-                  console.log(curScores)
+                  // console.log("tmpScore : "+tmpScore)
+                  // console.log("betList[i] : "+betList[i])
+                  // console.log("result[i].award : "+result[i].award)
+                  // console.log("room.maxRob : "+room.maxRob)
+                  // console.log(curScores)
               }else{
                   //庄家赢
-                  var tmpScore = betList[i] * result[banker].award * room.maxRob
+                  var tmpScore = betList[i] * result[banker].award * room.maxRob * room.rate
                   //闲家输的钱不能大于自身金钱
                   if(player[i].score < tmpScore){
                     tmpScore = player[i].score
                   }
                   curScores[i] -= tmpScore
                   curScores[banker] += tmpScore
-                  console.log("tmpScore : "+tmpScore)
-                  console.log("betList[i] : "+betList[i])
-                  console.log("result[banker].award : "+result[banker].award)
-                  console.log("room.maxRob : "+room.maxRob)
-                  console.log(curScores)
+                  // console.log("tmpScore : "+tmpScore)
+                  // console.log("betList[i] : "+betList[i])
+                  // console.log("result[banker].award : "+result[banker].award)
+                  // console.log("room.maxRob : "+room.maxRob)
+                  // console.log(curScores)
               }
           }
         }
         //庄家输的钱不能大于自身金钱
         if(curScores[banker] < 0 && player[banker].score + curScores[banker] < 0){
-          console.log(curScores)
-          console.log("banker : "+banker)
+          // console.log(curScores)
+          // console.log("banker : "+banker)
           var tmpScore = -(curScores[banker] + player[banker].score)
           //console.log("tmpScore : "+tmpScore)
           while(tmpScore > 0){
@@ -758,10 +781,10 @@ var MING_CARD_NUM = 4  //明牌数量
                   tmpMin = i
               }
             }
-            console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
+            //console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
             if(tmpMin == -1){
-              console.log(player)
-              console.log(result)
+              //console.log(player)
+              //console.log(result)
             }
             if(curScores[tmpMin] > 0){
               if(curScores[tmpMin] >= tmpScore){
@@ -775,7 +798,7 @@ var MING_CARD_NUM = 4  //明牌数量
               }
             }
           }
-          console.log(curScores)
+          //console.log(curScores)
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
@@ -1024,7 +1047,8 @@ var MING_CARD_NUM = 4  //明牌数量
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
-        allowAllin : allowAllin
+        allowAllin : allowAllin,
+        rate : room.rate
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
@@ -1060,7 +1084,9 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     local.sendAll(notify)
     local.initChairInfo(chair)
-    cb(true,uid)
+    if(cb){
+      cb(true,uid)
+    }
   }
   //房间是否空闲
   room.isFree = function(){

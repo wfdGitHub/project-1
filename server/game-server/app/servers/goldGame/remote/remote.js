@@ -5,7 +5,7 @@ var robotManager = require("../../../conf/robotManager.js")
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 var MATCHTIME = 500
-var MAXMATCHTIMER = 6
+var MAXMATCHTIMER = 10
 var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
 var ROOM_ALL_AMOUNT = 10000
@@ -15,8 +15,21 @@ module.exports = function(app) {
 };
 var local = {}
 var gameType = {
-	"goldMingpai" : true,
-	"goldNiuNiu" : true
+	"goldMingpai-1" : true,
+	"goldMingpai-2" : true,
+	"goldMingpai-3" : true,
+	"goldNiuNiu-1" : true,
+	"goldNiuNiu-2" : true,
+	"goldNiuNiu-3" : true
+}
+
+var minJoin = {
+	"goldMingpai-1" : 100,
+	"goldMingpai-2" : 300,
+	"goldMingpai-3" : 1000,
+	"goldNiuNiu-1" : 100,
+	"goldNiuNiu-2" : 300,
+	"goldNiuNiu-3" : 1000	
 }
 var roomIndex = 0
 
@@ -119,7 +132,7 @@ local.createRoom = function(type) {
 		//凑整房间人数
 		var roomCount = Math.floor(playerList.length / ROOMPLAYERNUM)
 		for(var i = 0; i < roomCount; i++){
-			var roomId = local.getUnusedRoom()			
+			var roomId = local.getUnusedRoom()
 			var users = []
 			var sids = []
 			var infos = []
@@ -290,7 +303,7 @@ local.matching = function(){
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					if(Math.random() < 0.3){
+					if(Math.random() < 0.2){
 						//加一个机器人到队列中
 						var robotData = robotManager.getRobotInfo()
 						var params = {"gameType" : type,"ip" : "0.0.0.0"}
@@ -304,7 +317,7 @@ local.matching = function(){
 				runTime = 0
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
-				if(playerCount < ROOMPLAYERNUM && Math.random() < 0.05){
+				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.05){
 					var robotData = robotManager.getRobotInfo()
 					var params = {"gameType" : type,"ip" : "0.0.0.0"}
 					local.robotJoinMatch(robotData.uid,params,robotData)
@@ -358,11 +371,12 @@ local.joinMatch = function(uid,sid,params,cb) {
 		cb(false)
 		return
 	}
+
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
 			//检测金币
-			if(data.gold < 10){
+			if(data.gold < minJoin[type]){
 				cb(false,{"msg" : tips.NO_GOLD})
 				return
 			}

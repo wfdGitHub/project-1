@@ -53,13 +53,15 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				break
 			case "beginBetting":
 				//开始下注
-				var max = Math.random() > 0.5 ? 1 : 2
-				max *= robot.roomInfo.basic
-				local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : max},5000,function(flag) {
-					if(flag == false){
-						console.log("beginBetting error : max : "+max)
-					}
-				})					
+				if(!robot.player.isBanker){
+					var max = Math.random() > 0.5 ? 1 : 2
+					max *= robot.roomInfo.basic
+					local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : max},3000,function(flag) {
+						if(flag == false){
+							console.log("beginBetting error : max : "+max)
+						}
+					})						
+				}
 				break
 			case "deal":
 				//开始发牌

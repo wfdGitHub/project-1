@@ -6,14 +6,14 @@ var robotFactory = require("./robot/niuniuRobot.js")
 var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,settlementCB,quitRoom,gemeOver) {
+  module.exports.createRoom = function(gameType,roomId,channelService,settlementCB,quitRoom,gemeOver) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
     var gameOverCB = gemeOver
     var room = {}
     room.roomId = roomId
-    room.roomType = "goldNiuNiu"
+    room.roomType = gameType
     room.gameMode = conf.MODE_GAME_NORMAL
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
@@ -24,6 +24,18 @@ var MING_CARD_NUM = 4  //明牌数量
     room.beginTime = (new Date()).valueOf()
     room.MatchStream = {}
     room.maxResultFlag = false
+    room.rate = 10
+    switch(gameType){
+      case "goldNiuNiu-1":
+        room.rate = 10
+      break
+      case "goldNiuNiu-2":
+        room.rate = 30
+      break
+      case "goldNiuNiu-3":
+        room.rate = 100
+      break            
+    }
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -99,9 +111,6 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     //初始化房间
     room.handle.newRoom = function(uids,sids,infos,cb) {
-      console.log(uids)
-      console.log(sids)
-      console.log(infos)
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -188,7 +197,7 @@ var MING_CARD_NUM = 4  //明牌数量
     }
 
     local.readyBegin = function() {
-      console.log("readyBegin!!!")
+      console.log("readyBegin")
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       timer = setTimeout(function() {
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -200,27 +209,44 @@ var MING_CARD_NUM = 4  //明牌数量
             }
           }
         }
-        //没有玩家则关闭房间
+        //没有真实玩家则退出一个机器人，机器人只剩一个时结束游戏
         var flag = true
+        var robotCount = 0
         for(var index in player){
           if(player.hasOwnProperty(index)){
-            if(player[index].isActive && !player[index].isRobot){
-              flag = false
+            if(player[index].isActive){
+              if(player[index].isRobot){
+                robotCount++
+              }else{
+                flag = false
+              }
             }
           }
         }
-        console.log(player)
-        console.log("flag : "+flag)
+        // console.log("flag : "+flag)
         if(flag){
-          gameOverCB(room.roomId,player,room.roomType)
-        }else{
-          //游戏开始
-          notify = {
-            "cmd" : "gameStart"
+          //随机退出一个机器人
+          var rand = Math.floor(Math.random() * 1000) % GAME_PLAYER
+          if(robotCount > 1){
+            for(var i = rand;i < GAME_PLAYER + rand;i++){
+              var chair = i % GAME_PLAYER
+              if(player[chair].isActive && player[chair].isRobot){
+                player[chair].isReady = false
+                quitRoomFun(player[chair].uid,room.roomId)
+                break
+              }
+            }
+          }else{
+            gameOverCB(room.roomId,player,room.roomType)
+            return
           }
-          local.sendAll(notify)
-          local.gameBegin()          
         }
+        //游戏开始
+        notify = {
+          "cmd" : "gameStart"
+        }
+        local.sendAll(notify)
+        local.gameBegin()
       },8000)
     }  
 
@@ -367,7 +393,7 @@ var MING_CARD_NUM = 4  //明牌数量
             //player[i].cardsList[room.runCount] = result[i]           
           }
       }
-      console.log(result)
+      // console.log(result)
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
         var notify = {
@@ -435,7 +461,7 @@ var MING_CARD_NUM = 4  //明牌数量
         robList[num++] = i
       }
     }
-    console.log("endRob num : "+num)
+    // console.log("endRob num : "+num)
     //无人抢庄将所有参与游戏的玩家加入抢庄列表
     if(num == 0){
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -597,9 +623,9 @@ var MING_CARD_NUM = 4  //明牌数量
         cb(false)
         return
       }
-      //其他模式
+      //下注金额必须低于自身金钱
       if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
+        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet && (param.bet + betList[chair]) * room.rate <= player[chair].score){
         betList[chair] += parseInt(param.bet)
         betAmount += parseInt(param.bet)
         local.betMessege(chair,param.bet)     
@@ -706,12 +732,12 @@ var MING_CARD_NUM = 4  //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  var tmpScore = betList[i] * result[i].award
+                  var tmpScore = betList[i] * result[i].award * room.rate
                   curScores[banker] -= tmpScore
                   curScores[i] += tmpScore
               }else{
                   //庄家赢
-                  var tmpScore = betList[i] * result[banker].award
+                  var tmpScore = betList[i] * result[banker].award * room.rate
                   //闲家输的钱不能大于自身金钱
                   if(player[i].score < tmpScore){
                     tmpScore = player[i].score
@@ -725,7 +751,7 @@ var MING_CARD_NUM = 4  //明牌数量
         //庄家输的钱不能大于自身金钱
         //console.log("banekr : "+banker)
         if(curScores[banker] < 0 && player[banker].score + curScores[banker] < 0){
-          console.log(curScores)
+          // console.log(curScores)
           var tmpScore = -(curScores[banker] + player[banker].score)
           //console.log("tmpScore : "+tmpScore)
           while(tmpScore > 0){
@@ -736,10 +762,10 @@ var MING_CARD_NUM = 4  //明牌数量
                   tmpMin = i
               }
             }
-            console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
+            // console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
             if(tmpMin == -1){
-              console.log(player)
-              console.log(result)
+              // console.log(player)
+              // console.log(result)
             }
             if(curScores[tmpMin] > 0){
               if(curScores[tmpMin] >= tmpScore){
@@ -753,7 +779,7 @@ var MING_CARD_NUM = 4  //明牌数量
               }
             }
           }
-          console.log(curScores)
+          // console.log(curScores)
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
@@ -808,7 +834,7 @@ var MING_CARD_NUM = 4  //明牌数量
             player[i].isShowCard = false
         }
         //金币场小结算
-        settlementCB(room.roomId,curScores,player,room.roomType)
+        settlementCB(room.roomId,curScores,player,room.rate)
         local.readyBegin()
       }
     }
@@ -991,7 +1017,8 @@ var MING_CARD_NUM = 4  //明牌数量
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
-        allowAllin : allowAllin
+        allowAllin : allowAllin,
+        rate : room.rate
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
@@ -1009,13 +1036,14 @@ var MING_CARD_NUM = 4  //明牌数量
     if(chair === undefined){
       cb(false)
       return
-    }    
+    }
     //清除座位信息
+    //console.log(player[chair])
     if(!player[chair].isRobot){
       var tsid =  room.channel.getMember(uid)['sid']
       if(tsid){
         room.channel.leave(uid,tsid)
-      }      
+      }
     }else{
        robots[chair].destroy()
     }
@@ -1027,7 +1055,9 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     local.sendAll(notify)
     local.initChairInfo(chair)
-    cb(true,uid)
+    if(cb){
+      cb(true,uid)
+    }
   }
   //房间是否空闲
   room.isFree = function(){

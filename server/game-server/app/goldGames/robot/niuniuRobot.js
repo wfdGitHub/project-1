@@ -37,13 +37,13 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 			case "beginRob":
 				//开始抢庄
 				if(Math.random() > 0.3){
-					local.delaySend(uid,"robBanker",{"flag" : true},3000,function(flag) {
+					local.delaySend(uid,"robBanker",{"flag" : true},2000,function(flag) {
 						if(flag == false){
 							console.log("beginRob error")
 						}
 					})					
 				}else{
-					local.delaySend(uid,"robBanker",{"flag" : false},3000,function(flag) {
+					local.delaySend(uid,"robBanker",{"flag" : false},2000,function(flag) {
 						if(flag == false){
 							console.log("beginRob error")
 						}
@@ -52,19 +52,22 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				break
 			case "beginBetting":
 				//开始下注
-				var betList = [1,5,10,20]
 				if(!robot.player.isBanker){
-					local.delaySend(uid,"bet",{"bet" : Math.floor(Math.random() * 20)},5000,function(flag) {
-						if(flag == false){
-							console.log("beginBetting error : max : ")
-							console.log(robot.player)
-						}
-					})
+					var betList = [1,5,10,20]
+					var rand = Math.floor(Math.random() * 1000) % 4
+					if(!robot.player.isBanker){
+						local.delaySend(uid,"bet",{"bet" : betList[rand]},3000,function(flag) {
+							if(flag == false){
+								console.log("beginBetting error : max : ")
+								console.log(robot.player)
+							}
+						})
+					}					
 				}
 				break
 			case "deal":
 				//开始发牌
-				local.delaySend(uid,"showCard",{},5000,function(flag) {
+				local.delaySend(uid,"showCard",{},3000,function(flag) {
 					if(flag == false){
 						console.log("deal error")
 					}
