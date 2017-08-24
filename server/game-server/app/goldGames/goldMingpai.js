@@ -109,7 +109,7 @@ var MING_CARD_NUM = 4  //明牌数量
       room.channel = channelService.getChannel(roomId,true)
     }
     //初始化房间
-    room.handle.newRoom = function(uids,sids,infos,cb) {
+    room.newRoom = function(uids,sids,infos,cb) {
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -136,7 +136,6 @@ var MING_CARD_NUM = 4  //明牌数量
       cb(true)
       local.readyBegin()
     }
-    
     //玩家加入
     room.handle.join = function(uid,sid,info,cb) {
       log("uid : "+uid+"   serverId : "+sid)
@@ -195,20 +194,6 @@ var MING_CARD_NUM = 4  //明牌数量
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
-      // if(gameState !== conf.GS_FREE){
-      //   cb(false)
-      //   return        
-      // }
-      // var chair = room.chairMap[uid]
-      // if(chair === undefined){
-      //   cb(false)
-      //   return
-      // }
-      // var tmpBanker = -1
-      // if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
-      //   tmpBanker = banker
-      // }
-      // frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
       cb(false)
     }
     local.readyBegin = function() {
@@ -1092,18 +1077,24 @@ var MING_CARD_NUM = 4  //明牌数量
   room.isFree = function(){
     return gameState === conf.GS_FREE
   }
-  return room 
+  room.getPlayer = function() {
+    return player
+  }
+  room.sendAll = local.sendAll
+  room.sendUid = local.sendUid
+  room.changeScore = local.changeScore
+  return room
 }
 
 
 var log = function(str) {
      console.log("LOG NiuNiu : "+str)
 }
-var deepCopy = function(source) { 
+var deepCopy = function(source) {
   var result={}
   for (var key in source) {
         result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
-     } 
+     }
   return result;
 }
 

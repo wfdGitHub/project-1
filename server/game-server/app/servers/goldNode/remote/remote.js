@@ -1,5 +1,6 @@
 var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
+var giveCfg = require("../../../conf/give.js")
 var goldMingpai = require("../../../goldGames/goldMingpai.js")
 var goldNiuNiu = require("../../../goldGames/niuniu.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
@@ -34,7 +35,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		return
 	}
 	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver)
-    GameRemote.roomList[roomId].handle.newRoom(uids,sids,infos,function (flag) {
+    GameRemote.roomList[roomId].newRoom(uids,sids,infos,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
 			goldLogger.info(info)
@@ -109,11 +110,62 @@ GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
 }
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
-	if(GameRemote.roomList[roomId].handle[code]){
-		GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
-	}else{
-		cb(false)
+	//赠送礼物处理
+	switch(code){
+		case "give":
+		console.log(params)
+			local.give(uid,params.targetChair,roomId,params.giveId,cb)
+		return
+		default :
+			if(GameRemote.roomList[roomId].handle[code]){
+				GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
+			}else{
+				cb(false)
+			}
+		return
 	}
+}
+//赠送道具
+local.give = function(uid,targetChair,roomId,giveId,cb) {
+	console.log(targetChair)
+	var room = GameRemote.roomList[roomId]
+	var chair = room.chairMap[uid]
+	var player = room.getPlayer()
+	if(chair === undefined || !targetChair || !player[targetChair].isActive || chair === targetChair){
+		cb(false)
+		return
+	}
+	var targetUid = player[targetChair].uid
+	if(!giveCfg[giveId]){
+		cb(false)
+		return
+	}
+	//扣除赠送者钻石
+	GameRemote.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+		console.log("diamond ： "+data)
+		var needDiamond = giveCfg[giveId].needDiamond
+		if(data && data >= needDiamond){
+			GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
+				//增加目标金币及魅力值
+				var gold = giveCfg[giveId].gold
+				if(!player[targetChair].isRobot){
+					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function() {})
+				}
+				player[targetChair].score += gold
+				var notify = {
+					"cmd" : "give",
+					"chair" : chair,
+					"targetChair" : targetChair,
+					"giveId" : giveId,
+					"gold" : gold
+				}
+				room.sendAll(notify)
+			})
+			cb(true)
+		}else{
+			cb(false)
+		}
+	})
 }
 //房间超时回调
 var finishGameOfTimer = function(index) {

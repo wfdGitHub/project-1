@@ -110,7 +110,7 @@ var MING_CARD_NUM = 4  //明牌数量
       room.channel = channelService.getChannel(roomId,true)
     }
     //初始化房间
-    room.handle.newRoom = function(uids,sids,infos,cb) {
+    room.newRoom = function(uids,sids,infos,cb) {
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -1063,6 +1063,12 @@ var MING_CARD_NUM = 4  //明牌数量
   room.isFree = function(){
     return gameState === conf.GS_FREE
   }
+  room.getPlayer = function() {
+    return player
+  }
+  room.sendAll = local.sendAll
+  room.sendUid = local.sendUid
+  room.changeScore = local.changeScore
   return room 
 }
 
