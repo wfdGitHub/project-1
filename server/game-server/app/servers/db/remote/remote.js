@@ -149,18 +149,18 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
 					//每日金币输赢更新
 					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
-						console.log(data)
-						if(data.dayGoldTime){
-					  		var myDate = new Date()
-					  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-					  		//隔日更新refreshList
-					  		if(data.dayGoldTime < dateString){
-					  			data.dayGoldValue = 0
-					  			data.dayGoldTime = dateString
-					  		}
-					  		data.dayGoldValue += oldValue
-					  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
-						}
+						//console.log(data)
+				  		var myDate = new Date()
+				  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+				  		//隔日更新refreshList
+				  		if(data.dayGoldTime !== dateString){
+				  			data.dayGoldValue = 0
+				  			data.dayGoldTime = dateString
+				  		}
+				  		data.dayGoldValue += oldValue
+				  		console.log("========")
+				  		console.log(data)
+				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
 					})
 				break
 				case "charm" :
@@ -172,18 +172,16 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
 					//每日魅力值更新
 					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
-						console.log(data)
-						if(data.charmTime){
-					  		var myDate = new Date()
-					  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-					  		//隔日更新refreshList
-					  		if(data.charmTime < dateString){
-					  			data.charmValue = 0
-					  			data.charmTime = dateString
-					  		}
-					  		data.charmValue += oldValue
-					  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
-						}
+						//console.log(data)
+				  		var myDate = new Date()
+				  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+				  		//隔日更新refreshList
+				  		if(data.charmTime !== dateString){
+				  			data.charmValue = 0
+				  			data.charmTime = dateString
+				  		}
+				  		data.charmValue += oldValue
+				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
 					})
 				break
 			}

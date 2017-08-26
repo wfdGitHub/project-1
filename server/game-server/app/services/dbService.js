@@ -83,80 +83,90 @@ local.changeRanklist = function(players) {
 	//console.log(players)
 	goldAllRanklist = []
 	goldDayRanklist = []
+
 	for(var i in players){
 		if(players.hasOwnProperty(i)){
 			//总金币榜
 			//若玩家金币大于总金币榜中最低值则加入榜单
-			if(goldAllRanklist.length > 0){
-				if(players[i].gold > goldAllRanklist[goldAllRanklist.length-1].gold){
-					//寻找合适位置加入
-					for(var index = 0; index < goldAllRanklist.length;index++){
-						if(players[i].gold > goldAllRanklist[index].gold && players[i].gold > 0){
-							var data = {}
-							data.uid = players[i].uid
-							data.nickname = players[i].nickname
-							data.head = players[i].head
-							data.gold = players[i].gold
-							goldAllRanklist.splice(index,0,data)
+			players[i].gold = parseInt(players[i].gold)
+			var minGold = goldAllRanklist.length > 0 ? goldAllRanklist[goldAllRanklist.length-1].gold : 0
+			if( (goldAllRanklist.length < 20 || players[i].gold > minGold) && players[i].gold > 0){
+				var data = {}
+				data.uid = players[i].uid
+				data.nickname = players[i].nickname
+				data.head = players[i].head
+				data.gold = players[i].gold
+				if(goldAllRanklist.length > 0){
+					for(var index = goldAllRanklist.length - 1; index >= 0;index--){
+						if(goldAllRanklist[index].gold > players[i].gold){
+							goldAllRanklist.splice(index + 1,0,data)
 							if(goldAllRanklist.length >= 20){
 								goldAllRanklist.splice(20,1)
 							}
 							break
 						}
+						if(index == 0){
+							goldAllRanklist.splice(0,0,data)
+							if(goldAllRanklist.length >= 20){
+								goldAllRanklist.splice(20,1)
+							}
+						}
+					}				
+				}else{
+					if(players[i].gold > 0){
+						goldAllRanklist.push(data)
 					}
-				}
-			}else{
-				if(players[i].gold > 0){
-					var data = {}
-					data.uid = players[i].uid
-					data.nickname = players[i].nickname
-					data.head = players[i].head
-					data.gold = players[i].gold
-					goldAllRanklist.push(data)				
 				}
 			}
 		}
 	}
+
 	for(var i in players){
 		if(players.hasOwnProperty(i)){
 			//今日金币榜
+			//若玩家金币大于总金币榜中最低值则加入榜单
 	  		var myDate = new Date()
 	  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-			if(goldDayRanklist.length > 0){
-				if(players[i].refreshList.dayGoldTime !== dateString){
-					break
-				}
-				if(players[i].refreshList.dayGoldValue > goldDayRanklist[goldDayRanklist.length-1].gold){
-					//寻找合适位置加入
-					for(var index = 0; index < goldDayRanklist.length;index++){
-						if(players[i].refreshList.dayGoldValue > goldDayRanklist[index].gold && players[i].refreshList.dayGoldValue > 0){
-							var data = {}
-							data.uid = players[i].uid
-							data.nickname = players[i].nickname
-							data.head = players[i].head
-							data.gold = players[i].refreshList.dayGoldValue
-							goldDayRanklist.splice(index,0,data)
+			if(players[i].refreshList.dayGoldTime !== dateString){
+				//console.log(players[i].refreshList.dayGoldTime)
+				continue
+			}
+			players[i].refreshList.dayGoldValue = parseInt(players[i].refreshList.dayGoldValue)
+			//console.log("gold : "+players[i].refreshList.dayGoldValue)
+			var minGold = goldDayRanklist.length > 0 ? goldDayRanklist[goldDayRanklist.length-1].gold : 0
+			if( (goldDayRanklist.length < 20 || players[i].refreshList.dayGoldValue > minGold) && players[i].refreshList.dayGoldValue > 0){
+				var data = {}
+				data.uid = players[i].uid
+				data.nickname = players[i].nickname
+				data.head = players[i].head
+				data.gold = players[i].refreshList.dayGoldValue
+				if(goldDayRanklist.length > 0){
+					for(var index = goldDayRanklist.length - 1; index >= 0;index--){
+						if(goldDayRanklist[index].gold > players[i].refreshList.dayGoldValue){
+							goldDayRanklist.splice(index + 1,0,data)
 							if(goldDayRanklist.length >= 20){
 								goldDayRanklist.splice(20,1)
 							}
 							break
 						}
+						if(index == 0){
+							goldDayRanklist.splice(0,0,data)
+							if(goldDayRanklist.length >= 20){
+								goldDayRanklist.splice(20,1)
+							}
+						}
+					}				
+				}else{
+					if(players[i].refreshList.dayGoldValue > 0){
+						goldDayRanklist.push(data)
 					}
-				}				
-			}else{
-				if(players[i].refreshList.dayGoldValue > 0){
-					var data = {}
-					data.uid = players[i].uid
-					data.nickname = players[i].nickname
-					data.head = players[i].head
-					data.gold = players[i].refreshList.dayGoldValue
-					goldDayRanklist.push(data)					
 				}
 			}
 		}
 	}
-	// console.log(goldAllRanklist)
+
 	// console.log(goldDayRanklist)
+	// console.log(goldAllRanklist)
 	refreshTime = setTimeout(local.refreshRanklist,5000)
 }
 

@@ -852,7 +852,7 @@ var MING_CARD_NUM = 4  //明牌数量
             player[i].isShowCard = false
         }
         //金币场小结算
-        settlementCB(room.roomId,curScores,player,room.roomType)
+        settlementCB(room.roomId,curScores,player,room.rate)
         local.readyBegin()
       }
     }

@@ -131,7 +131,7 @@ local.give = function(uid,targetChair,roomId,giveId,cb) {
 	var room = GameRemote.roomList[roomId]
 	var chair = room.chairMap[uid]
 	var player = room.getPlayer()
-	if(chair === undefined || !targetChair || !player[targetChair].isActive || chair === targetChair){
+	if(chair === undefined || targetChair > 5 || targetChair < 0 || !player[targetChair].isActive || chair === targetChair){
 		cb(false)
 		return
 	}
@@ -150,8 +150,9 @@ local.give = function(uid,targetChair,roomId,giveId,cb) {
 				var gold = giveCfg[giveId].gold
 				var charm = giveCfg[giveId].charm
 				if(!player[targetChair].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function() {})
-					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function() {})
+					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
+						GameRemote.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+					})
 				}
 				player[targetChair].score += gold
 				player[targetChair].charm += charm
@@ -203,6 +204,8 @@ local.settlementCB = function(roomId,curScores,player,rate) {
 			}
 		}
 	}
+	console.log(player)
+	console.log("rate : "+rate)
 	//金币等于0退出游戏
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
