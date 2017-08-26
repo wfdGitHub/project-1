@@ -1,4 +1,6 @@
 var httpConf = require("../../../conf/httpModule.js")
+var signInConf = require("../../../conf/signIn.js")
+
 
 module.exports = function(app) {
 	return new DBRemote(app);
@@ -33,6 +35,7 @@ var createAccount = function(result,cb) {
 		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
+		//每日刷新数据
 		var refreshList = {}
 		refreshList.lottoTime = 0 					//抽奖
 		refreshList.lottoCount = 0 				
@@ -43,6 +46,14 @@ var createAccount = function(result,cb) {
 		refreshList.charmTime = 0 					//今日魅力值
 		refreshList.charmValue = 0
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
+		//连续登陆记录
+  		var myDate = new Date()
+  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+		var  loginRecord = {}
+		loginRecord.recordDate = dateString
+		loginRecord.loginDay = 1
+		loginRecord.loginMax = 1
+		DBRemote.dbService.setPlayerObject(uid,"loginRecord",loginRecord)
 		cb(false)
 	})
 }
@@ -72,6 +83,48 @@ DBRemote.prototype.check = function(result,cb) {
 		}
 	})
 }
+
+//登陆回调
+DBRemote.prototype.loginCB = function(uid,cb) {
+  DBRemote.dbService.getPlayerObject(uid,"loginRecord",function(data) {
+      if(data){
+        var myDate = new Date()
+        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+        if(dateString != data.recordDate){
+          //今日未登陆则判断昨天是否登陆，若是则增加登陆天数
+          myDate.setDate(myDate.getDate() - 1)
+          var oldDateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+          if(oldDateString == data.recordDate){
+              data.recordDate = dateString
+              data.loginDay += 1
+              if(data.loginMax < data.loginDay){
+              	data.loginMax = data.loginDay
+              	//在此领取连续签到奖励
+              	if(signInConf[data.loginMax]){
+              		var type = signInConf[data.loginMax]["award"]["type"]
+              		var value = signInConf[data.loginMax]["award"]["value"]
+              		console.log("type  : "+type)
+              		console.log("value : "+value)
+              		DBRemote.prototype.setValue(uid,type,value,function(argument) {
+						var notify = {
+							"cmd" : "signInAward",
+							"data" : signInConf[data.loginMax]
+						}
+						DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+              		})
+              	}
+              }
+          }else{
+            data.recordDate = dateString
+            data.loginDay = 1
+          }
+          DBRemote.dbService.setPlayerObject(uid,"loginRecord",data,function(){})
+        }
+      }
+  })
+  cb()
+}
+
 DBRemote.prototype.getPlayerNickName = function(uid,cb) {
 	DBRemote.dbService.getPlayerString(uid,"nickname",function(data){
 		cb(data)

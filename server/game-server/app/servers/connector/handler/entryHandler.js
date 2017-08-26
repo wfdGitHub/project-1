@@ -67,6 +67,8 @@ handler.getSelfData = function(msg,session,next) {
 //   this.gameChanel.pushMessage('onNotify',notify)
 //   next()
 // }
+
+
 //游客登录
 handler.visitorEnter = function(msg, session, next) {
   var self = this
@@ -190,7 +192,12 @@ handler.visitorEnter = function(msg, session, next) {
         userLoginLogger.info(info)    
         //通知gameServer
         self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})    
-        self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})        
+        self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
+        var myDate = new Date()
+        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+        if(notify.data.loginRecord.recordDate !== dateString){
+          self.app.rpc.db.remote.loginCB(null,playerId,function(argument) {})
+        }
       }
       ],
     function(err,result) {
@@ -309,7 +316,7 @@ handler.enter = function(msg, session, next) {
           // console.log("nickname : "+session.get("nickname"))
           session.on('closed', onUserLeave.bind(null,self))
 
-          cb(null)        
+          cb(null)
         })
       },
       function(cb){
@@ -356,6 +363,11 @@ handler.enter = function(msg, session, next) {
         //通知gameServer
         self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
         self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
+        var myDate = new Date()
+        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+        if(notify.data.loginRecord.recordDate !== dateString){
+          self.app.rpc.db.remote.loginCB(null,playerId,function(argument) {})
+        }
       }
       ],
     function(err,result) {

@@ -1,4 +1,6 @@
 var async = require('async')
+var lottoConf = require("../../../conf/lotto.js")
+
 
 module.exports = function(app) {
   return new Handler(app)
@@ -34,12 +36,27 @@ handler.dayLotte = function(msg,session,next) {
 	  			next(null,{flag : false})
 	  			return
 	  		}
-	  		//领取奖品
 	  		data.lottoCount++
-	  		self.app.rpc.db.remote.setPlayerObject(session,uid,"refreshList",data,function() {
-	  			next(null,{flag : true,award : "gold"})
-	  		})
-	  		
+	  		self.app.rpc.db.remote.setPlayerObject(session,uid,"refreshList",data,function() {})
+	  		//领取奖品
+	  		var weight = 0
+	  		for(var i = 0; i < lottoConf.length; i++){
+	  			weight += lottoConf[i].weight
+	  		}
+	  		console.log("weight : "+weight)
+	  		var rand = Math.floor(Math.random() * weight)
+	  		var curWeight = 0
+	  		for(var i = 0; i < lottoConf.length; i++){
+	  			curWeight += lottoConf[i].weight
+	  			if(rand < curWeight){
+	  				//领取奖励
+	  				if(lottoConf[i].type){
+	  					self.app.rpc.db.remote.setValue(session,uid,lottoConf[i].type,lottoConf[i].value,function() {})
+	  				}
+	  				next(null,{flag : true,"data" : lottoConf[i],"index" : i})
+	  				return
+	  			}
+	  		}
 	  	})
 	}else{
 		next(null,{flag : false})
