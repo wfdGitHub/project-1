@@ -133,7 +133,7 @@ handler.getGiftBag = function(msg,session,next) {
 	  						//更新礼包记录
 	  						next(null,{flag : true,"data" : giftBagConf[data.curGiftBag],"index" : data.curGiftBag})
 	  						data.curGiftBag++
-	  						data.curValue = 0
+	  						data.curValue -= giftBagConf[data.curGiftBag].RMB
 	  						self.app.rpc.db.remote.setPlayerObject(session,uid,"rechargeRecord",data,function(){})
 	  					})
 	  				}		
