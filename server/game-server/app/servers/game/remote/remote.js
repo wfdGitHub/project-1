@@ -3,6 +3,7 @@ var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
+var httpConf = require("../../../conf/httpModule.js")
 
 //console.log(conf)
 module.exports = function(app) {
@@ -293,9 +294,10 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					}
 					//钻石消耗记录
 					GameRemote.app.rpc.db.remote.setValue(null,uid,"useDiamond",needMond,function() {})
+					httpConf.coinChangeRecord(uid,1,needMond)
 					cb(true,{"roomId" : roomId})
 				})	    		
-	    	}	    		    	
+	    	}
 	    	], function (err, result) {
 			console.log(err)
 			console.log(result)

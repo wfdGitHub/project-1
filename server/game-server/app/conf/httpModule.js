@@ -162,6 +162,28 @@ module.exports.sendDiamondHttp = function(uid,coin,diamond,type) {
   req.end()
 }
 
+module.exports.coinChangeRecord = function(uid,type,diamond) {
+  var data = {
+    "game_uid" : uid,
+    "type" : type,
+    "coin" : diamond
+  }
+  var keys = Object.keys(data).sort()
+  var string = ""
+  for(var i = 0;i < keys.length;i++){
+    string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
+  }
+  string += "key=niuniuyiyousecretkey"
+  data.sign = md5(string)
+  var req=http.request('http://pay.5d8d.com/niu_admin.php/api/coinChangeRecord?'+require('querystring').stringify(data),function(res){
+    
+  })
+  req.on("error",function(err){
+    console.log(err.message)
+  })
+  req.end()
+}
+
 module.exports.sendGameOver = function(data) {
     delete data.matchStream
     //streamData.scores = querystring.stringify(streamData.scores)
