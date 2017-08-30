@@ -1,6 +1,7 @@
 var async = require('async')
 var lottoConf = require("../../../conf/lotto.js")
 var giftBagConf = require("../../../conf/giftBag.js")
+var goldConf = require("../../../conf/goldConf.js")
 
 module.exports = function(app) {
   return new Handler(app)
@@ -148,6 +149,7 @@ handler.getGiftBag = function(msg,session,next) {
 	}
 }
 
+//获取充值记录
 handler.getRechargeInfo = function(msg,session,next) {
 	var uid = session.get("uid")
 	if(!!uid){
@@ -161,4 +163,32 @@ handler.getRechargeInfo = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}
+}
+
+//购买金币
+handler.buyGold = function(msg,session,next) {
+	var buyType = msg.type
+	if(!buyType || typeof(buyType) !== "number" || !goldConf[buyType]){
+		next(null,{flag : false})
+	}
+	var uid = session.get("uid")
+	var self = this
+	if(!!uid){
+		//获取钻石
+		self.app.rpc.db.remote.getValue(session,uid,"diamond",function(data){
+			var diamond = goldConf[buyType].diamond
+			if(data && data >= diamond){
+				self.app.rpc.db.remote.setValue(session,uid,"diamond",-diamond,function() {
+					var gold = goldConf[buyType].gold + goldConf[buyType].give
+					self.app.rpc.db.remote.setValue(session,uid,"gold",gold,function() {
+						next(null,{flag : true})
+					})					
+				})
+			}else{
+				next(null,{flag : false})
+			}
+		})		
+	}else{
+		next(null,{flag : false})
+	}		
 }
