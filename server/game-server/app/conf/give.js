@@ -1,3 +1,4 @@
+//赠送
 module.exports = 
 {
 	"1" : {"name" : "招财猫","gold" : 100000,"charm" : 100,"needDiamond" : 1},

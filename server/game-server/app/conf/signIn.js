@@ -1,3 +1,4 @@
+//签到奖励
 module.exports = 
 {
 	"2" : {"name" : "连续签到两天奖励","award" : {"type" : "gold" , "value" : 10000}},

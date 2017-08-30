@@ -1,3 +1,4 @@
+//每日转盘
 module.exports = 
 [
 	{"id" : 1 , "type" : "gold"  , "name" : "金币"    ,"value" : 100     ,"weight" : 100},

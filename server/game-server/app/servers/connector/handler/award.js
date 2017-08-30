@@ -1,6 +1,6 @@
 var async = require('async')
 var lottoConf = require("../../../conf/lotto.js")
-
+var giftBagConf = require("../../../conf/giftBag.js")
 
 module.exports = function(app) {
   return new Handler(app)
@@ -110,6 +110,54 @@ handler.bankruptGold = function(msg,session,next) {
 	      return
 	    }
 	  )
+	}else{
+		next(null,{flag : false})
+	}
+}
+
+//领取充值礼包
+handler.getGiftBag = function(msg,session,next) {
+	var uid = session.get("uid")
+	var self = this
+	if(!!uid){
+		//获取玩家充值信息
+		self.app.rpc.db.remote.getPlayerObject(session,uid,"rechargeRecord",function(data) {
+			if(giftBagConf[data.curGiftBag]){
+				if(data.curValue >= giftBagConf[data.curGiftBag].RMB){
+					//领取奖励
+					var type = giftBagConf[data.curGiftBag].award.type
+					var value = giftBagConf[data.curGiftBag].award.value
+	  				if(type){
+	  					self.app.rpc.db.remote.setValue(session,uid,type,value,function(){
+	  						//更新礼包记录
+	  						next(null,{flag : true,"data" : giftBagConf[data.curGiftBag],"index" : data.curGiftBag})
+	  						data.curGiftBag++
+	  						data.curValue = 0
+	  						self.app.rpc.db.remote.setPlayerObject(session,uid,"rechargeRecord",data,function(){})
+	  					})
+	  				}		
+				}else{
+					next(null,{flag : false})
+				}				
+			}else{
+				next(null,{flag : false})
+			}
+		})
+	}else{
+		next(null,{flag : false})
+	}
+}
+
+handler.getRechargeInfo = function(msg,session,next) {
+	var uid = session.get("uid")
+	if(!!uid){
+		this.app.rpc.db.remote.getPlayerObject(session,uid,"rechargeRecord",function(data){
+			if(data){
+				next(null,{flag : true,"data" : data})
+			}else{
+				next(null,{flag : false})
+			}
+		}) 
 	}else{
 		next(null,{flag : false})
 	}

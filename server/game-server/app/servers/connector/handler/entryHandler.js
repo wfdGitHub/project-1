@@ -195,6 +195,7 @@ handler.visitorEnter = function(msg, session, next) {
         self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
         var myDate = new Date()
         var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+        console.log("notify.data.loginRecord.recordDate : "+notify.data.loginRecord.recordDate+" dateString : "+dateString)
         if(notify.data.loginRecord.recordDate !== dateString){
           self.app.rpc.db.remote.loginCB(null,playerId,function(argument) {})
         }

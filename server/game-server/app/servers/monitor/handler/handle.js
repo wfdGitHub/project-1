@@ -27,10 +27,10 @@ var Handler = function(app) {
 			//接收数据完毕
 			req.addListener("end", function () {
 				var data=JSON.parse(postData);
-                //console.log(data)
+                console.log(data)
 				switch(data.cmd){
 					case "addDiamond" : 
-						local.addDiamond(data.diamond,data.uid,function(flag) {
+						local.addDiamond(data.diamond,data.uid,data.RMB,function(flag) {
 							if(flag){
 								local.write(res,{"flag" : true})
 							}else{
@@ -129,7 +129,7 @@ local.updateNotify = function(notify,source,cb){
 }
 
 //添加钻石
-local.addDiamond = function(diamond,uid,cb) {
+local.addDiamond = function(diamond,uid,RMB,cb) {
 	if(!diamond || typeof(diamond) != "number"){
 		cb(null,{"flag" : false})
 	}
@@ -154,7 +154,18 @@ local.addDiamond = function(diamond,uid,cb) {
 				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})	  
 				var info = "     uid : "+uid+"   diamond : "+diamond
 				//记录充值
-				diamondLogger.info(info);	
+				diamondLogger.info(info);
+				//记录充值记录
+				if(RMB && typeof(RMB) == "number"){
+					Handler.app.rpc.db.remote.getPlayerObject(null,uid,"rechargeRecord",function(data) {
+						if(data){
+							data.allValue += RMB
+							data.curValue += RMB
+							console.log(data)
+							Handler.app.rpc.db.remote.setPlayerObject(null,uid,"rechargeRecord",data,function(){})
+						}
+					})
+				}
 				cb(true)
 			}else{
 				cb(false)

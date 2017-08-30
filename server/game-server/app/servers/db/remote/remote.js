@@ -54,6 +54,12 @@ var createAccount = function(result,cb) {
 		loginRecord.loginDay = 1
 		loginRecord.loginMax = 1
 		DBRemote.dbService.setPlayerObject(uid,"loginRecord",loginRecord)
+		//充值记录
+		var rechargeRecord = {}
+		rechargeRecord.allValue = 0
+		rechargeRecord.curGiftBag = 1
+		rechargeRecord.curValue = 0
+		DBRemote.dbService.setPlayerObject(uid,"rechargeRecord",rechargeRecord)
 		cb(false)
 	})
 }
