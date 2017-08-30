@@ -157,7 +157,7 @@ local.createRoom = function(type) {
 			// console.log(users)
 		}
 	}else if(playerList.length > 0 && playerList.length < ROOMPLAYERNUM){
-		//人数不足一个房间补足机器人
+		//人数不足一个房间
 		var roomId = local.getUnusedRoom()
 		var users = []
 		var sids = []
@@ -262,7 +262,7 @@ local.userQuit = function(uid,cb) {
 
 //定时匹配
 local.matching = function(){
-	//console.log("matching")
+	// console.log("matching")
 	for(var type in gameType){
 		if(gameType.hasOwnProperty(type)){
 			//匹配队列玩家列表
@@ -311,7 +311,6 @@ local.matching = function(){
 					}
 				}
 			}
-
 			//动态添加机器人
 			for(var i = 0;i < tmpRoomList.length; i++){
 				runTime = 0
@@ -362,6 +361,8 @@ local.joinMatch = function(uid,sid,params,cb) {
 	//在匹配队列中不能再次申请
 	if(GameRemote.matchMap[uid]){
 		console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		console.log(GameRemote.matchList)
+		console.log(GameRemote.matchMap)
 		cb(false)
 		return
 	}

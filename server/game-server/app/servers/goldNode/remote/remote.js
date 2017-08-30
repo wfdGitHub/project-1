@@ -39,7 +39,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
 			goldLogger.info(info)
-			console.log(uids)
+			//console.log(uids)
 			for(var i = 0;i < uids.length;i++){
 				GameRemote.userMap[uids[i]] = roomId
 			}
@@ -56,7 +56,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 
 //加入房间
 GameRemote.prototype.joinRoom = function(params,player,roomId,cb) {
-	console.log(player)
+	//console.log(player)
 	if(!GameRemote.roomList[roomId]){
 		goldLogger.info("joinError!!!!!!!")
 		cb(false)
@@ -65,8 +65,8 @@ GameRemote.prototype.joinRoom = function(params,player,roomId,cb) {
 	GameRemote.roomList[roomId].handle.join(player.uid,player.sid,player.info,function(flag){
 		if(flag){
 			GameRemote.userMap[player.uid] = roomId
-			console.log("joinRoom : ")
-			console.log(player)
+			//console.log("joinRoom : ")
+			//console.log(player)
 		}
 		cb(flag)
 	})
@@ -113,7 +113,7 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 	//赠送礼物处理
 	switch(code){
 		case "give":
-		console.log(params)
+		//console.log(params)
 			local.give(uid,params.targetChair,roomId,params.giveId,cb)
 		return
 		default :
@@ -127,7 +127,7 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 }
 //赠送道具
 local.give = function(uid,targetChair,roomId,giveId,cb) {
-	console.log(targetChair)
+	//console.log(targetChair)
 	var room = GameRemote.roomList[roomId]
 	var chair = room.chairMap[uid]
 	var player = room.getPlayer()
@@ -142,7 +142,7 @@ local.give = function(uid,targetChair,roomId,giveId,cb) {
 	}
 	//扣除赠送者钻石
 	GameRemote.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
-		console.log("diamond ： "+data)
+		//console.log("diamond ： "+data)
 		var needDiamond = giveCfg[giveId].needDiamond
 		if(data && data >= needDiamond){
 			GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
@@ -193,8 +193,8 @@ var finishGameOfTimer = function(index) {
 //小结算回调
 local.settlementCB = function(roomId,curScores,player,rate) {
 	//TODO
-	console.log("roomId : "+roomId)
-	console.log(curScores)
+	//console.log("roomId : "+roomId)
+	//console.log(curScores)
 	//console.log(player)
 	//更改金币
 	for(var index in curScores){
@@ -205,7 +205,7 @@ local.settlementCB = function(roomId,curScores,player,rate) {
 		}
 	}
 	console.log(player)
-	console.log("rate : "+rate)
+	//console.log("rate : "+rate)
 	//金币等于0退出游戏
 	for(var index in player){
 		if(player.hasOwnProperty(index)){

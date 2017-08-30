@@ -50,7 +50,7 @@ var MING_CARD_NUM = 4  //明牌数量
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
     var result = {}                      //牌型
-    var basic = 0                        //房间底分
+    var basicType = 0                    //房间底分类型
     var actionFlag = true                //行动标志
     var lastScore = {}                   //上一局输赢
     var allowAllin = true                //是否允许推注
@@ -63,6 +63,13 @@ var MING_CARD_NUM = 4  //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
+    var betType = {
+      "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
+      "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
+      "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
+      "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
+      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
+    }    
     var robState,betList
     room.runCount = 0
    //房间初始化
@@ -112,8 +119,8 @@ var MING_CARD_NUM = 4  //明牌数量
     room.newRoom = function(uids,sids,infos,cb) {
       local.init()
       room.halfwayEnter = true
-      basic = 1
-      room.basic = basic
+      basicType = 4
+      room.basic = basicType
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
       gameState = conf.GS_FREE         //游戏状态
@@ -121,7 +128,7 @@ var MING_CARD_NUM = 4  //明牌数量
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
       room.bankerMode = conf.MODE_BANKER_ROB             //定庄模式
-      room.cardMode = conf.MODE_CARD_SHOW                //明牌模式
+      room.cardMode = conf.MODE_CARD_HIDE                //明牌模式
       room.needGold = 0                                  //本局每人消耗金币
       //设置下注上限
       maxBet = 10
@@ -584,6 +591,7 @@ var MING_CARD_NUM = 4  //明牌数量
             //游戏状态为BETTING
             if(gameState !== conf.GS_BETTING){
               console.log("bet1")
+              console.log(game)
               cb(false)
               return
             }
@@ -605,8 +613,8 @@ var MING_CARD_NUM = 4  //明牌数量
               cb(false)
               return
             }
-            //下注只能下底分或底分两倍
-            if(!param || typeof(param.bet) !== "number" || (param.bet !== basic && param.bet !== 2 * basic) 
+            //下注只能按预设的分下
+            if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])
               || (param.bet + betList[chair]) * room.rate > player[chair].score){
               console.log("bet5 " +param.bet)
               cb(false)
@@ -644,8 +652,8 @@ var MING_CARD_NUM = 4  //明牌数量
               cb(false)
               return
             }
-            var tmpBet = basic + lastScore[chair]
-            var maxBet = basic * 4
+            var tmpBet = betType[basicType]["default"] + lastScore[chair]
+            var maxBet = betType[basicType]["max"]
             if(tmpBet > maxBet){
               tmpBet = maxBet
             }
@@ -682,8 +690,8 @@ var MING_CARD_NUM = 4  //明牌数量
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
-            betList[i] = basic
-            local.betMessege(i,basic)  
+            betList[i] = betType[basicType]["default"]
+            local.betMessege(i,betList[i])
           }
       }  
       var tmpCards = {}
@@ -1026,7 +1034,7 @@ var MING_CARD_NUM = 4  //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basic : basic,
+        basicType : basicType,
         maxRob : room.maxRob,
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,

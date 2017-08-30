@@ -8,6 +8,14 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	robot.timer = 0
 	var quitRoomFun = quitRoom
 	var gameCount = 0
+	var gameBet = roomInfo.basicType
+    var betType = {
+      "1" : [1,2],
+      "2" : [2,4],
+      "3" : [4,8],
+      "4" : [1,3,5],
+      "5" : [2,4,6]
+    } 
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
 		//console.log("cmd : "+cmd)
@@ -54,11 +62,11 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 			case "beginBetting":
 				//开始下注
 				if(!robot.player.isBanker){
-					var max = Math.random() > 0.5 ? 1 : 2
-					max *= robot.roomInfo.basic
-					local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : max},3000,function(flag) {
+					var bet = Math.floor(Math.random() * betType[gameBet].length) % betType[gameBet].length
+					bet = betType[gameBet][bet]
+					local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : bet},3000,function(flag) {
 						if(flag == false){
-							console.log("beginBetting error : max : "+max)
+							console.log("beginBetting error : max : "+bet)
 						}
 					})						
 				}
@@ -95,6 +103,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	}
 	local.delaySend = function(uid,cmd,param,time,cb) {
 		var newtime = Math.random() * time + 2000
+		console.log("newTime : "+newtime)
 		robot.timer = setTimeout(function() {
 			local.send(uid,cmd,param,cb)
 		},newtime)
