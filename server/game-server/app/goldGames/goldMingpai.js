@@ -6,11 +6,12 @@ var robotFactory = require("./robot/mingpaiRobot.js")
 var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(gameType,roomId,channelService,settlementCB,quitRoom,gemeOver) {
+  module.exports.createRoom = function(gameType,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
     var gameOverCB = gemeOver
+    var gameBeginCB = beginCB
     var room = {}
     room.roomId = roomId
     room.roomType = gameType
@@ -259,6 +260,7 @@ var MING_CARD_NUM = 4  //明牌数量
     //游戏开始
     local.gameBegin = function() {
       log("gameBegin")
+      gameBeginCB(room.roomId,player,room.rate)
       gameState = conf.GS_GAMEING     
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
         if(banker !== -1){
@@ -521,7 +523,8 @@ var MING_CARD_NUM = 4  //明牌数量
       
       var notify = {
         "cmd": "showCard",
-        "chair" : chair
+        "chair" : chair,
+        "result" : result[chair]
       }
       local.sendAll(notify)
       //所有参与游戏的玩家都开牌则在三秒后进入结算

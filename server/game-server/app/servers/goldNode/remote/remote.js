@@ -34,7 +34,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
     GameRemote.roomList[roomId].newRoom(uids,sids,infos,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
@@ -189,6 +189,17 @@ var finishGameOfTimer = function(index) {
 		}
 	}
 }
+//游戏开始回调
+local.beginCB = function(roomId,player,rate) {
+	for(var index in player){
+		if(player.hasOwnProperty(index)){
+			if(player[index].isActive && !player[index].isRobot){
+				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",rate * 50,function(){})				
+			}
+		}
+	}	
+}
+
 
 //小结算回调
 local.settlementCB = function(roomId,curScores,player,rate) {
@@ -199,8 +210,10 @@ local.settlementCB = function(roomId,curScores,player,rate) {
 	//更改金币
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
-			if(player[index].isActive && !player[index].isRobot){
-				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],null)				
+			if(curScores){
+				if(player[index].isActive && !player[index].isRobot){
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],function(){})				
+				}
 			}
 		}
 	}

@@ -2,6 +2,7 @@ var async = require("async")
 var http=require("http");
 var diamondLogger = require("pomelo-logger").getLogger("diamond-log");
 var giveDiamondLogger = require("pomelo-logger").getLogger("giveDiamond-log");
+var goldLogger = require("pomelo-logger").getLogger("gold-log");
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -31,6 +32,15 @@ var Handler = function(app) {
 				switch(data.cmd){
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,data.RMB,function(flag) {
+							if(flag){
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
+					case "addGold" :
+						local.addGold(data.gold,data.uid,function(flag) {
 							if(flag){
 								local.write(res,{"flag" : true})
 							}else{
@@ -127,11 +137,51 @@ local.updateNotify = function(notify,source,cb){
 	}
 	Handler.app.rpc.db.remote.updateNotify(null,notify,source,cb)
 }
-
+//添加金币
+local.addGold = function(gold,uid,cb) {
+	if(!gold || typeof(gold) != "number"){
+		cb(null,{"flag" : false})
+		return
+	}
+	async.waterfall([
+	function(next) {
+		//查询用户是否存在
+		Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+			if(uid === data){
+				//玩家存在
+				next()
+			}else{
+				//玩家不存在
+				cb(false)
+			}
+		})	
+	},
+	function() {
+		//添加钻石
+		Handler.app.rpc.db.remote.setValue(null,uid,"gold",gold,function(flag) {
+			if(flag == true){
+				var info = "     uid : "+uid+"   gold : "+gold
+				//记录充值
+				goldLogger.info(info);
+				cb(true)
+			}else{
+				cb(false)
+			}
+		})	
+	}
+	],
+	function(err,result) {
+		console.log(err)
+		console.log(result)
+		cb(null)
+		return
+})	
+}
 //添加钻石
 local.addDiamond = function(diamond,uid,RMB,cb) {
 	if(!diamond || typeof(diamond) != "number"){
 		cb(null,{"flag" : false})
+		return
 	}
 	async.waterfall([
 	function(next) {

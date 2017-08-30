@@ -106,6 +106,16 @@
     },
     {
       "type": "file",
+      "filename": "${opts:base}/logs/monitor/addGold.log",
+      "maxLogSize": 1048576,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"gold-log"
+    },    
+    {
+      "type": "file",
       "filename": "${opts:base}/logs/monitor/userLogin.log",
       "maxLogSize": 1048576,
       "layout": {
