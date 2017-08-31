@@ -157,7 +157,7 @@ local.createRoom = function(type) {
 				if(GameRemote.matchMap[users[j]]){
 					infos.push(GameRemote.matchMap[users[j]].info)
 					delete GameRemote.matchMap[users[j]]
-					GameRemote.userMap[users[j]] = roomId				
+					GameRemote.userMap[users[j]] = roomId
 				}else{
 					users.splice(j,1)
 					j--
@@ -192,7 +192,7 @@ local.createRoom = function(type) {
 			if(GameRemote.matchMap[users[j]]){
 				infos.push(GameRemote.matchMap[users[j]].info)
 				delete GameRemote.matchMap[users[j]]
-				GameRemote.userMap[users[j]] = roomId				
+				GameRemote.userMap[users[j]] = roomId
 			}else{
 				users.splice(j,1)
 				j--
@@ -201,8 +201,8 @@ local.createRoom = function(type) {
 		}
 		//创建金币场
 		local.goldNodeNewRoom(users,sids,infos,roomId,type)
-		// console.log("createRoom")
-		// console.log(users)
+		//console.log("createRoom")
+		//console.log(users)
 	}
 }
 //通知游戏服务器创建房间创建成功
@@ -406,7 +406,6 @@ local.joinMatch = function(uid,sid,params,cb) {
 				cb(false,{"msg" : tips.NO_GOLD})
 				return
 			}
-			GameRemote.matchList[type].push(uid)
 			GameRemote.matchList[type].push(uid)
 			console.log(GameRemote.matchList[type])
 			data.ip = params.ip
