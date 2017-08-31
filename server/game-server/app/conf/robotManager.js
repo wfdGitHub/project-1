@@ -5,8 +5,8 @@ manager.getRobotInfo = function() {
 	data.diamond = 0
 	data.uid = Math.floor(Math.random() * 100)
 	data.nickname = "robot."+data.uid
-	var qqId = Math.floor(Math.random() * 200000000) + 500000000
-	data.head = "http://qlogo4.store.qq.com/qzone/"+qqId+"/"+qqId+"/100"
+	var qqId = Math.floor(Math.random() * 1000) + 752387000
+	data.head = "http://q2.qlogo.cn/headimg_dl?bs="+qqId+"&dst_uin="+qqId+"&dst_uin="+qqId+"&;dst_uin="+qqId+"&spec=100&url_enc=0&referer=bu_interface"
 	data.history = []
 	data.sex = Math.random() > 0.5 ? 1 : 2
 	data.limits = 0
@@ -27,3 +27,10 @@ manager.getRobotInfo = function() {
 	data.refreshList = refreshList
 	return data
 }
+
+
+var HeadList = 
+[
+	752387065,
+
+]

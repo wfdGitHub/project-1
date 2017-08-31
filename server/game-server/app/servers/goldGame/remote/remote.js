@@ -422,6 +422,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 			GameRemote.matchList[type].push(uid)
 			console.log(GameRemote.matchList[type])
 			data.ip = params.ip
+			delete data.history
 			GameRemote.matchMap[uid] = {"type" : type,"info" : data}
 			cb(true)
 		}else{
