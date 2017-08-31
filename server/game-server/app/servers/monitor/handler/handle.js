@@ -393,9 +393,9 @@ handler.giveDiamond = function(msg,session,next){
 			Handler.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
 				if(flag == true){
 					cb()
+					httpConf.coinChangeRecord(uid,4,-diamond)
 				}else{
 					next(null,{"flag" : false})
-					httpConf.coinChangeRecord(uid,4,-diamond)
 				}
 			})	 			
 		},

@@ -226,6 +226,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 		switch(GameRemote.roomList[roomId].consumeMode){
 			case MODE_DIAMOND_HOST: 
 				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-(diamond * 3),null)
+				httpConf.coinChangeRecord(players[0].uid,1,-(diamond * 3))
 				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"useDiamond",(diamond * 3),null)
 				break;
 			case MODE_DIAMOND_EVERY: 
@@ -233,6 +234,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 					if(players.hasOwnProperty(index)){
                         if(players[index].isActive){
                             GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+                            httpConf.coinChangeRecord(players[index].uid,1,-diamond)
                             GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"useDiamond",diamond,null)
                         }
 					}
@@ -252,6 +254,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 					}
 				}
 				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-(diamond * 3),null)
+				httpConf.coinChangeRecord(players[win].uid,1,-(diamond * 3))
 				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"useDiamond",(diamond * 3),null)
 				break;		
 		}		
