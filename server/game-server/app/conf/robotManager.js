@@ -1,10 +1,11 @@
+var http = require('http')
 var manager = module.exports
 
-manager.getRobotInfo = function() {
+manager.getRobotInfo = function(cb) {
 	var data = {}
 	data.diamond = 0
 	data.uid = Math.floor(Math.random() * 100)
-	data.nickname = "robot."+data.uid
+	data.nickname = ""
 	var qqId = Math.floor(Math.random() * 1000) + 752387000
 	data.head = "http://q2.qlogo.cn/headimg_dl?bs="+qqId+"&dst_uin="+qqId+"&dst_uin="+qqId+"&;dst_uin="+qqId+"&spec=100&url_enc=0&referer=bu_interface"
 	data.history = []
@@ -25,12 +26,20 @@ manager.getRobotInfo = function() {
 	refreshList.charmTime = 0 					//今日魅力值
 	refreshList.charmValue = 0	
 	data.refreshList = refreshList
-	return data
+	
+	//获取名字
+    var string = "http://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins="+qqId
+    var req=http.get(string,function(res){
+        var data = data
+        res.on("data",function(chunk) {
+          data += chunk
+        })
+        res.on("end",function() {
+        	data.nickname = data.split(",")[6]
+        	cb(data)
+        })
+    })
+    // req.on('error', function(e) {
+    //   console.error(e);   
+    // })
 }
-
-
-var HeadList = 
-[
-	752387065,
-
-]
