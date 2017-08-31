@@ -14,8 +14,8 @@ var async = require("async")
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
 	"zhajinniu" : ZhaJinNiu,
-	"mingpaiqz" : MingPaiQZ,
-	"fengkuang" : FengKuang
+	"mingpaiqz" : MingPaiQZ//,
+	//"fengkuang" : FengKuang
 }
 
 var MODE_DIAMOND_HOST = 1              //房主扣钻
