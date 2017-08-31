@@ -302,7 +302,7 @@ local.matching = function(){
 			//console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
-			//console.log(tmpRoomList)
+			console.log(tmpRoomList)
 			//从该类型的所有房间中找空闲房间
 			var runTime = 0
 			for(var i = 0;i < tmpRoomList.length; i++){
@@ -315,10 +315,10 @@ local.matching = function(){
 				if(GameRemote.RoomMap[roomId].length < ROOMPLAYERNUM){
 					do{
 						runTime++
-						console.log(GameRemote.typeRoomMap[type])
+						//console.log(GameRemote.typeRoomMap[type])
 						var playerCount = GameRemote.RoomMap[roomId].length
-						console.log("playerCount : "+playerCount+ "  runTime : "+runTime)
-						console.log(GameRemote.RoomMap[roomId])
+						// console.log("playerCount : "+playerCount+ "  runTime : "+runTime)
+						// console.log(GameRemote.RoomMap[roomId])
 						local.joinRoom(type,roomId)
 						GameRemote.matchTimer[type] = 0		
 					}while(playerCount < ROOMPLAYERNUM && playerList.length > 0 && runTime < 100)					
@@ -328,19 +328,20 @@ local.matching = function(){
 			if(playerList.length > 0 && runTime < 100){
 				//已有房间已满   尝试创建新房间
 				GameRemote.matchTimer[type]++
-				console.log("GameRemote.matchTimer[type] : "+GameRemote.matchTimer[type])
+				//console.log("GameRemote.matchTimer[type] : "+GameRemote.matchTimer[type])
 				//人数超过6人或匹配次数到达预计则开始游戏
 				if(playerList.length >= ROOMPLAYERNUM || GameRemote.matchTimer[type] >= MAXMATCHTIMER){
 					GameRemote.matchTimer[type] = 0
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					if(Math.random() < 0.2){
+					if(Math.random() < 1){
 						//加一个机器人到队列中
-						robotManager.getRobotInfo(function(robotData) {
-							var params = {"gameType" : type,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)	
-						})
+						robotManager.getRobotInfo(function(robotData,robotType) {
+							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+							local.robotJoinMatch(robotData.uid,params,robotData)
+							//console.log(GameRemote.matchList)	
+						},type)
 					}
 				}
 			}
@@ -349,11 +350,11 @@ local.matching = function(){
 				runTime = 0
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
-				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.05){
-					robotManager.getRobotInfo(function(robotData) {
-						var params = {"gameType" : type,"ip" : "0.0.0.0"}
-						local.robotJoinMatch(robotData.uid,params,robotData)	
-					})
+				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 1){
+					robotManager.getRobotInfo(function(robotData,robotType) {
+						var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+						local.robotJoinMatch(robotData.uid,params,robotData)
+					},type)
 				}
 			}
 		}
@@ -420,7 +421,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 				return
 			}
 			GameRemote.matchList[type].push(uid)
-			console.log(GameRemote.matchList[type])
+			//console.log(GameRemote.matchList[type])
 			data.ip = params.ip
 			delete data.history
 			GameRemote.matchMap[uid] = {"type" : type,"info" : data}

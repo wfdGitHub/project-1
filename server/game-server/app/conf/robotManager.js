@@ -1,7 +1,7 @@
 var http = require('http')
 var manager = module.exports
 
-manager.getRobotInfo = function(cb) {
+manager.getRobotInfo = function(cb,type) {
 	var data = {}
 	data.diamond = 0
 	data.uid = Math.floor(Math.random() * 100)
@@ -35,8 +35,9 @@ manager.getRobotInfo = function(cb) {
           tmpData += chunk
         })
         res.on("end",function() {
-        	data.nickname = tmpData.split(",")[6]
-        	cb(data)
+        	data.nickname = tmpData.split(",")[6].split("\"")[1]
+        	console.log("nickname : "+data.nickname)
+        	cb(data,type)
         })
     })
     // req.on('error', function(e) {
