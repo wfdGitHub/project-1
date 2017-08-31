@@ -30,12 +30,12 @@ manager.getRobotInfo = function(cb) {
 	//获取名字
     var string = "http://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins="+qqId
     var req=http.get(string,function(res){
-        var data = data
+        var tmpData = tmpData
         res.on("data",function(chunk) {
-          data += chunk
+          tmpData += chunk
         })
         res.on("end",function() {
-        	data.nickname = data.split(",")[6]
+        	data.nickname = tmpData.split(",")[6]
         	cb(data)
         })
     })
