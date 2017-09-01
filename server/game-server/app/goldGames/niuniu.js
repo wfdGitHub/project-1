@@ -623,7 +623,7 @@ var MING_CARD_NUM = 4  //明牌数量
       }    
       //庄家不能下注
       if(chair == banker){
-        console.log(1111114444)
+        console.log("1111114444" + "banker : "+banker+"  chair : "+chair)
         cb(false)
         return
       }

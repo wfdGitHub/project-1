@@ -44,10 +44,11 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				// }
 				break
 			case "gameBegin":
-				result = logic.getType(robot.player.handCard)
+				
 				break
 			case "beginRob":
 				//开始抢庄
+				result = logic.getType(robot.player.handCard)
 				var max = 0
 				if(result.type >= 10){
 					if(Math.random() > 0.4){
