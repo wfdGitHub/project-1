@@ -5,7 +5,7 @@ manager.getRobotInfo = function(cb,type) {
 	var data = {}
 	data.diamond = 0
 	data.uid = Math.floor(Math.random() * 100)
-	data.nickname = ""
+	data.nickname = "robot."+data.uid
 	var qqId = Math.floor(Math.random() * 1000) + 752387000
 	data.head = "http://q2.qlogo.cn/headimg_dl?bs="+qqId+"&dst_uin="+qqId+"&dst_uin="+qqId+"&;dst_uin="+qqId+"&spec=100&url_enc=0&referer=bu_interface"
 	data.history = []
@@ -28,19 +28,20 @@ manager.getRobotInfo = function(cb,type) {
 	data.refreshList = refreshList
 	
 	//获取名字
-    var string = "http://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins="+qqId
-    var req=http.get(string,function(res){
-        var tmpData = tmpData
-        res.on("data",function(chunk) {
-          tmpData += chunk
-        })
-        res.on("end",function() {
-        	data.nickname = tmpData.split(",")[6].split("\"")[1]
-        	console.log("nickname : "+data.nickname)
-        	cb(data,type)
-        })
-    })
+    // var string = "http://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins="+qqId
+    // var req=http.get(string,function(res){
+    //     var tmpData = tmpData
+    //     res.on("data",function(chunk) {
+    //       tmpData += chunk
+    //     })
+    //     res.on("end",function() {
+    //     	data.nickname = tmpData.split(",")[6].split("\"")[1]
+    //     	console.log("nickname : "+data.nickname)
+    //     	cb(data,type)
+    //     })
+    // })
     // req.on('error', function(e) {
     //   console.error(e);   
     // })
+    cb(data,type)
 }

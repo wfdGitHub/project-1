@@ -1,3 +1,5 @@
+var logic = require("../logic/NiuNiuLogic.js")
+
 module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	var local = {}
 	var robot = {}
@@ -16,6 +18,8 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
       "4" : [1,3,5],
       "5" : [2,4,6]
     } 
+    var typeWeight = [1,1,1,1,2,2,2,3,3,3,3,3,3,3,3]
+    var result
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
 		//console.log("cmd : "+cmd)
@@ -40,30 +44,63 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				// }
 				break
 			case "gameBegin":
-				//开始游戏
+				result = logic.getType(robot.player.handCard)
 				break
 			case "beginRob":
 				//开始抢庄
-				if(Math.random() > 0.3){
-					var max = Math.floor(Math.random() * 1024) % 4 + 1
-					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},3000,function(flag) {
-						if(flag == false){
-							console.log("beginRob error")
-						}
-					})					
+				var max = 0
+				if(result.type >= 10){
+					if(Math.random() > 0.4){
+						max = 4
+					}else{
+						max = 0
+					}
+				}else if(result.type > 5){
+					var rand = Math.random()
+					if(rand < 0.3){
+						max = 4
+					}else if(rand < 0.8){
+						max = 3
+					}else{
+						max = 0
+					}
 				}else{
-					local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : 0},3000,function(flag) {
-						if(flag == false){
-							console.log("beginRob error")
-						}
-					})
+					var rand = Math.random()
+					if(rand < 0.1){
+						max = 4
+					}else if(rand < 0.2){
+						max = 3
+					}else if(rand < 0.3){
+						max = 2
+					}else if(rand < 0.4){
+						max = 1
+					}else{
+						max = 0
+					}
 				}
+				local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},3000,function(flag) {
+					if(flag == false){
+						console.log("beginRob error")
+					}
+				})
 				break
 			case "beginBetting":
 				//开始下注
 				if(!robot.player.isBanker){
-					var bet = Math.floor(Math.random() * betType[gameBet].length) % betType[gameBet].length
-					bet = betType[gameBet][bet]
+					//判断牌型
+					var rand = typeWeight[result.type]
+					if(result.type > 10){
+						rand = 3
+					}else{
+						rand += Math.floor(Math.random() * 2) - 1
+						if(rand > 3){
+							rand = 3
+						}
+						if(rand < 0){
+							rand = 0
+						}
+					}
+					bet = betType[gameBet][rand]
 					local.delaySend(uid,"useCmd",{"cmd" : "bet" , "bet" : bet},3000,function(flag) {
 						if(flag == false){
 							console.log("beginBetting error : max : "+bet)

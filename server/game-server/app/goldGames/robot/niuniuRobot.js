@@ -1,3 +1,8 @@
+var logic = require("../logic/NiuNiuLogic.js")
+
+var betList = [1,5,10,20]
+var typeWeight = [1,1,1,1,2,2,2,3,3,3,3,3,3,3,3]
+
 module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	var local = {}
 	var robot = {}
@@ -8,6 +13,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	robot.timer = 0
 	var quitRoomFun = quitRoom
 	var gameCount = 0
+	var result
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
 		//console.log("cmd : "+cmd)
@@ -33,28 +39,42 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				break
 			case "gameBegin":
 				//开始游戏
+				result = logic.getType(robot.player.handCard)
 				break
 			case "beginRob":
 				//开始抢庄
-				if(Math.random() > 0.3){
-					local.delaySend(uid,"robBanker",{"flag" : true},2000,function(flag) {
-						if(flag == false){
-							console.log("beginRob error")
-						}
-					})					
+				var flag = false
+				if(result.type >= 10){
+					flag = true
 				}else{
-					local.delaySend(uid,"robBanker",{"flag" : false},2000,function(flag) {
-						if(flag == false){
-							console.log("beginRob error")
-						}
-					})
+					var rand = Math.random()
+					if(rand < 0.3){
+						flag = true
+					}
 				}
+				local.delaySend(uid,"robBanker",{"flag" : flag},2000,function(flag) {
+					if(flag == false){
+						console.log("beginRob error")
+					}
+				})
 				break
 			case "beginBetting":
 				//开始下注
 				if(!robot.player.isBanker){
-					var betList = [1,5,10,20]
-					var rand = Math.floor(Math.random() * 1000) % 4
+					//判断牌型
+					
+					var rand = typeWeight[result.type]
+					if(result.type > 10){
+						rand = 3
+					}else{
+						rand += Math.floor(Math.random() * 2) - 1
+						if(rand > 3){
+							rand = 3
+						}
+						if(rand < 0){
+							rand = 0
+						}
+					}
 					if(!robot.player.isBanker){
 						local.delaySend(uid,"bet",{"bet" : betList[rand]},3000,function(flag) {
 							if(flag == false){
