@@ -324,49 +324,49 @@ var MING_CARD_NUM = 4  //明牌数量
         }
       }while(dealFlag && randTimes < conf.ROUND_TIMES)
       //找出剩余牌
-      var tmpCards = {}
-      var tmpCardCount = 0
-      for(var i = index;i < cardCount;i++){
-        tmpCards[tmpCardCount++] = deepCopy(cards[i])
-      }
-      //执行控制   
-      //先计算每个人的运气值   -1 到 1之间     
-      var luckyValue = {}
-      var randomMaxScore = 500 + Math.floor(Math.random() * 300)
-      var randomMinScore = 400 + Math.floor(Math.random() * 200)
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-            if(player[i].score > 100){
-                luckyValue[i] = player[i].score / randomMaxScore
-            }else if(player[i].score < -100){
-                luckyValue[i] = player[i].score / randomMinScore
-            }else{
-              continue
-            }
-            if(luckyValue[i] > 1){
-              luckyValue[i] = 1
-            }else if(luckyValue[i] < -1){
-              luckyValue[i] = -1
-            }
-            luckyValue[i] = luckyValue[i] * 0.6
-          }
-      }
-      //运气值低的先执行控制 
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-              if(luckyValue[i] < 0){
-                if(Math.random() < -luckyValue[i]){
-                  //换好牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
-                }
-              }else if(luckyValue[i] > 0){
-                if(Math.random() < luckyValue[i]){
-                  //换差牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
-                }
-              }
-          }
-      }
+      // var tmpCards = {}
+      // var tmpCardCount = 0
+      // for(var i = index;i < cardCount;i++){
+      //   tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      // }
+      // //执行控制   
+      // //先计算每个人的运气值   -1 到 1之间     
+      // var luckyValue = {}
+      // var randomMaxScore = 500 + Math.floor(Math.random() * 300)
+      // var randomMinScore = 400 + Math.floor(Math.random() * 200)
+      // for(var i = 0;i < GAME_PLAYER;i++){
+      //     if(player[i].isActive && player[i].isReady){
+      //       if(player[i].score > 100){
+      //           luckyValue[i] = player[i].score / randomMaxScore
+      //       }else if(player[i].score < -100){
+      //           luckyValue[i] = player[i].score / randomMinScore
+      //       }else{
+      //         continue
+      //       }
+      //       if(luckyValue[i] > 1){
+      //         luckyValue[i] = 1
+      //       }else if(luckyValue[i] < -1){
+      //         luckyValue[i] = -1
+      //       }
+      //       luckyValue[i] = luckyValue[i] * 0.6
+      //     }
+      // }
+      // //运气值低的先执行控制 
+      // for(var i = 0;i < GAME_PLAYER;i++){
+      //     if(player[i].isActive && player[i].isReady){
+      //         if(luckyValue[i] < 0){
+      //           if(Math.random() < -luckyValue[i]){
+      //             //换好牌
+      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+      //           }
+      //         }else if(luckyValue[i] > 0){
+      //           if(Math.random() < luckyValue[i]){
+      //             //换差牌
+      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+      //           }
+      //         }
+      //     }
+      // }
       
       //记录参与游戏人数
       curPlayerCount = 0
