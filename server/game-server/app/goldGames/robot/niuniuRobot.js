@@ -62,7 +62,6 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				//开始下注
 				if(!robot.player.isBanker){
 					//判断牌型
-					
 					var rand = typeWeight[result.type]
 					if(result.type > 10){
 						rand = 3
@@ -82,7 +81,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 								console.log(robot.player)
 							}
 						})
-					}					
+					}
 				}
 				break
 			case "deal":

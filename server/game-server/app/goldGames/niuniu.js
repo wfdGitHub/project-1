@@ -431,7 +431,7 @@ var MING_CARD_NUM = 4  //明牌数量
           }
           local.sendAll(notify)
           timer = setTimeout(local.endRob,conf.TID_ROB_TIME)
-          break
+          return
         case conf.MODE_BANKER_ORDER :
           //轮庄
           do{

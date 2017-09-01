@@ -41,7 +41,7 @@ var maxJoin = {
 	"goldNiuNiu-2" : 50000,
 	"goldNiuNiu-3" : "infinite"	
 }
-var roomIndex = 0
+
 
 var GameRemote = function(app) {
 	if(app.get("serverId") === "gold-server"){
@@ -92,10 +92,6 @@ GameRemote.prototype.userConnect = function(uid,sid,cb) {
 	if(cb){
 		cb()
 	}
-}
-//当房间人数发生变化时更新matchMap
-local.updateMatchMap = function(){
-	//TODO
 }
 
 //将队首玩家加入房间
@@ -267,6 +263,7 @@ local.quitRoom = function(roomId,uid) {
 		}
 	}
 	delete GameRemote.userMap[uid]
+	robotManager.freeRobot(uid)
 	console.log(GameRemote.userMap)
 }
 
@@ -337,11 +334,13 @@ local.matching = function(){
 				}else{
 					if(Math.random() < 1){
 						//加一个机器人到队列中
-						robotManager.getRobotInfo(function(robotData,robotType) {
-							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)
-							//console.log(GameRemote.matchList)	
-						},type)
+						var robotId = robotManager.getUnusedRobot()
+						if(robotId){
+							robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+								var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+								local.robotJoinMatch(robotData.uid,params,robotData)
+							})
+						}
 					}
 				}
 			}
@@ -351,10 +350,13 @@ local.matching = function(){
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
 				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 1){
-					robotManager.getRobotInfo(function(robotData,robotType) {
-						var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-						local.robotJoinMatch(robotData.uid,params,robotData)
-					},type)
+					var robotId = robotManager.getUnusedRobot()
+					if(robotId){
+						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+							local.robotJoinMatch(robotData.uid,params,robotData)
+						})
+					}
 				}
 			}
 		}

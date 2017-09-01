@@ -1,11 +1,22 @@
 var http = require('http')
 var manager = module.exports
 
-manager.getRobotInfo = function(cb,type) {
+var robotState = {}
+var ROBOT_AMOUNT = 1000
+for(var i = 20000;i < 20000+ROBOT_AMOUNT;i++){
+	robotState[i] = true
+}
+
+var goldList = {
+	"1" : {"min" : 1000,"max" : 5000},
+	"2" : {"min" : 5000,"max" : 10000},
+	"3" : {"min" : 10000,"max" : 100000}
+}
+manager.getRobotInfo = function(type,uid,cb) {
 	var data = {}
 	data.diamond = 0
-	data.uid = Math.floor(Math.random() * 100)
-	data.nickname = "robot."+data.uid
+	data.uid = uid
+	data.nickname = "robot."+uid
 	var qqId = Math.floor(Math.random() * 1000) + 752387000
 	data.head = "http://q2.qlogo.cn/headimg_dl?bs="+qqId+"&dst_uin="+qqId+"&dst_uin="+qqId+"&;dst_uin="+qqId+"&spec=100&url_enc=0&referer=bu_interface"
 	data.history = []
@@ -13,7 +24,12 @@ manager.getRobotInfo = function(cb,type) {
 	data.limits = 0
 	data.freeze = 0
 	data.useDiamond = 0
-	data.gold = Math.floor(Math.random() * 7000) + 2000
+	var goldConf = goldList[type.split("-")[1]]
+	if(goldConf){
+		data.gold = Math.floor(Math.random() * (goldConf.max - goldConf.min)) + goldConf.min
+	}else{
+		data.gold = Math.floor(Math.random() * 7000) + 2000
+	}
 	data.isRobot = true
 	data.charm = 0
 	var refreshList = {}
@@ -43,5 +59,22 @@ manager.getRobotInfo = function(cb,type) {
     // req.on('error', function(e) {
     //   console.error(e);   
     // })
+    robotState[uid] = false
     cb(data,type)
+}
+
+manager.getUnusedRobot = function() {
+	//随机分配房间号
+	var robotId = Math.floor((Math.random() * ROBOT_AMOUNT)) + 20000
+	for(var i = robotId;i < ROBOT_AMOUNT + robotId;i++){
+		var index = (robotId % ROBOT_AMOUNT) + 20000
+		if(robotState[index] == true){
+			return index
+		}
+	}
+	return false
+}
+
+manager.freeRobot = function(uid) {
+	robotState[uid] = true
 }
