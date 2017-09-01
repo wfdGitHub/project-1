@@ -294,7 +294,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					}
 					//钻石消耗记录
 					GameRemote.app.rpc.db.remote.setValue(null,uid,"useDiamond",needMond,function() {})
-					httpConf.coinChangeRecord(uid,1,needMond)
+					httpConf.coinChangeRecord(uid,1,-needMond)
 					cb(true,{"roomId" : roomId})
 				})	    		
 	    	}
