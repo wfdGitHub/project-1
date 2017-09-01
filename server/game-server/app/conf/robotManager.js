@@ -8,8 +8,8 @@ for(var i = 20000;i < 20000+ROBOT_AMOUNT;i++){
 }
 
 var goldList = {
-	"1" : {"min" : 1000,"max" : 5000},
-	"2" : {"min" : 5000,"max" : 10000},
+	"1" : {"min" : 1000,"max" : 10000},
+	"2" : {"min" : 5000,"max" : 50000},
 	"3" : {"min" : 10000,"max" : 100000}
 }
 manager.getRobotInfo = function(type,uid,cb) {

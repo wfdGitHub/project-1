@@ -16,6 +16,9 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	var result
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
+		if(!robot.player.isReady){
+			return
+		}
 		//console.log("cmd : "+cmd)
 		switch(cmd){
 			case "userJoin":
@@ -60,7 +63,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				break
 			case "beginBetting":
 				//开始下注
-				if(!robot.player.isBanker){
+				if(!robot.player.isBanker && robot.player.isReady){
 					//判断牌型
 					var rand = typeWeight[result.type]
 					if(result.type > 10){

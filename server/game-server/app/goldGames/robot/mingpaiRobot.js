@@ -22,6 +22,9 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
     var result
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
+		if(!robot.player.isReady){
+			return
+		}		
 		//console.log("cmd : "+cmd)
 		switch(cmd){
 			case "userJoin":
@@ -67,13 +70,13 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 					}
 				}else{
 					var rand = Math.random()
-					if(rand < 0.1){
+					if(rand < 0.05){
 						max = 4
-					}else if(rand < 0.2){
+					}else if(rand < 0.1){
 						max = 3
-					}else if(rand < 0.3){
+					}else if(rand < 0.15){
 						max = 2
-					}else if(rand < 0.4){
+					}else if(rand < 0.2){
 						max = 1
 					}else{
 						max = 0
