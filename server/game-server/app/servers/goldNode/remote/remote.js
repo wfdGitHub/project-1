@@ -210,7 +210,7 @@ local.settlementCB = function(roomId,curScores,player,rate) {
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive){
-				if(player[index].score < rate * 10){
+				if(player[index].score < rate * 50){
 					//退出游戏
 					local.quitRoom(player[index].uid,roomId,function(){})
 				}

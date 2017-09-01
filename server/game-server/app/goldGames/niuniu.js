@@ -30,11 +30,11 @@ var MING_CARD_NUM = 4  //明牌数量
         room.rate = 10
       break
       case "goldNiuNiu-2":
-        room.rate = 30
+        room.rate = 50
       break
       case "goldNiuNiu-3":
         room.rate = 100
-      break            
+      break
     }
     //房间初始化
     var local = {}                       //私有方法

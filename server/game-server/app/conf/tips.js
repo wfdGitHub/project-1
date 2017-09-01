@@ -12,6 +12,7 @@ conf[15] = "该房不允许中途进入"
 conf[16] = "该用户非您发展，不能赠送"
 conf[17] = "房间已满"
 conf[18] = "金币不足"
+conf[19] = "金币超出此房间上限"
 
 conf.NO_DIAMOND = 10
 conf.FULL_ROOM = 11
@@ -22,5 +23,6 @@ conf.CANT_HALF_JOIN = 15
 conf.CANT_GIVE = 16
 conf.ROOM_FULL = 17
 conf.NO_GOLD = 18
+conf.MORE_GOLD
 
 module.exports.tipsConf = conf

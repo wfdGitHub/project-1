@@ -25,12 +25,21 @@ var gameType = {
 }
 
 var minJoin = {
-	"goldMingpai-1" : 100,
-	"goldMingpai-2" : 300,
-	"goldMingpai-3" : 1000,
-	"goldNiuNiu-1" : 100,
-	"goldNiuNiu-2" : 300,
-	"goldNiuNiu-3" : 1000
+	"goldMingpai-1" : 1000,
+	"goldMingpai-2" : 5000,
+	"goldMingpai-3" : 10000,
+	"goldNiuNiu-1" : 1000,
+	"goldNiuNiu-2" : 5000,
+	"goldNiuNiu-3" : 10000
+}
+
+var maxJoin = {
+	"goldMingpai-1" : 10000,
+	"goldMingpai-2" : 50000,
+	"goldMingpai-3" : "infinite",
+	"goldNiuNiu-1" : 10000,
+	"goldNiuNiu-2" : 50000,
+	"goldNiuNiu-3" : "infinite"	
 }
 var roomIndex = 0
 
@@ -404,6 +413,10 @@ local.joinMatch = function(uid,sid,params,cb) {
 			//检测金币
 			if(data.gold < minJoin[type]){
 				cb(false,{"msg" : tips.NO_GOLD})
+				return
+			}
+			if(maxJoin[type] !== "infinite" && data.gold > maxJoin[type]){
+				cb(false,{"msg" : tips.MORE_GOLD})
 				return
 			}
 			GameRemote.matchList[type].push(uid)
