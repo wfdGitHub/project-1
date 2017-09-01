@@ -451,7 +451,7 @@ var MING_CARD_NUM = 4  //明牌数量
       //无人抢庄将所有参与游戏的玩家加入抢庄列表
       if(num == 0){
         for(var i = 0; i < GAME_PLAYER;i++){
-      //随机出一个庄家
+          //随机出一个庄家
           if(player[i].isActive && player[i].isReady){
             robList[num++] = i
           }
@@ -466,6 +466,14 @@ var MING_CARD_NUM = 4  //明牌数量
       player[banker].isBanker = true
       player[banker].bankerCount++
       gameState = conf.GS_NONE
+      if(banker !== -1){
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }
+        player[banker].isBanker = true    
+      }
       setTimeout(local.betting,1000)
     }
     //下注阶段
