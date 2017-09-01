@@ -1045,6 +1045,11 @@ var MING_CARD_NUM = 4  //明牌数量
   room.userQuit = function(uid,cb){
     //空闲时间才可退出
     if(gameState !== conf.GS_FREE){
+      var notify = {
+        "cmd" : "userReturn"
+      }
+      local.sendUid(uid,notify)
+      room.leave(uid)
       cb(false)
       return
     }
@@ -1056,9 +1061,11 @@ var MING_CARD_NUM = 4  //明牌数量
     //清除座位信息
     //console.log(player[chair])
     if(!player[chair].isRobot){
-      var tsid =  room.channel.getMember(uid)['sid']
-      if(tsid){
-        room.channel.leave(uid,tsid)
+      if(room.channel.getMember(uid)){
+        var tsid =  room.channel.getMember(uid)['sid']
+        if(tsid){
+          room.channel.leave(uid,tsid)
+        }
       }
     }else{
        robots[chair].destroy()

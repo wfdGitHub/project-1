@@ -94,11 +94,11 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 					//判断牌型
 					var rand = typeWeight[result.type]
 					if(result.type > 10){
-						rand = 3
+						rand = 2
 					}else{
 						rand += Math.floor(Math.random() * 2) - 1
-						if(rand > 3){
-							rand = 3
+						if(rand > 2){
+							rand = 2
 						}
 						if(rand < 0){
 							rand = 0
@@ -109,7 +109,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 						if(flag == false){
 							console.log("beginBetting error : max : "+bet)
 						}
-					})						
+					})
 				}
 				break
 			case "deal":
