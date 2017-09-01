@@ -184,20 +184,28 @@ handler.visitorEnter = function(msg, session, next) {
         if(!self.gameChanel.getMember(playerId)){
           self.gameChanel.add(playerId,self.app.get('serverId'))
         }
-        self.channelService.pushMessageByUids('onMessage', notify, [{
-          uid: playerId,
-          sid: self.app.get('serverId')
-        }])
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)    
         //通知gameServer
         self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})    
         self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
         var myDate = new Date()
-        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-        console.log("notify.data.loginRecord.recordDate : "+notify.data.loginRecord.recordDate+" dateString : "+dateString)
+        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())      
+        console.log(dateString) 
         if(notify.data.loginRecord.recordDate !== dateString){
-          self.app.rpc.db.remote.loginCB(null,playerId,function(argument) {})
+          self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
+            notify.data.loginRecord = loginRecord
+            console.log(notify.data.loginRecord)
+            self.channelService.pushMessageByUids('onMessage', notify, [{
+              uid: playerId,
+              sid: self.app.get('serverId')
+            }])
+          })
+        }else{
+          self.channelService.pushMessageByUids('onMessage', notify, [{
+            uid: playerId,
+            sid: self.app.get('serverId')
+          }])          
         }
       }
       ],
@@ -354,10 +362,6 @@ handler.enter = function(msg, session, next) {
         if(!self.gameChanel.getMember(playerId)){
           self.gameChanel.add(playerId,self.app.get('serverId'))
         }
-        self.channelService.pushMessageByUids('onMessage', notify, [{
-          uid: playerId,
-          sid: self.app.get('serverId')
-        }])
         httpConf.sendLoginHttp(notify)
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
@@ -367,7 +371,18 @@ handler.enter = function(msg, session, next) {
         var myDate = new Date()
         var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
         if(notify.data.loginRecord.recordDate !== dateString){
-          self.app.rpc.db.remote.loginCB(null,playerId,function(argument) {})
+          self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
+            notify.data.loginRecord = loginRecord
+            self.channelService.pushMessageByUids('onMessage', notify, [{
+              uid: playerId,
+              sid: self.app.get('serverId')
+            }])
+          })
+        }else{
+          self.channelService.pushMessageByUids('onMessage', notify, [{
+            uid: playerId,
+            sid: self.app.get('serverId')
+          }])          
         }
       }
       ],

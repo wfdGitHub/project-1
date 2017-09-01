@@ -127,8 +127,8 @@ DBRemote.prototype.loginCB = function(uid,cb) {
           DBRemote.dbService.setPlayerObject(uid,"loginRecord",data,function(){})
         }
       }
+      cb(data)
   })
-  cb()
 }
 
 DBRemote.prototype.getPlayerNickName = function(uid,cb) {
