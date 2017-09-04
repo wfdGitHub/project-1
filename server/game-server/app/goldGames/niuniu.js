@@ -275,6 +275,7 @@ var MING_CARD_NUM = 4  //明牌数量
       clearTimeout(timer)
       log("gameBegin")
       gameBeginCB(room.roomId,player,room.rate)
+      room.initialTime = (new Date()).valueOf()
       gameState = conf.GS_GAMEING     
       if(banker !== -1){
         //重置庄家信息
