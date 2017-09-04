@@ -102,12 +102,28 @@ DBRemote.prototype.check = function(result,cb) {
 DBRemote.prototype.loginCB = function(uid,cb) {
   DBRemote.dbService.getPlayerObject(uid,"loginRecord",function(data) {
       if(data){
-        var myDate = new Date()
-        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+  		var myDate = new Date()
+  		var month = myDate.getMonth()
+  		var date = myDate.getDate()
+  		if(month < 10){
+  			month = "0"+month
+  		}
+  		if(date < 10){
+  			date = "0"+date
+  		}
+  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
         if(dateString != data.recordDate){
           //今日未登陆则判断昨天是否登陆，若是则增加登陆天数
           myDate.setDate(myDate.getDate() - 1)
-          var oldDateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+		  month = myDate.getMonth()
+		  date = myDate.getDate()
+		  if(month < 10){
+		  	month = "0"+month
+		  }
+		  if(date < 10){
+		  	date = "0"+date
+		  }
+		  var oldDateString = parseInt(""+myDate.getFullYear() + month + date)   
           if(oldDateString == data.recordDate){
               data.recordDate = dateString
               data.loginDay += 1
