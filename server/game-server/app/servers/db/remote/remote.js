@@ -48,7 +48,15 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
 		//连续登陆记录
   		var myDate = new Date()
-  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+  		var month = myDate.getMonth()
+  		var date = myDate.getDate()
+  		if(month < 10){
+  			month = "0"+month
+  		}
+  		if(date < 10){
+  			date = "0"+date
+  		}
+  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
 		var  loginRecord = {}
 		loginRecord.recordDate = dateString
 		loginRecord.loginDay = 1
