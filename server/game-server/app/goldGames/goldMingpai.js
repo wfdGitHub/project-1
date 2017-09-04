@@ -269,7 +269,7 @@ var MING_CARD_NUM = 4  //明牌数量
     //游戏开始
     local.gameBegin = function() {
       log("gameBegin")
-      gameBeginCB(room.roomId,player,room.rate)
+      gameBeginCB(room.roomId,player,room.rate,room.currencyType)
       room.initialTime = (new Date()).valueOf()
       gameState = conf.GS_GAMEING     
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){

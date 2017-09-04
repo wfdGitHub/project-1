@@ -198,14 +198,18 @@ var finishGameOfTimer = function(index) {
 	}
 }
 //游戏开始回调
-local.beginCB = function(roomId,player,rate) {
+local.beginCB = function(roomId,player,rate,currencyType) {
+	if(currencyType !== "diamond"){
+		currencyType = "gold"
+	}
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
-				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",rate * 50,function(){})				
+				player[index].score -= rate * 50
+				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,rate * 50,function(){})				
 			}
 		}
-	}	
+	}
 }
 
 

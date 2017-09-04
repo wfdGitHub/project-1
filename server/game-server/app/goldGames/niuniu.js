@@ -282,9 +282,9 @@ var MING_CARD_NUM = 4  //明牌数量
     local.gameBegin = function(argument) {
       clearTimeout(timer)
       log("gameBegin")
-      gameBeginCB(room.roomId,player,room.rate)
+      gameBeginCB(room.roomId,player,room.rate,room.currencyType)
       room.initialTime = (new Date()).valueOf()
-      gameState = conf.GS_GAMEING     
+      gameState = conf.GS_GAMEING
       if(banker !== -1){
         //重置庄家信息
         for(var i = 0;i < GAME_PLAYER;i++){
