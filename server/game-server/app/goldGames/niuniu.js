@@ -23,6 +23,7 @@ var MING_CARD_NUM = 4  //明牌数量
     room.halfwayEnter = true             //允许中途加入
     room.agencyId = 0                    //代开房玩家ID 
     room.beginTime = (new Date()).valueOf()
+    room.initialTime = room.beginTime    //游戏开始时间戳
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
@@ -1034,7 +1035,9 @@ var MING_CARD_NUM = 4  //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
         allowAllin : allowAllin,
-        rate : room.rate
+        rate : room.rate,
+        initialTime : room.initialTime,
+        curTime : (new Date()).valueOf()
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
