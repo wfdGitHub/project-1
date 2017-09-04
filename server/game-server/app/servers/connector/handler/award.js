@@ -26,8 +26,16 @@ handler.dayLotte = function(msg,session,next) {
 	  	self.app.rpc.db.remote.getPlayerObject(session,uid,"refreshList",function(data) {
 	  		//console.log(data)
 	  		var myDate = new Date()
-	  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-	  		//console.log(dateString)
+	  		var month = myDate.getMonth()
+	  		var date = myDate.getDate()
+	  		if(month < 10){
+	  			month = "0"+month
+	  		}
+	  		if(date < 10){
+	  			date = "0"+date
+	  		}
+	  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	  		// console.log(dateString)
 	  		//隔日更新refreshList
 	  		if(data.lottoTime < dateString){
 	  			data.lottoCount = 0
@@ -44,7 +52,7 @@ handler.dayLotte = function(msg,session,next) {
 	  		for(var i = 0; i < lottoConf.length; i++){
 	  			weight += lottoConf[i].weight
 	  		}
-	  		console.log("weight : "+weight)
+	  		// console.log("weight : "+weight)
 	  		var rand = Math.floor(Math.random() * weight)
 	  		var curWeight = 0
 	  		for(var i = 0; i < lottoConf.length; i++){
