@@ -30,6 +30,7 @@ manager.getRobotInfo = function(type,uid,cb) {
 	}else{
 		data.gold = Math.floor(Math.random() * 7000) + 2000
 	}
+	data.diamond = data.gold
 	data.isRobot = true
 	data.charm = 0
 	var refreshList = {}

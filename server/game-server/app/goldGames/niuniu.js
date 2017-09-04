@@ -6,13 +6,14 @@ var robotFactory = require("./robot/niuniuRobot.js")
 var MING_CARD_NUM = 4  //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(gameType,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
+  module.exports.createRoom = function(currencyType,gameType,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
     var gameOverCB = gemeOver
     var gameBeginCB = beginCB
     var room = {}
+    room.currencyType = currencyType
     room.roomId = roomId
     room.roomType = gameType
     room.gameMode = conf.MODE_GAME_NORMAL
@@ -27,14 +28,14 @@ var MING_CARD_NUM = 4  //明牌数量
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
-    switch(gameType){
-      case "goldNiuNiu-1":
+    switch(gameType.split("-")[1]){
+      case 1:
         room.rate = 10
       break
-      case "goldNiuNiu-2":
+      case 2:
         room.rate = 50
       break
-      case "goldNiuNiu-3":
+      case 3:
         room.rate = 100
       break
     }
@@ -171,7 +172,14 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].uid = uid
       player[chair].ip = info.ip
       player[chair].playerInfo = info
-      player[chair].score = parseInt(info.gold)
+      if(room.currencyType == "gold"){
+        player[chair].score = parseInt(info.gold)        
+      }else if(room.currencyType == "diamond"){
+        player[chair].score = parseInt(info.diamond)
+      }else{
+        cb(false)
+        return        
+      }
       player[chair].charm = info.charm
       player[chair].isRobot = false
       //玩家数量增加
@@ -852,7 +860,7 @@ var MING_CARD_NUM = 4  //明牌数量
             player[i].isShowCard = false
         }
         //金币场小结算
-        settlementCB(room.roomId,curScores,player,room.rate)
+        settlementCB(room.roomId,curScores,player,room.rate,room.currencyType)
         local.readyBegin()
       }
     }

@@ -7,12 +7,18 @@ var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
 var async = require("async")
 
 var ROOM_FACTORY = {
-	"goldMingpai-1" : goldMingpai,
-	"goldMingpai-2" : goldMingpai,
-	"goldMingpai-3" : goldMingpai,
-	"goldNiuNiu-1" : goldNiuNiu,
-	"goldNiuNiu-2" : goldNiuNiu,
-	"goldNiuNiu-3" : goldNiuNiu
+	"goldMingpai-1-gold" : goldMingpai,
+	"goldMingpai-2-gold" : goldMingpai,
+	"goldMingpai-3-gold" : goldMingpai,
+	"goldNiuNiu-1-gold" : goldNiuNiu,
+	"goldNiuNiu-2-gold" : goldNiuNiu,
+	"goldNiuNiu-3-gold" : goldNiuNiu,
+	"goldMingpai-1-diamond" : goldMingpai,
+	"goldMingpai-2-diamond" : goldMingpai,
+	"goldMingpai-3-diamond" : goldMingpai,
+	"goldNiuNiu-1-diamond" : goldNiuNiu,
+	"goldNiuNiu-2-diamond" : goldNiuNiu,
+	"goldNiuNiu-3-diamond" : goldNiuNiu	
 }
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -34,7 +40,9 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
+	var currencyType = params.gameType.split("-")[2]
+	console.log("currencyType : "+currencyType)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(currencyType,params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
     GameRemote.roomList[roomId].newRoom(uids,sids,infos,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
@@ -202,24 +210,27 @@ local.beginCB = function(roomId,player,rate) {
 
 
 //小结算回调
-local.settlementCB = function(roomId,curScores,player,rate) {
+local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	//TODO
 	//console.log("roomId : "+roomId)
 	//console.log(curScores)
 	//console.log(player)
 	//更改金币
+	if(currencyType !== "diamond"){
+		currencyType = "gold"
+	}
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
 			if(curScores){
 				if(player[index].isActive && !player[index].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,"gold",curScores[index],function(){})				
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],function(){})				
 				}
 			}
 		}
 	}
-	console.log(player)
+	//console.log(player)
 	//console.log("rate : "+rate)
-	//金币等于0退出游戏
+	//货币等于0退出游戏
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive){

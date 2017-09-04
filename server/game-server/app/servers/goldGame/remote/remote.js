@@ -16,30 +16,48 @@ module.exports = function(app) {
 };
 var local = {}
 var gameType = {
-	"goldMingpai-1" : true,
-	"goldMingpai-2" : true,
-	"goldMingpai-3" : true,
-	"goldNiuNiu-1" : true,
-	"goldNiuNiu-2" : true,
-	"goldNiuNiu-3" : true
+	"goldMingpai-1-gold" : true,
+	"goldMingpai-2-gold" : true,
+	"goldMingpai-3-gold" : true,
+	"goldNiuNiu-1-gold" : true,
+	"goldNiuNiu-2-gold" : true,
+	"goldNiuNiu-3-gold" : true,
+	"goldMingpai-1-diamond" : true,
+	"goldMingpai-2-diamond" : true,
+	"goldMingpai-3-diamond" : true,
+	"goldNiuNiu-1-diamond" : true,
+	"goldNiuNiu-2-diamond" : true,
+	"goldNiuNiu-3-diamond" : true
 }
 
 var minJoin = {
-	"goldMingpai-1" : 1000,
-	"goldMingpai-2" : 5000,
-	"goldMingpai-3" : 10000,
-	"goldNiuNiu-1" : 1000,
-	"goldNiuNiu-2" : 5000,
-	"goldNiuNiu-3" : 10000
+	"goldMingpai-1-gold" : 1000,
+	"goldMingpai-2-gold" : 5000,
+	"goldMingpai-3-gold" : 10000,
+	"goldNiuNiu-1-gold" : 1000,
+	"goldNiuNiu-2-gold" : 5000,
+	"goldNiuNiu-3-gold" : 10000,
+	"goldMingpai-1-diamond" : 1000,
+	"goldMingpai-2-diamond" : 5000,
+	"goldMingpai-3-diamond" : 10000,
+	"goldNiuNiu-1-diamond" : 1000,
+	"goldNiuNiu-2-diamond" : 5000,
+	"goldNiuNiu-3-diamond" : 10000
 }
 
 var maxJoin = {
-	"goldMingpai-1" : 10000,
-	"goldMingpai-2" : 50000,
-	"goldMingpai-3" : "infinite",
-	"goldNiuNiu-1" : 10000,
-	"goldNiuNiu-2" : 50000,
-	"goldNiuNiu-3" : "infinite"	
+	"goldMingpai-1-gold" : 10000,
+	"goldMingpai-2-gold" : 50000,
+	"goldMingpai-3-gold" : "infinite",
+	"goldNiuNiu-1-gold" : 10000,
+	"goldNiuNiu-2-gold" : 50000,
+	"goldNiuNiu-3-gold" : "infinite",
+	"goldMingpai-1-diamond" : 10000,
+	"goldMingpai-2-diamond" : 50000,
+	"goldMingpai-3-diamond" : "infinite",
+	"goldNiuNiu-1-diamond" : 10000,
+	"goldNiuNiu-2-diamond" : 50000,
+	"goldNiuNiu-3-diamond" : "infinite"	
 }
 
 
@@ -413,13 +431,27 @@ local.joinMatch = function(uid,sid,params,cb) {
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
-			//检测金币
-			if(data.gold < minJoin[type]){
-				cb(false,{"msg" : tips.NO_GOLD})
-				return
-			}
-			if(maxJoin[type] !== "infinite" && data.gold > maxJoin[type]){
-				cb(false,{"msg" : tips.MORE_GOLD})
+			//检测金币或钻石
+			if(type.split("-")[2] == "gold"){
+				if(data.gold < minJoin[type]){
+					cb(false,{"msg" : tips.NO_GOLD})
+					return
+				}
+				if(maxJoin[type] !== "infinite" && data.gold > maxJoin[type]){
+					cb(false,{"msg" : tips.MORE_GOLD})
+					return
+				}				
+			}else if(type.split("-")[2] == "diamond"){
+				if(data.diamond < minJoin[type]){
+					cb(false,{"msg" : tips.NO_DIAMOND})
+					return
+				}
+				if(maxJoin[type] !== "infinite" && data.diamond > maxJoin[type]){
+					cb(false,{"msg" : tips.MORE_DIAMOND})
+					return
+				}					
+			}else{
+				cb(false)
 				return
 			}
 			GameRemote.matchList[type].push(uid)
