@@ -30,8 +30,8 @@ var MING_CARD_NUM = 4               //明牌数量
     var banker = -1                      //庄家椅子号
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
-    room.GAME_PLAYER = 6                 //游戏人数
-    GAME_PLAYER = 6
+    room.GAME_PLAYER = 9                 //游戏人数
+    GAME_PLAYER = room.GAME_PLAYER
     var curPlayer = -1                   //当前操作玩家
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
