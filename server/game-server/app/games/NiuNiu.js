@@ -44,6 +44,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   room.agencyId = 0                    //代开房玩家ID
   room.beginTime = (new Date()).valueOf()
   room.MatchStream = {}
+  basicType = 0
   //房间初始化
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
@@ -69,7 +70,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   
   var betAmount = 0
   //下注上限
-  var maxBet = 0
+  var betType = {
+    "0" : {"1" : true,"2" : true,"3" : true,"4" : true,"5" : true},
+    "1" : {"1" : true,"5" : true,"10" : true,"20" : true}
+  }
   //斗公牛模式积分池
   var bonusPool = 40
   var robState,betList
@@ -103,9 +107,13 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
+    if(!param.basicType || typeof(param.basicType) !== "number" || !betType[param.basicType]){
+          param.basicType = 0
+    }    
     if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
     }
+    basicType = param.basicType
     frame.start(param.isWait)    
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
@@ -128,14 +136,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
     room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
-    //设置下注上限
-    maxBet = 20
-    // if(room.gameMode == MODE_GAME_BULL){
-    //   room.bankerMode = MODE_BANKER_NONE
-    //   banker = roomHost
-    //   maxBet = 10
-    // }
-    //console.log("room maxGameNumber : "+room.maxGameNumber)
     if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
       room.bankerMode = MODE_BANKER_NONE
     }
@@ -253,7 +253,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       roomType : room.roomType,
       bankerTime : bankerTime,
       betList : betList,
-      bonusPool : bonusPool
+      bonusPool : bonusPool,
+      basicType : basicType
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -303,7 +304,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           TID_SETTLEMENT : conf.TID_SETTLEMENT,
           roomType : room.roomType,
           bankerTime : bankerTime,
-          bonusPool : bonusPool
+          bonusPool : bonusPool,
+          basicType : basicType
         },
         betList : betList,
         state : gameState,
@@ -532,7 +534,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     }else{
       //其他模式
       if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet){
+        && param.bet > 0 && betList[chair] == 0 && betType[basicType][param.bet]){
         betList[chair] += param.bet
         betAmount += param.bet
         local.betMessege(chair,param.bet)     
@@ -1251,8 +1253,6 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     //下注信息
     betList = new Array(GAME_PLAYER)
     betAmount = 0
-    //下注上限
-    maxBet = 0
     //斗公牛模式积分池
     bonusPool = room.playerCount * 8
     //玩家属性
