@@ -107,8 +107,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cb(false)
       return
     } 
-    if(!param.basicType || typeof(param.basicType) !== "number" || !betType[param.basicType]){
-          param.basicType = 0
+    if(typeof(param.basicType) !== "number" || !betType[param.basicType]){
+          param.basicType = 1
     }    
     if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
