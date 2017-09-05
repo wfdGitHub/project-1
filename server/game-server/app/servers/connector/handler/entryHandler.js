@@ -195,7 +195,7 @@ handler.visitorEnter = function(msg, session, next) {
         if(notify.data.loginRecord.recordDate !== dateString){
           self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
             notify.data.loginRecord = loginRecord
-            console.log(notify.data.loginRecord)
+            //console.log(notify.data.loginRecord)
             self.channelService.pushMessageByUids('onMessage', notify, [{
               uid: playerId,
               sid: self.app.get('serverId')

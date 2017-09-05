@@ -71,7 +71,45 @@ handler.dayLotte = function(msg,session,next) {
 		next(null,{flag : false})
 	}
 }
+//分享领取奖励
+handler.shareAward = function(msg,session,next) {
+	var self = this
+	var uid = session.get("uid")
+	if(!!uid){
+	  	self.app.rpc.db.remote.getPlayerObject(session,uid,"refreshList",function(data) {
+		  	//console.log(data)
+	  		var myDate = new Date()
+	  		var month = myDate.getMonth()
+	  		var date = myDate.getDate()
+	  		if(month < 10){
+	  			month = "0"+month
+	  		}
+	  		if(date < 10){
+	  			date = "0"+date
+	  		}
+	  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	  		//console.log(dateString)
+	  		//隔日更新refreshList
+	  		if(data.shareTime < dateString){
+	  			data.shareCount = 0
+	  			data.shareTime = dateString
+	  		}
+	  		if(data.shareCount >= 1){
+	  			next(null,{flag : false})
+	  			return
+	  		}
+	  		//领取奖品
+	  		data.shareCount++
+	  		self.app.rpc.db.remote.setPlayerObject(session,uid,"refreshList",data,function() {})
+			self.app.rpc.db.remote.setValue(session,uid,"gold",2000,function(){
+				next(null,{flag : true,award : "gold",value : 2000})
+			})
+	  	})
+	}else{
+		next(null,{flag : false})
+	}
 
+}
 //领取低保
 handler.bankruptGold = function(msg,session,next) {
 	var self = this

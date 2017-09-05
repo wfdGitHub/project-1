@@ -96,6 +96,8 @@ local.changeRanklist = function(players) {
 				data.nickname = players[i].nickname
 				data.head = players[i].head
 				data.gold = players[i].gold
+				data.charm = players[i].charm
+				data.dayCharm = players[i].refreshList.charmValue
 				if(goldAllRanklist.length > 0){
 					for(var index = goldAllRanklist.length - 1; index >= 0;index--){
 						if(goldAllRanklist[index].gold > players[i].gold){
@@ -140,6 +142,8 @@ local.changeRanklist = function(players) {
 				data.nickname = players[i].nickname
 				data.head = players[i].head
 				data.gold = players[i].refreshList.dayGoldValue
+				data.charm = players[i].charm
+				data.dayCharm = players[i].refreshList.charmValue				
 				if(goldDayRanklist.length > 0){
 					for(var index = goldDayRanklist.length - 1; index >= 0;index--){
 						if(goldDayRanklist[index].gold > players[i].refreshList.dayGoldValue){

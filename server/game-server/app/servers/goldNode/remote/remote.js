@@ -4,6 +4,7 @@ var giveCfg = require("../../../conf/give.js")
 var goldMingpai = require("../../../goldGames/goldMingpai.js")
 var goldNiuNiu = require("../../../goldGames/niuniu.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
+var lottoConf = require("../../../conf/lotto.js")
 var async = require("async")
 
 var ROOM_FACTORY = {
@@ -124,6 +125,9 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 		//console.log(params)
 			local.give(uid,params.targetChair,roomId,params.giveId,cb)
 		return
+		case "lotto":
+			local.lotto(uid,roomId,cb)
+		return
 		default :
 			if(GameRemote.roomList[roomId].handle[code]){
 				GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
@@ -131,6 +135,43 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 				cb(false)
 			}
 		return
+	}
+}
+//抽奖
+local.lotto = function(uid,roomId,cb) {
+	var room = GameRemote.roomList[roomId]
+	var chair = room.chairMap[uid]
+	var player = room.getPlayer()
+	if(chair === undefined){
+		cb(false)
+		return
+	}
+	if(player[chair].gameCount >= 5){
+		player[chair].gameCount = 0
+  		//领取奖品
+  		var weight = 0
+  		for(var i = 0; i < lottoConf.length; i++){
+  			weight += lottoConf[i].weight
+  		}
+  		// console.log("weight : "+weight)
+  		var rand = Math.floor(Math.random() * weight)
+  		var curWeight = 0
+  		for(var i = 0; i < lottoConf.length; i++){
+  			curWeight += lottoConf[i].weight
+  			if(rand < curWeight){
+  				//领取奖励
+  				if(lottoConf[i].type){
+  					GameRemote.app.rpc.db.remote.setValue(null,uid,lottoConf[i].type,lottoConf[i].value,function(){})
+  					if(room.currencyType == lottoConf[i].type){
+  						player[chair].score += lottoConf[i].value
+  					}
+  				}
+  				cb({flag : true,"data" : lottoConf[i],"index" : i})
+  				return
+  			}
+  		}
+	}else{
+		cb(false)
 	}
 }
 //赠送道具

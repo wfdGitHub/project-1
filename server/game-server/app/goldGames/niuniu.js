@@ -16,7 +16,6 @@ var MING_CARD_NUM = 4  //明牌数量
     room.currencyType = currencyType
     room.roomId = roomId
     room.roomType = gameType
-    room.gameMode = conf.MODE_GAME_NORMAL
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}                     //玩家操作
@@ -215,6 +214,7 @@ var MING_CARD_NUM = 4  //明牌数量
           if(player[i].isActive){
             if(player[i].isOnline){
               player[i].isReady = true
+              player[i].gameCount++
             }else{
               quitRoomFun(player[i].uid,room.roomId)
             }
@@ -403,7 +403,10 @@ var MING_CARD_NUM = 4  //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            //player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]      
+            if(result[i].type > 10){
+              player[i].gameCount += 5
+            }      
           }
       }
       // console.log(result)
@@ -943,6 +946,7 @@ var MING_CARD_NUM = 4  //明牌数量
       player[chair].ip  = undefined           //玩家ip地址
       player[chair].isRobot = undefined       //是否为机器人        
       player[chair].cardsList = {}            //手牌记录
+      player[chair].gameCount = 0             //游戏次数
   }
     //玩家离线
     room.leave = function(uid) {

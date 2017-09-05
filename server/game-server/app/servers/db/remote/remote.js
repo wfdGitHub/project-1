@@ -45,6 +45,8 @@ var createAccount = function(result,cb) {
 		refreshList.dayGoldValue = 0
 		refreshList.charmTime = 0 					//今日魅力值
 		refreshList.charmValue = 0
+		refreshList.shareTime = 0 					//分享领取奖励
+		refreshList.shareCount = 0 					
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
 		//连续登陆记录
   		var myDate = new Date()

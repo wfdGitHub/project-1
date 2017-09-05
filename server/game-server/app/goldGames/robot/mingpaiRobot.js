@@ -144,7 +144,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	}
 	local.delaySend = function(uid,cmd,param,time,cb) {
 		var newtime = Math.random() * time + 2000
-		console.log("newTime : "+newtime)
+		//console.log("newTime : "+newtime)
 		robot.timer = setTimeout(function() {
 			local.send(uid,cmd,param,cb)
 		},newtime)
