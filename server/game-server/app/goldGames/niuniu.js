@@ -27,7 +27,7 @@ var MING_CARD_NUM = 4  //明牌数量
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
-    switch(gameType.split("-")[1]){
+    switch(parseInt(gameType.split("-")[1])){
       case 1:
         room.rate = 10
       break

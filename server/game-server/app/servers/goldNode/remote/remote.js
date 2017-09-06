@@ -246,8 +246,13 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
-				player[index].score -= rate * 50
-				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,rate * 50,function(){})				
+				player[index].score -= rate
+				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,rate,function(){})
+				var notify = {
+					"cmd" : "beginConsume",
+					"rate" : rate
+				}
+				GameRemote.roomList[roomId].sendAll(notify)
 			}
 		}
 	}
