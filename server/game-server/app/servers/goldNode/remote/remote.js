@@ -166,6 +166,14 @@ local.lotto = function(uid,roomId,cb) {
   						player[chair].score += lottoConf[i].value
   					}
   				}
+  				var notify = {
+  					"cmd" : "lottoAward",
+  					"type" : lottoConf[i].type,
+  					"value" : lottoConf[i].value,
+  					"chair" : chair,
+  					"score" : player[chair].score
+  				}
+  				room.sendAll(notify)
   				cb({flag : true,"data" : lottoConf[i],"index" : i})
   				return
   			}

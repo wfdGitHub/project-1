@@ -21,7 +21,7 @@ var DBRemote = function(app) {
 var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
 		var uid = playerId
-		DBRemote.dbService.setPlayer(uid,"diamond",10)
+		DBRemote.dbService.setPlayer(uid,"diamond",1000)
 		DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
 		DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
 		DBRemote.dbService.setPlayer(uid,"uid",uid)

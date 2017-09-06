@@ -22,9 +22,9 @@ conf.COMB_TYPE_MICRO =    14          // 五小   x8
 
 
 conf.GAME_PLAYER = 2                 //游戏人数
-conf.TID_ROB_TIME = 5000            //抢庄时间
-conf.TID_BETTING = 10000              //下注时间
-conf.TID_SETTLEMENT = 10000           //结算时间
+conf.TID_ROB_TIME = 5000             //抢庄时间
+conf.TID_BETTING = 13000             //下注时间
+conf.TID_SETTLEMENT = 10000          //结算时间
 
 conf.TID_ZHAJINNIU = 80000			 //诈金牛模式玩家操作时间
 conf.TID_ZHAJINNIU_SETTLEMENT = 3000 //炸金牛结算时间
