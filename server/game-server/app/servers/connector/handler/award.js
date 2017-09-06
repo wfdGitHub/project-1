@@ -1,6 +1,7 @@
 var async = require('async')
 var lottoConf = require("../../../conf/lotto.js")
 var giftBagConf = require("../../../conf/giftBag.js")
+var giveCfg = require("../../../conf/give.js")
 var goldConf = require("../../../conf/goldConf.js")
 
 module.exports = function(app) {
@@ -245,4 +246,111 @@ handler.buyGold = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}		
+}
+
+//游戏外赠送道具
+handler.give = function(msg,session,next) {
+	var uid = session.get("uid")
+	var giveId = msg.giveId
+	var targetUid = msg.targetUid
+	var self = this
+	if(!giveCfg[giveId] || !targetUid){
+		next(null,{flag : false})
+		return
+	}
+	if(!!uid){
+		async.waterfall([
+			function(cb) {
+				//查询目标玩家是否存在
+				self.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+					if(data){
+						cb()
+					}else{
+						next(null,{flag : false})
+						return			
+					}
+				})				
+			},
+			function(cb) {
+				//查询赠送者钻石
+				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+					//console.log("diamond ： "+data)
+					var needDiamond = giveCfg[giveId].needDiamond
+					if(data && data >= needDiamond){
+						cb()
+					}else{
+						next(null,{"flag" : false})
+						return
+					}
+				})
+			},
+			function(cb) {
+				//扣除赠送者钻石
+				self.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
+					//增加目标金币及魅力值
+					cb()
+				})
+			},
+			function() {
+				//赠送成功
+				var gold = giveCfg[giveId].gold
+				var charm = giveCfg[giveId].charm
+				self.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
+					self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+				})
+				//通知被赠送玩家
+				var notify = {
+					"cmd" : "beGive",
+					"source" : uid,
+					"gold" : gold,
+					"charm" : charm,
+					"giveId" : giveId,
+				}
+				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function() {})
+				next(null,{"flag" : true})
+			}
+
+		],
+	    function(err,result) {
+	      next(null,{"flag" : false,code : -200})
+	      return
+	    }		
+		)
+
+	//扣除赠送者钻石
+	self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+		//console.log("diamond ： "+data)
+		var needDiamond = giveCfg[giveId].needDiamond
+		if(data && data >= needDiamond){
+			self.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
+				//增加目标金币及魅力值
+				var gold = giveCfg[giveId].gold
+				var charm = giveCfg[giveId].charm
+				if(!player[targetChair].isRobot){
+					self.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
+						self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+					})
+				}
+				player[targetChair].score += gold
+				player[targetChair].charm += charm
+				//今日魅力值更新
+				player[targetChair].playerInfo.refreshList.charmValue += charm
+				var notify = {
+					"cmd" : "give",
+					"chair" : chair,
+					"targetChair" : targetChair,
+					"giveId" : giveId,
+					"gold" : gold,
+				}
+				room.sendAll(notify)
+			})
+			cb(true)
+		}else{
+			cb(false)
+		}
+	})
+	}else{
+		next(null,{flag : false})
+	}
+
 }
