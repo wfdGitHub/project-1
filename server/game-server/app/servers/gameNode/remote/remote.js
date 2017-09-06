@@ -56,6 +56,11 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
+			for(var index in params){
+				if(params.hasOwnProperty(index)){
+					info += index + " : "+params[index]+"  ,  "
+				}
+			}
 			openRoomLogger.info(info)
 			GameRemote.userMap[uid] = roomId
 			//房间计时器
