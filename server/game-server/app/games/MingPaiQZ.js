@@ -36,7 +36,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
     var result = {}                      //牌型
-    var basicType = 0                    //房间底分类型
+    var basic = 0                        //房间底分
     var actionFlag = true                //行动标志
     var lastScore = {}                   //上一局输赢
     var allowAllin = true                //是否允许推注
@@ -122,28 +122,32 @@ var MING_CARD_NUM = 4               //明牌数量
         log("newRoom error   param.consumeMode : "+param.consumeMode)
         cb(false)
         return
-      } 
+      }
       if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
         (param.bankerMode != 1 && param.bankerMode != 5)){
         log("newRoom error   param.bankerMode : "+param.bankerMode)
         cb(false)
         return
-      }  
+      }
       if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
-      }    
-      if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
-        log("newRoom error   param.cardMode : "+param.cardMode)
+      }
+      if(!param.basic || typeof(param.basic) !== "number" || !betType[param.basic]){
+        log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return
-      } 
-      if(!param.basicType || typeof(param.basicType) !== "number" || !betType[param.basicType]){
-        log("newRoom error   param.basicType : "+param.basicType)
+      }
+      //选择6人或9人
+      if(!param.playerCount || typeof(param.playerCount) !== "number" || (param.playerCount !== 6 && param.playerCount !== 9)){
+        log("newRoom error   param.playerCount : "+param.playerCount)
         cb(false)
         return        
       }
+      GAME_PLAYER = param.playerCount
+      room.GAME_PLAYER = GAME_PLAYER
+      //离线等待
       if(typeof(param.isWait) !== "boolean"){
           param.isWait = true
       }
@@ -155,10 +159,14 @@ var MING_CARD_NUM = 4               //明牌数量
       if(param.halfwayEnter === false){
         room.halfwayEnter = false
       }
+      //选择规则：可选牛牛：4倍，牛九2倍，牛八2倍或牛牛：4倍，牛九3倍，牛八2倍，牛七2倍
+      
+      //特殊牌型选择：五花牛5倍，炸弹牛6倍，五小牛8倍
+      
       //房间初始化
       local.init()
-      basicType = param.basicType
-      room.basic = basicType
+      basic = param.basic
+      room.basic = basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
@@ -170,7 +178,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
-      room.cardMode = param.cardMode                     //明牌模式
+      room.cardMode = conf.MODE_CARD_SHOW                //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
       cb(true)
     }
@@ -247,7 +255,6 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       local.sendAll(notify)
 
-
       if(!room.channel.getMember(uid)){
         room.channel.add(uid,sid)
       }
@@ -265,7 +272,6 @@ var MING_CARD_NUM = 4               //明牌数量
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
         tmpBanker = banker
       }
-
       frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
     }
     //游戏开始
@@ -483,18 +489,12 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //下注阶段
     local.betting = function() {
-      log("betting")
-      //状态改变
-      gameState = conf.GS_BETTING
-      //通知客户端
-      var notify = {
-        cmd : "beginBetting",
-        banker : banker,
-        lastScore : lastScore
+      for(var i = 0; i < GAME_PLAYER;i++){
+        if(player[i].isReady && i != banker){
+          betList[i] = basic
+        }
       }
-      local.sendAll(notify)
-      //定时器启动下一阶段
-      timer = setTimeout(local.deal,conf.TID_BETTING)      
+      local.deal()
     }
     //发送聊天
     room.handle.say = function(uid,sid,param,cb) {
@@ -578,7 +578,7 @@ var MING_CARD_NUM = 4               //明牌数量
             }
             //记录抢庄
             robState[chair] = param.num
-           
+            
             var notify = {
               "cmd" : "robBanker",
               "chair" : chair,
@@ -604,71 +604,71 @@ var MING_CARD_NUM = 4               //明牌数量
             return
           case "bet" : 
             //游戏状态为BETTING
-            if(gameState !== conf.GS_BETTING){
-              cb(false)
-              return
-            }
-            //不在游戏中不能下注
-            if(!player[chair].isReady){
-              cb(false)
-              return
-            }  
-            //庄家不能下注
-            if(chair == banker){
-              cb(false)
-              return
-            }
-            //已下注不能下注
-            if(betList[chair] !== 0){
-              cb(false)
-              return
-            }
-            //下注只能按预设的分下
-            if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
-              cb(false)
-              return
-            }
-            betList[chair] += param.bet
-            betAmount += param.bet
-            local.betMessege(chair,param.bet)
-            local.isAllBet()
-            cb(true)
+            // if(gameState !== conf.GS_BETTING){
+            //   cb(false)
+            //   return
+            // }
+            // //不在游戏中不能下注
+            // if(!player[chair].isReady){
+            //   cb(false)
+            //   return
+            // }  
+            // //庄家不能下注
+            // if(chair == banker){
+            //   cb(false)
+            //   return
+            // }
+            // //已下注不能下注
+            // if(betList[chair] !== 0){
+            //   cb(false)
+            //   return
+            // }
+            // //下注只能按预设的分下
+            // if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
+            //   cb(false)
+            //   return
+            // }
+            // betList[chair] += param.bet
+            // betAmount += param.bet
+            // local.betMessege(chair,param.bet)
+            // local.isAllBet()
+            cb(false)
             return
         case "allIn" :
             //推注
-            if(gameState !== conf.GS_BETTING){
-              cb(false)
-              return
-            }
-            //本局游戏不允许推注不能推注
-            if(!allowAllin){
-              cb(false)
-              return
-            }
-            //庄家不能下注
-            if(chair == banker){
-              cb(false)
-              return
-            }
-            //已下注不能下注
-            if(betList[chair] !== 0){
-              cb(false)
-              return
-            }
-            //上一局赢了才能推注              
-            if(lastScore[chair] <= 0){
-              cb(false)
-              return
-            }
-            var tmpBet = betType[basicType]["default"] + lastScore[chair]
-            var maxBet = betType[basicType]["max"]
-            if(tmpBet > maxBet){
-              tmpBet = maxBet
-            }
-            betList[chair] += tmpBet
-            local.betMessege(chair,tmpBet)
-            local.isAllBet()
-            cb(true)
+            // if(gameState !== conf.GS_BETTING){
+            //   cb(false)
+            //   return
+            // }
+            // //本局游戏不允许推注不能推注
+            // if(!allowAllin){
+            //   cb(false)
+            //   return
+            // }
+            // //庄家不能下注
+            // if(chair == banker){
+            //   cb(false)
+            //   return
+            // }
+            // //已下注不能下注
+            // if(betList[chair] !== 0){
+            //   cb(false)
+            //   return
+            // }
+            // //上一局赢了才能推注              
+            // if(lastScore[chair] <= 0){
+            //   cb(false)
+            //   return
+            // }
+            // var tmpBet = betType[basicType]["default"] + lastScore[chair]
+            // var maxBet = betType[basicType]["max"]
+            // if(tmpBet > maxBet){
+            //   tmpBet = maxBet
+            // }
+            // betList[chair] += tmpBet
+            // local.betMessege(chair,tmpBet)
+            // local.isAllBet()
+            cb(false)
             return
       }
       cb(false)
@@ -701,7 +701,7 @@ var MING_CARD_NUM = 4               //明牌数量
             betList[i] = betType[basicType]["default"]
             local.betMessege(i,betList[i])
           }
-      }  
+      }
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){

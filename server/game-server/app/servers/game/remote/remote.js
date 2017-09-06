@@ -116,95 +116,97 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			return
 		}
 	}else if(code == "newRoom"){
-		//无效数据判断
-		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
-	      console.log("agency error   param.gameNumber : "+params.gameNumber)
-	      cb(false)
-	      return
-	    }  
-	  async.waterfall([
-			function(next) {
-				//获取玩家钻石
-				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
-					next(null,data)
-				})
-			}, 
-			function(data,next) {
-				//console.log("a111111 : "+GameRemote.GameService.userMap[uid])
-				//判断是否满足准入数额
-				var diamond = data
-				var needMond = Math.ceil(params.gameNumber / 10)
-				switch(params.consumeMode){
-					case conf.MODE_DIAMOND_HOST : 
-						needMond = needMond * 3
-					break;
-					case conf.MODE_DIAMOND_EVERY :
-						needMond = needMond
-					break;
-					case conf.MODE_DIAMOND_WIN : 
-						needMond = needMond * 3
-					break;
-				}
-				if(diamond >= needMond && GameRemote.GameService.userMap[uid] === undefined){
-					next(null)
-				}else{
-					cb(false,{"code" :tips.NO_DIAMOND})
-				}
-				return
-			},
-			function(next) {
-				//console.log("a222222")
-				//获取玩家信息
-				//console.log(GameRemote.dbService)
-				self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
-					next(null,data)
-				})
-			},
-			function(playerInfo) {
-				//console.log("a3333")
-				//找到空闲房间ID
-				delete playerInfo["history"]
-				params.playerInfo = playerInfo
-				var roomId = GameRemote.GameService.getUnusedRoom(params.gameType)
-				if(roomId !== false){		
-					//分配游戏服务器
-					GameRemote.NodeNumber++
-					var nodeLength = GameRemote.app.getServersByType('gameNode').length
-					if(GameRemote.NodeNumber >= nodeLength){
-						GameRemote.NodeNumber = 0
-					}
-					//记录房间对应游戏服务器
-					GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
-					params.gid = GameRemote.GameService.roomList[roomId]
-					//与游戏服务器连接
-					self.app.rpc.gameNode.remote.newRoom(null,params,uid,sid,roomId,function (flag) {
-						console.log("======== : "+flag)
-						if(flag === true){
-							GameRemote.GameService.userMap[uid] = roomId;
-							GameRemote.GameService.roomState[roomId] = false;
-							GameRemote.GameService.RoomMap[roomId] = []
-							var info = {
-								"uid" : playerInfo.uid,
-								"nickname" : playerInfo.playerInfo,
-								"head" : playerInfo.head
-							}
-							GameRemote.GameService.RoomMap[roomId].push(info)
-						}else{
-							GameRemote.GameService.roomState[roomId] = true
-							GameRemote.GameService.roomList[roomId] = false
-						}
-						cb(flag)
-					})
-				}else{
-					cb(false,{"code" :tips.FULL_ROOM})
-				}
-			}
-	  	], function (err, result) {
-			console.log(err)
-			console.log(result)
-			cb(false)
-			return
-	  });
+		cb(false)
+		return
+		// //无效数据判断
+		// if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
+	 //      console.log("agency error   param.gameNumber : "+params.gameNumber)
+	 //      cb(false)
+	 //      return
+	 //    }  
+	 //  async.waterfall([
+		// 	function(next) {
+		// 		//获取玩家钻石
+		// 		self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
+		// 			next(null,data)
+		// 		})
+		// 	}, 
+		// 	function(data,next) {
+		// 		//console.log("a111111 : "+GameRemote.GameService.userMap[uid])
+		// 		//判断是否满足准入数额
+		// 		var diamond = data
+		// 		var needMond = Math.ceil(params.gameNumber / 10)
+		// 		switch(params.consumeMode){
+		// 			case conf.MODE_DIAMOND_HOST : 
+		// 				needMond = needMond * 3
+		// 			break;
+		// 			case conf.MODE_DIAMOND_EVERY :
+		// 				needMond = needMond
+		// 			break;
+		// 			case conf.MODE_DIAMOND_WIN : 
+		// 				needMond = needMond * 3
+		// 			break;
+		// 		}
+		// 		if(diamond >= needMond && GameRemote.GameService.userMap[uid] === undefined){
+		// 			next(null)
+		// 		}else{
+		// 			cb(false,{"code" :tips.NO_DIAMOND})
+		// 		}
+		// 		return
+		// 	},
+		// 	function(next) {
+		// 		//console.log("a222222")
+		// 		//获取玩家信息
+		// 		//console.log(GameRemote.dbService)
+		// 		self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+		// 			next(null,data)
+		// 		})
+		// 	},
+		// 	function(playerInfo) {
+		// 		//console.log("a3333")
+		// 		//找到空闲房间ID
+		// 		delete playerInfo["history"]
+		// 		params.playerInfo = playerInfo
+		// 		var roomId = GameRemote.GameService.getUnusedRoom(params.gameType)
+		// 		if(roomId !== false){		
+		// 			//分配游戏服务器
+		// 			GameRemote.NodeNumber++
+		// 			var nodeLength = GameRemote.app.getServersByType('gameNode').length
+		// 			if(GameRemote.NodeNumber >= nodeLength){
+		// 				GameRemote.NodeNumber = 0
+		// 			}
+		// 			//记录房间对应游戏服务器
+		// 			GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
+		// 			params.gid = GameRemote.GameService.roomList[roomId]
+		// 			//与游戏服务器连接
+		// 			self.app.rpc.gameNode.remote.newRoom(null,params,uid,sid,roomId,function (flag) {
+		// 				console.log("======== : "+flag)
+		// 				if(flag === true){
+		// 					GameRemote.GameService.userMap[uid] = roomId;
+		// 					GameRemote.GameService.roomState[roomId] = false;
+		// 					GameRemote.GameService.RoomMap[roomId] = []
+		// 					var info = {
+		// 						"uid" : playerInfo.uid,
+		// 						"nickname" : playerInfo.playerInfo,
+		// 						"head" : playerInfo.head
+		// 					}
+		// 					GameRemote.GameService.RoomMap[roomId].push(info)
+		// 				}else{
+		// 					GameRemote.GameService.roomState[roomId] = true
+		// 					GameRemote.GameService.roomList[roomId] = false
+		// 				}
+		// 				cb(flag)
+		// 			})
+		// 		}else{
+		// 			cb(false,{"code" :tips.FULL_ROOM})
+		// 		}
+		// 	}
+	 //  	], function (err, result) {
+		// 	console.log(err)
+		// 	console.log(result)
+		// 	cb(false)
+		// 	return
+	 //  });
 	}else if(code == "agency"){
 		//代开房
 		//TODO  无效数据判断
@@ -238,7 +240,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function(data,next) {
 	    		//检查钻石是否足够
 				var diamond = data
-				needMond = Math.ceil(params.gameNumber / 10) * 3
+				needMond = Math.ceil(params.gameNumber / 10) * 1
 				if(diamond < needMond){
 					cb(false,{"code" : tips.NO_DIAMOND})
 					return

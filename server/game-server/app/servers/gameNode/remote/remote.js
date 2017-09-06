@@ -216,7 +216,6 @@ var gemeOver = function(roomId,players,flag,cb) {
 	var diamond = GameRemote.roomList[roomId].needDiamond
 	var GAME_PLAYER = roomPlayerCount
 	//console.log("diamond : "+diamond)
-	//console.log("GAME_PLAYER : "+GAME_PLAYER)
 	var agencyId = GameRemote.roomList[roomId].agencyId
 	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	if(diamond !== 0){
@@ -258,7 +257,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 	}else{
 		//代开房未开始则返回钻石
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
-			var tmpDiamond = Math.floor(maxGameNumber/10) * 3
+			var tmpDiamond = Math.floor(maxGameNumber/10) * 1
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
 			httpConf.coinChangeRecord(agencyId,6,tmpDiamond)

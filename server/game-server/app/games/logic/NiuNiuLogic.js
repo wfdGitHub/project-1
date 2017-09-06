@@ -18,7 +18,7 @@ var COMB_TYPE_MICRO =    14          // 五小  x8
 module.exports.getType = function(handCard) {
       //type 特殊类型  0:无;  1 : 牛牛; : 2 : 五花; 3 : 五小;4 : 炸弹;
       var result = {
-        "type" : 0,                       
+        "type" : 0,
         "card" : {},
         "award": 1,
         "Comb" : {}
