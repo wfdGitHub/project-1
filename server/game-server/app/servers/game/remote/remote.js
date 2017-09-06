@@ -106,7 +106,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							"nickname" : playerInfo.nickname,
 							"head" : playerInfo.head
 						}
-						GameRemote.GameService.RoomMap[roomId].push(info)						
+						GameRemote.GameService.RoomMap[roomId].push(info)
 					}
 				}
 				cb(flag,msg)

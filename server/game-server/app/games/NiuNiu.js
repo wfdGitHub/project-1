@@ -44,7 +44,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   room.agencyId = 0                    //代开房玩家ID
   room.beginTime = (new Date()).valueOf()
   room.MatchStream = {}
-  basicType = 0
+  room.basicType = 0
   //房间初始化
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
@@ -113,7 +113,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
     }
-    basicType = param.basicType
+    room.basicType = param.basicType
     frame.start(param.isWait)    
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
@@ -254,7 +254,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       bankerTime : bankerTime,
       betList : betList,
       bonusPool : bonusPool,
-      basicType : basicType
+      basicType : room.basicType
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -305,7 +305,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
           roomType : room.roomType,
           bankerTime : bankerTime,
           bonusPool : bonusPool,
-          basicType : basicType
+          basicType : room.basicType
         },
         betList : betList,
         state : gameState,
@@ -519,25 +519,25 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       if(tmpMinbet > 40){
         tmpMinbet = 40
       }
-      if(param.bet && typeof(param.bet) == "number" 
+      if(param.bet && typeof(param.bet) == "number"
         && (param.bet >= tmpMinbet) && param.bet > 0
-        && (param.bet + betList[chair]) <= 40 
-        && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1)) 
+        && (param.bet + betList[chair]) <= 40
+        && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1))
         && (param.bet + betAmount) <= bonusPool ){
         betList[chair] += param.bet
-        betAmount += param.bet 
-        local.betMessege(chair,param.bet)     
+        betAmount += param.bet
+        local.betMessege(chair,param.bet)
       }else{
         cb(false)
         return
       }
     }else{
       //其他模式
-      if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && betList[chair] == 0 && betType[basicType][param.bet]){
+      if(param.bet && typeof(param.bet) == "number"
+        && param.bet > 0 && betList[chair] == 0 && betType[room.basicType][param.bet]){
         betList[chair] += param.bet
         betAmount += param.bet
-        local.betMessege(chair,param.bet)     
+        local.betMessege(chair,param.bet)
       }else{
         cb(false)
         return
