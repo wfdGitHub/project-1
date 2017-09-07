@@ -7,8 +7,8 @@ module.exports = {
 }
 var access_token = ""
 var jsapi_ticket = ""
-var appid = "wxd72486a200bde1db"
-var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
+var appid = "wx949076bad1439cbd"
+var secret = "dc31862522335ce0c16c10045fdb5351"
 var timer = false
 var local = {}
 module.exports.H5GetData = function(code,count,cb) {
