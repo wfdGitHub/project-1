@@ -71,8 +71,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   var betAmount = 0
   //下注上限
   var betType = {
-    "0" : {"1" : true,"2" : true,"3" : true,"4" : true,"5" : true},
-    "1" : {"1" : true,"5" : true,"10" : true,"20" : true}
+    "0" : {"1" : 1,"2" : 2,"3" : 3,"4" : 5},
+    "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
   }
   //斗公牛模式积分池
   var bonusPool = 40
@@ -535,9 +535,10 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       //其他模式
       if(param.bet && typeof(param.bet) == "number"
         && param.bet > 0 && betList[chair] == 0 && betType[room.basicType][param.bet]){
-        betList[chair] += param.bet
-        betAmount += param.bet
-        local.betMessege(chair,param.bet)
+        var tmpbet = betType[room.basicType][param.bet]
+        betList[chair] += tmpbet
+        betAmount += tmpbet
+        local.betMessege(chair,tmpbet)
       }else{
         cb(false)
         return
