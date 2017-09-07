@@ -15,6 +15,8 @@ conf[18] = "金币不足"
 conf[19] = "金币超出此房间上限"
 conf[20] = "钻石不足"
 conf[21] = "钻石超出此房间上限"
+conf[22] = "请等待上局游戏结束"
+conf[23] = "已在匹配队列中"
 
 
 conf.NO_DIAMOND = 10
@@ -29,5 +31,7 @@ conf.NO_GOLD = 18
 conf.MORE_GOLD = 19
 conf.NO_DIAMOND = 20
 conf.MORE_DIAMOND = 21
+conf.WAIT_GAME_OVER = 22
+conf.IN_MATCHING = 23
 
 module.exports.tipsConf = conf

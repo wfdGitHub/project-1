@@ -418,13 +418,13 @@ local.joinMatch = function(uid,sid,params,cb) {
 		console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
 		console.log(GameRemote.matchList)
 		console.log(GameRemote.matchMap)
-		cb(false)
+		cb(false,{"msg" : tips.IN_MATCHING})
 		return
 	}
 	//在房间中不能申请
 	if(GameRemote.userMap[uid]){
 		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
-		cb(false)
+		cb(false,{"msg" : tips.WAIT_GAME_OVER})
 		return
 	}
 
