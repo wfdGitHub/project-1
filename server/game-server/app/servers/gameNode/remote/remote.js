@@ -85,7 +85,12 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
-			openRoomLogger.info(info)
+			for(var index in params){
+				if(params.hasOwnProperty(index)){
+					info += index + " : "+params[index]+"  ,  "
+				}
+			}	
+			openRoomLogger.info(info)		
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
 			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
