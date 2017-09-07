@@ -9,10 +9,10 @@ var COMB_TYPE_OX7   =    7           // 牛7
 var COMB_TYPE_OX8   =    8           // 牛8   x2
 var COMB_TYPE_OX9   =    9           // 牛9   x3
 var COMB_TYPE_OX10  =    10          // 牛牛  x4
-var COMB_TYPE_YIN_DELUX =    11      // 银花牛x5
-var COMB_TYPE_JIN_DELUX =    12      // 金花牛x6
-var COMB_TYPE_BOMB  =    13          // 炸弹  x7
-var COMB_TYPE_MICRO =    14          // 五小  x8
+// var COMB_TYPE_YIN_DELUX =    11      // 银花牛x5
+// var COMB_TYPE_JIN_DELUX =    12      // 金花牛x6
+// var COMB_TYPE_BOMB  =    13          // 炸弹  x7
+// var COMB_TYPE_MICRO =    14          // 五小  x8
 
 
 module.exports.getType = function(handCard) {
@@ -31,56 +31,56 @@ module.exports.getType = function(handCard) {
           }
       }
       //五小牛
-      if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
-          result.type = COMB_TYPE_MICRO
-          result.award = 8
-          return result
-      }
+      // if((handCard[0].num + handCard[1].num + handCard[2].num + handCard[3].num + handCard[4].num) <= 10){
+      //     result.type = COMB_TYPE_MICRO
+      //     result.award = 8
+      //     return result
+      // }
 
-      //炸弹
-      var count = 0
-      for(var i = 0;i < 5;i++){
-        count = 1
-        for(var j = 0;j < 5;j++){
-          if(i != j && handCard[i].num === handCard[j].num){
-              count++
-          }
-        }
-        if(count === 4){
-          result.type = COMB_TYPE_BOMB
-          result.card = handCard[i]
-          result.award = 7
-          return result
-        }
-      }
-      //银花牛
-      var flag = true
-      var yinniuCount = 0
-      for(var i = 0;i < 5;i++){
-        if(handCard[i].num < 10){
-          flag = false
-          break
-        }else if(handCard[i].num === 10){
-          yinniuCount++
-        }
-      }
-      if(flag === true && yinniuCount === 1){
-          result.type = COMB_TYPE_YIN_DELUX
-          result.award = 5
-          return result 
-      }
-      //五花牛
-      flag = true
-      for(var i = 0;i < 5;i++){
-        if(handCard[i].num < 11){
-          flag = false
-        }
-      }
-      if(flag === true){
-          result.type = COMB_TYPE_JIN_DELUX
-          result.award = 6
-          return result 
-      }
+      // //炸弹
+      // var count = 0
+      // for(var i = 0;i < 5;i++){
+      //   count = 1
+      //   for(var j = 0;j < 5;j++){
+      //     if(i != j && handCard[i].num === handCard[j].num){
+      //         count++
+      //     }
+      //   }
+      //   if(count === 4){
+      //     result.type = COMB_TYPE_BOMB
+      //     result.card = handCard[i]
+      //     result.award = 7
+      //     return result
+      //   }
+      // }
+      // //银花牛
+      // var flag = true
+      // var yinniuCount = 0
+      // for(var i = 0;i < 5;i++){
+      //   if(handCard[i].num < 10){
+      //     flag = false
+      //     break
+      //   }else if(handCard[i].num === 10){
+      //     yinniuCount++
+      //   }
+      // }
+      // if(flag === true && yinniuCount === 1){
+      //     result.type = COMB_TYPE_YIN_DELUX
+      //     result.award = 5
+      //     return result 
+      // }
+      // //五花牛
+      // flag = true
+      // for(var i = 0;i < 5;i++){
+      //   if(handCard[i].num < 11){
+      //     flag = false
+      //   }
+      // }
+      // if(flag === true){
+      //     result.type = COMB_TYPE_JIN_DELUX
+      //     result.award = 6
+      //     return result 
+      // }
       var __card_val = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10]
       var allComb = [
         [0,1,2,3,4],

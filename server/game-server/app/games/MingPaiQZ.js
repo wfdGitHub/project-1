@@ -56,6 +56,12 @@ var MING_CARD_NUM = 4               //明牌数量
       "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
       "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
     }
+    //奖励类型
+    var awardList = {
+      "0" : [1,1,1,1,1,1,1,1,2,2,4],
+      "1" : [1,1,1,1,1,1,1,2,2,3,4]
+    }
+    room.awardType = 0
     //下注上限
     var maxBet = 0
 
@@ -143,10 +149,17 @@ var MING_CARD_NUM = 4               //明牌数量
       if(!param.playerCount || typeof(param.playerCount) !== "number" || (param.playerCount !== 6 && param.playerCount !== 9)){
         log("newRoom error   param.playerCount : "+param.playerCount)
         cb(false)
-        return        
+        return
       }
       GAME_PLAYER = param.playerCount
-      room.GAME_PLAYER = GAME_PLAYER
+      room.GAME_PLAYER = GAME_PLAYER      
+      //选择倍率类型
+      if(!param.awardType || typeof(param.awardType) !== "number" || !awardList[param.awardType]){
+        log("newRoom error   param.awardType : "+param.awardType)
+        cb(false)
+        return
+      }
+      room.awardType = param.awardType
       //离线等待
       if(typeof(param.isWait) !== "boolean"){
           param.isWait = true
@@ -743,12 +756,14 @@ var MING_CARD_NUM = 4               //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  curScores[i] += betList[i] * result[i].award * room.maxRob
-                  curScores[banker] -= betList[i] * result[i].award * room.maxRob
+                  var tmpAward = awardList[room.awardType][result[i].type]
+                  curScores[i] += betList[i] * tmpAward * room.maxRob
+                  curScores[banker] -= betList[i] * tmpAward * room.maxRob
               }else{
                   //庄家赢
-                  curScores[i] -= betList[i] * result[banker].award * room.maxRob
-                  curScores[banker] += betList[i] * result[banker].award * room.maxRob
+                  var tmpAward = awardList[room.awardType][result[banker].type]
+                  curScores[i] -= betList[i] * tmpAward * room.maxRob
+                  curScores[banker] += betList[i] * tmpAward * room.maxRob
               }              
           }
         }

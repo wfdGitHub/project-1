@@ -257,11 +257,10 @@ var gemeOver = function(roomId,players,flag,cb) {
 	}else{
 		//代开房未开始则返回钻石
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
-			var tmpDiamond = Math.floor(maxGameNumber/10) * 1
+			var tmpDiamond = Math.ceil(GameRemote.roomList[roomId].GAME_PLAYER * maxGameNumber / 10) * 1
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
 			httpConf.coinChangeRecord(agencyId,6,tmpDiamond)
-
 		}
 	}
 	if(GameRemote.roomList[roomId].isRecord == true){

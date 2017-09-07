@@ -218,7 +218,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
-	    }   
+	    }
+		if(!params.playerCount || typeof(params.playerCount) !== "number" || (params.playerCount != 6 && params.playerCount != 9)){
+	      console.log("agency error   param.playerCount : "+params.playerCount)
+	      cb(false)
+	      return
+	    }
 	    var roomId = 0
 	    var needMond = 0
 	    async.waterfall([
@@ -235,12 +240,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				//获取玩家钻石
 				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
 					next(null,data)
-				})	    		
+				})
 	    	},
 	    	function(data,next) {
 	    		//检查钻石是否足够
 				var diamond = data
-				needMond = Math.ceil(params.gameNumber / 10) * 1
+				needMond = Math.ceil(params.gameNumber * params.playerCount / 10) * 1
 				if(diamond < needMond){
 					cb(false,{"code" : tips.NO_DIAMOND})
 					return
