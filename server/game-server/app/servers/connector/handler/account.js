@@ -1,0 +1,65 @@
+var async = require('async')
+
+module.exports = function(app) {
+  return new Handler(app)
+}
+
+var Handler = function(app) {
+  this.app = app
+  Handler.app = app
+  this.sessionService = this.app.get('sessionService')
+  this.channelService = this.app.get('channelService')
+}
+
+var handler = Handler.prototype
+
+handler.bindWeiXinUnionid = function(msg, session, next) {
+	//游客账号绑定微信
+	var self = this
+	var uid = session.get("uid")
+	var openId = msg.openId
+	var token = msg.token
+	var unionid = 0
+	if(!!uid){
+		async.waterfall([
+				function(cb){
+					//判断是否是游客
+					self.app.rpc.db.remote.getPlayerString(null,uid,"uidMap",function(data) {
+						if(data == uid){
+							//是游客
+							cb()
+						}else{
+							console.log("不是游客")
+							next(null,{"flag" : false})
+						}
+					})
+				},
+				function(cb) {
+					//获取微信unionid
+			        self.app.rpc.login.remote.checkUser(session, {"openId" : openId,"token" : token},function(result){
+			            if(result == false){
+			                next(null,{"flag" : false})
+			            }else{
+			            	console.log(result)
+			              	unionid = result.unionid
+			              	cb()
+			            }
+			        })					
+				},
+				function(cb) {
+					//绑定微信
+					self.app.rpc.login.remote.changeBindUidMap(session,uid,unionid,function(data) {
+						console.log(data)
+						next(null,{"flag" : true})
+					})
+				}
+			],
+		    function(err,result) {
+		      next(null,{"flag" : false})
+		      return
+		    }
+		)		
+	}else{
+		next(null,{"flag" : false})
+	}
+}

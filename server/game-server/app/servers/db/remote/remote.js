@@ -157,6 +157,12 @@ DBRemote.prototype.loginCB = function(uid,cb) {
   })
 }
 
+DBRemote.prototype.getPlayerString = function(uid,name,cb) {
+	DBRemote.dbService.getPlayerString(uid,name,function(data){
+		cb(data)
+	})
+}
+
 DBRemote.prototype.getPlayerNickName = function(uid,cb) {
 	DBRemote.dbService.getPlayerString(uid,"nickname",function(data){
 		cb(data)
@@ -320,4 +326,11 @@ DBRemote.prototype.getPlayerObject = function(uid,name,cb) {
 
 DBRemote.prototype.setPlayerObject = function(uid,name,value,cb) {
 	DBRemote.dbService.setPlayerObject(uid,name,value,cb)
+}
+
+//改绑UIDMAP
+DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
+    BRemote.dbService.setPlayer(uid,"uidMap",unionid)
+    BRemote.dbService.setPlayer(unionid,"uidMap",uid)
+    cb(true)
 }
