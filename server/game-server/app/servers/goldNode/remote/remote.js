@@ -255,7 +255,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
 				player[index].score -= rate
-				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,rate,function(){})
+				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
 				var notify = {
 					"cmd" : "beginConsume",
 					"rate" : rate
