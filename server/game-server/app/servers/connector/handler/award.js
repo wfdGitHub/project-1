@@ -254,6 +254,7 @@ handler.give = function(msg,session,next) {
 	var giveId = msg.giveId
 	var targetUid = msg.targetUid
 	var self = this
+	var needDiamond = 0
 	if(!giveCfg[giveId] || !targetUid){
 		next(null,{flag : false})
 		return
@@ -275,7 +276,7 @@ handler.give = function(msg,session,next) {
 				//查询赠送者钻石
 				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
 					//console.log("diamond ： "+data)
-					var needDiamond = giveCfg[giveId].needDiamond
+					needDiamond = giveCfg[giveId].needDiamond
 					if(data && data >= needDiamond){
 						cb()
 					}else{
@@ -312,43 +313,10 @@ handler.give = function(msg,session,next) {
 
 		],
 	    function(err,result) {
-	      next(null,{"flag" : false,code : -200})
+	      next(null,{"flag" : false,code : 1})
 	      return
-	    }		
+	    }	
 		)
-
-	//扣除赠送者钻石
-	self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
-		//console.log("diamond ： "+data)
-		var needDiamond = giveCfg[giveId].needDiamond
-		if(data && data >= needDiamond){
-			self.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
-				//增加目标金币及魅力值
-				var gold = giveCfg[giveId].gold
-				var charm = giveCfg[giveId].charm
-				if(!player[targetChair].isRobot){
-					self.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
-						self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
-					})
-				}
-				player[targetChair].score += gold
-				player[targetChair].charm += charm
-				//今日魅力值更新
-				player[targetChair].playerInfo.refreshList.charmValue += charm
-				var notify = {
-					"cmd" : "give",
-					"chair" : chair,
-					"targetChair" : targetChair,
-					"giveId" : giveId,
-					"gold" : gold,
-				}
-				room.sendAll(notify)
-			})
-			cb(true)
-		}else{
-			cb(false)
-		}
-	})
 	}else{
 		next(null,{flag : false})
 	}

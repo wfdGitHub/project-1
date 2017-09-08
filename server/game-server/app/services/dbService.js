@@ -171,7 +171,7 @@ local.changeRanklist = function(players) {
 
 	// console.log(goldDayRanklist)
 	// console.log(goldAllRanklist)
-	refreshTime = setTimeout(local.refreshRanklist,60 * 60 * 1000)
+	refreshTime = setTimeout(local.refreshRanklist,5000)
 }
 
 dbService.updateDiamond = function(value) {

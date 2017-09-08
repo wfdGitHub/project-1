@@ -216,6 +216,8 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     local.readyBegin = function() {
       console.log("readyBegin")
+      gameState = conf.GS_FREE
+      room.initialTime = (new Date()).valueOf()
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       timer = setTimeout(function() {
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -265,13 +267,12 @@ var MING_CARD_NUM = 4  //明牌数量
         }
         local.sendAll(notify)
         local.gameBegin()
-      },8000)
+      },conf.TID_WAITING_TIME)
     }
     //游戏开始
     local.gameBegin = function() {
       log("gameBegin")
       gameBeginCB(room.roomId,player,room.rate,room.currencyType)
-      room.initialTime = (new Date()).valueOf()
       gameState = conf.GS_GAMEING     
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
         if(banker !== -1){
@@ -737,14 +738,13 @@ var MING_CARD_NUM = 4  //明牌数量
       }
       
       timer = setTimeout(function(){
-        gameState = conf.GS_FREE
         local.settlement()
       },conf.TID_SETTLEMENT)
   }    
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
-        gameState = conf.GS_FREE
+        gameState = conf.GS_SETTLEMENT
         room.runCount++
         readyCount = 0
         clearTimeout(timer)
@@ -971,21 +971,18 @@ var MING_CARD_NUM = 4  //明牌数量
     //玩家离线
     room.leave = function(uid) {
       //判断是否在椅子上
-      // console.log("leave11111 : "+room.chairMap[uid])
       var chair = room.chairMap[uid]
       if(chair === undefined){
         return
       }
-      // console.log(room.channel)
-      // console.log("leave222222")
       if(player[chair].isOnline == true){
         player[chair].isOnline = false
-        //playerCount--
-        var tsid =  room.channel.getMember(uid)['sid']
-        if(tsid){
-          room.channel.leave(uid,tsid)
+        if(!player[chair].isRobot && room.channel.getMember(uid)){
+          var tsid =  room.channel.getMember(uid)['sid']
+          if(tsid){
+            room.channel.leave(uid,tsid)
+          }          
         }
-        console.log(room.channel)
         var notify = {
           cmd: "userDisconne",
           uid: uid,
@@ -995,7 +992,6 @@ var MING_CARD_NUM = 4  //明牌数量
         if(room.bankerMode == conf.MODE_BANKER_NIUNIU && banker == chair){
           return
         }
-        //frame.disconnect(chair,player,gameState,local,local.gameBegin)
       }
     }
     //积分改变
@@ -1066,6 +1062,7 @@ var MING_CARD_NUM = 4  //明牌数量
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
+        TID_WAITING_TIME : conf.TID_WAITING_TIME,
         robState : robState,
         allowAllin : allowAllin,
         rate : room.rate,
