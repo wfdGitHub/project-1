@@ -241,16 +241,13 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					//每日金币输赢更新
 					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
 						//console.log(data)
-				  		var myDate = new Date()
-				  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+				  		var dateString = local.getDateString()
 				  		//隔日更新refreshList
 				  		if(data.dayGoldTime !== dateString){
 				  			data.dayGoldValue = 0
 				  			data.dayGoldTime = dateString
 				  		}
 				  		data.dayGoldValue += oldValue
-				  		console.log("========")
-				  		console.log(data)
 				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
 					})
 				break
@@ -333,4 +330,20 @@ DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
     BRemote.dbService.setPlayer(uid,"uidMap",unionid)
     BRemote.dbService.setPlayer(unionid,"uidMap",uid)
     cb(true)
+}
+
+
+
+local.getDateString = function() {
+	var myDate = new Date()
+	var month = myDate.getMonth()
+	var date = myDate.getDate()
+	if(month < 10){
+		month = "0"+month
+	}
+	if(date < 10){
+		date = "0"+date
+	}
+	var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	return dateString
 }

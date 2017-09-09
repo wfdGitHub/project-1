@@ -26,16 +26,7 @@ handler.dayLotte = function(msg,session,next) {
 		//获取refreshList
 	  	self.app.rpc.db.remote.getPlayerObject(session,uid,"refreshList",function(data) {
 	  		//console.log(data)
-	  		var myDate = new Date()
-	  		var month = myDate.getMonth()
-	  		var date = myDate.getDate()
-	  		if(month < 10){
-	  			month = "0"+month
-	  		}
-	  		if(date < 10){
-	  			date = "0"+date
-	  		}
-	  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	  		var dateString = local.getDateString()
 	  		// console.log(dateString)
 	  		//隔日更新refreshList
 	  		if(data.lottoTime < dateString){
@@ -79,16 +70,7 @@ handler.shareAward = function(msg,session,next) {
 	if(!!uid){
 	  	self.app.rpc.db.remote.getPlayerObject(session,uid,"refreshList",function(data) {
 		  	//console.log(data)
-	  		var myDate = new Date()
-	  		var month = myDate.getMonth()
-	  		var date = myDate.getDate()
-	  		if(month < 10){
-	  			month = "0"+month
-	  		}
-	  		if(date < 10){
-	  			date = "0"+date
-	  		}
-	  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	  		var dateString = local.getDateString()
 	  		//console.log(dateString)
 	  		//隔日更新refreshList
 	  		if(data.shareTime < dateString){
@@ -132,16 +114,7 @@ handler.bankruptGold = function(msg,session,next) {
 	      function(cb) {
 		  	self.app.rpc.db.remote.getPlayerObject(session,uid,"refreshList",function(data) {
 			  	//console.log(data)
-		  		var myDate = new Date()
-		  		var month = myDate.getMonth()
-		  		var date = myDate.getDate()
-		  		if(month < 10){
-		  			month = "0"+month
-		  		}
-		  		if(date < 10){
-		  			date = "0"+date
-		  		}
-		  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
+		  		var dateString = local.getDateString()
 		  		//console.log(dateString)
 		  		//隔日更新refreshList
 		  		if(data.bankruptTime < dateString){
@@ -321,4 +294,19 @@ handler.give = function(msg,session,next) {
 		next(null,{flag : false})
 	}
 
+}
+
+
+local.getDateString = function() {
+	var myDate = new Date()
+	var month = myDate.getMonth()
+	var date = myDate.getDate()
+	if(month < 10){
+		month = "0"+month
+	}
+	if(date < 10){
+		date = "0"+date
+	}
+	var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	return dateString
 }
