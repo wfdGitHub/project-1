@@ -45,7 +45,9 @@ var MING_CARD_NUM = 3               //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
-
+    //大小王
+    cards[cardCount++] = {num : 14, type : 0}
+    cards[cardCount++] = {num : 14, type : 1}
     //下注信息
     var betAmount = 0
 
