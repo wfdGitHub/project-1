@@ -349,7 +349,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
         for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
-              for(var j = 0;j < 5;j++){
+              for(var j = 0;j < 3;j++){
                 player[i].handCard[j] = cards[index++];
               }
               tmpAllCount++
@@ -470,7 +470,6 @@ var MING_CARD_NUM = 3               //明牌数量
           }
         }
         timer = setTimeout(function(){
-          gameState = conf.GS_SETTLEMENT
           local.settlement()
         },conf.TID_SETTLEMENT)
     }    
@@ -576,7 +575,7 @@ var MING_CARD_NUM = 3               //明牌数量
     }    
     //玩家抢庄
     room.handle.robBanker = function(uid,sid,param,cb) {
-      if(gameState !== GS_ROB_BANKER){
+      if(gameState !== conf.GS_ROB_BANKER){
         cb(false)
         return
       }
@@ -803,7 +802,7 @@ var MING_CARD_NUM = 3               //明牌数量
       player[chair].isBanker = false          //是否为庄家
       player[chair].isNoGiveUp = false        //是否未放弃游戏  true表示未放弃   false表示已放弃            
       player[chair].isShowCard = false        //是否开牌
-      player[chair].handCard = new Array(5)   //手牌
+      player[chair].handCard = new Array(3)   //手牌
       player[chair].score = 0                 //当前积分
       player[chair].bankerCount = 0           //坐庄次数
       player[chair].cardsList  = {}           //总战绩列表

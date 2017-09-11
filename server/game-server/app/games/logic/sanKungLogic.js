@@ -71,7 +71,9 @@ module.exports.getType = function(handCard) {
 	var pointNum = 0
 	//普通牌型，计算点数
 	for(var i = 0; i < 3;i++){
-		pointNum += handCard[i].num
+    if(handCard[i].num < 10){
+      pointNum += handCard[i].num 
+    }
 	}
 	pointNum = pointNum % 10
 	if(pointNum == 9){
