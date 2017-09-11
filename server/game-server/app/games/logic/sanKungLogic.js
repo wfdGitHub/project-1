@@ -17,7 +17,7 @@ var COMB_TYPE_TIAN_GONG = 	 14		 // 天公
 //获取牌型
 module.exports.getType = function(handCard) {
 	var result = {
-		"type" : 0,                       
+		"type" : 0,              
 		"card" : {},
 		"award": 1
 	}

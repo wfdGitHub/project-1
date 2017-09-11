@@ -21,7 +21,7 @@ conf.COMB_TYPE_MICRO =    14          // 五小   x8
 
 
 
-conf.GAME_PLAYER = 2                 //游戏人数
+conf.GAME_PLAYER = 6                 //游戏人数
 conf.TID_ROB_TIME = 5000            //抢庄时间
 conf.TID_BETTING = 10000              //下注时间
 conf.TID_SETTLEMENT = 10000           //结算时间
@@ -49,12 +49,14 @@ conf.MODE_GAME_BULL   = 3              //斗公牛模式
 conf.MODE_GAME_SHIP   = 4              //开船模式
 conf.MODE_GAME_ZHAJINNIU = 5		   //炸金牛
 conf.MODE_GAME_CRAZE = 6 			   //疯狂模式
+conf.conf.MODE_GAME_SANKUNG = 7 	   //三公
 //定庄模式
 conf.MODE_BANKER_ROB   = 1              //随机抢庄
 conf.MODE_BANKER_HOST  = 2              //房主做庄
 conf.MODE_BANKER_ORDER = 3              //轮庄
 conf.MODE_BANKER_NONE  = 4              //无定庄模式
 conf.MODE_BANKER_NIUNIU = 5 			//牛牛坐庄
+conf.MODE_BANKER_JIUDIAN = 6 			//九点坐庄
 //消耗模式
 conf.MODE_DIAMOND_HOST = 1              //房主扣钻
 conf.MODE_DIAMOND_EVERY = 2             //每人扣钻
@@ -68,7 +70,9 @@ conf.GAME_TYPE = {
 	"niuniu" : true,
 	"zhajinniu" : true,
 	"mingpaiqz" : true,
-	"fengkuang" : true
+	"fengkuang" : true,
+	"sanKung" : true
+
 }
 
 var ROOM_FACTORY = {
