@@ -1,5 +1,5 @@
 //三公
-var logic = require("./logic/sanKungLogic.js")
+var logic = require("./logic/SanKungLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
