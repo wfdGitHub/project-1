@@ -80,7 +80,20 @@ handler.visitorEnter = function(msg, session, next) {
   async.waterfall([
       function(cb) {
         if(userId != undefined){
-          cb()
+          //判断userId存在则登陆，否则新建账号
+          self.app.rpc.db.remote.getPlayerString(null,userId,"uidMap",function(data) {
+            //账号不存在或该账号非游客账号
+            if(!data || userId == data){
+              self.app.rpc.db.remote.getPlayerId(session,function(uid) {
+                  //console.log("uid : "+uid)
+                  playerId = parseInt(uid) + 1
+                  userId = parseInt(uid) + 1
+                  cb()
+              })
+            }else{
+              cb()
+            }
+          })
         }else{
           self.app.rpc.db.remote.getPlayerId(session,function(uid) {
               //console.log("uid : "+uid)

@@ -327,8 +327,8 @@ DBRemote.prototype.setPlayerObject = function(uid,name,value,cb) {
 
 //改绑UIDMAP
 DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
-    BRemote.dbService.setPlayer(uid,"uidMap",unionid)
-    BRemote.dbService.setPlayer(unionid,"uidMap",uid)
+    DBRemote.dbService.setPlayer(uid,"uidMap",unionid)
+    DBRemote.dbService.setPlayer(unionid,"uidMap",uid)
     cb(true)
 }
 

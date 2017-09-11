@@ -30,7 +30,7 @@ handler.bindWeiXinUnionid = function(msg, session, next) {
 							cb()
 						}else{
 							console.log("不是游客")
-							next(null,{"flag" : false})
+							next(null,{"flag" : false,"code" : 1})
 						}
 					})
 				},
@@ -38,17 +38,28 @@ handler.bindWeiXinUnionid = function(msg, session, next) {
 					//获取微信unionid
 			        self.app.rpc.login.remote.checkUser(session, {"openId" : openId,"token" : token},function(result){
 			            if(result == false){
-			                next(null,{"flag" : false})
+			                next(null,{"flag" : false,"code" : 2})
 			            }else{
 			            	console.log(result)
 			              	unionid = result.unionid
 			              	cb()
 			            }
-			        })					
+			        })
+				},
+				function(cb) {
+					//判断该微信号没有绑定过账号
+					self.app.rpc.db.remote.getPlayerString(null,unionid,"uidMap",function(data) {
+						if(data){
+							console.log("该微信已有账号")
+							next(null,{"flag" : false,"code" : 3})							
+						}else{
+							cb()
+						}
+					})					
 				},
 				function(cb) {
 					//绑定微信
-					self.app.rpc.login.remote.changeBindUidMap(session,uid,unionid,function(data) {
+					self.app.rpc.db.remote.changeBindUidMap(session,uid,unionid,function(data) {
 						console.log(data)
 						next(null,{"flag" : true})
 					})
