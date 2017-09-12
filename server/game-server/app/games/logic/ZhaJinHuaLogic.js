@@ -98,6 +98,17 @@ module.exports.getType = function(handCard) {
 
 //对比手牌   返回true为第一个玩家赢，false为第二个玩家赢
 module.exports.compare = function(result1,result2) {
+    //花色不同235大于豹子
+    if(result1.type == COMB_TYPE_BAOZI){
+      if(result2.type == COMB_TYPE_DAN && result2.cards[0].num == 2 && result2.cards[1].num == 3 && result2.cards[2].num == 5){
+        return false
+      }
+    }
+    if(result2.type == COMB_TYPE_BAOZI){
+      if(result1.type == COMB_TYPE_DAN && result1.cards[0].num == 2 && result1.cards[1].num == 3 && result1.cards[2].num == 5){
+        return true
+      }
+    }
     //先判断牌型
     if(result1.type > result2.type){
         return true
