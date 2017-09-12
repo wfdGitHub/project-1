@@ -9,10 +9,8 @@ var COMB_TYPE_OX7   =    7           // 7点
 var COMB_TYPE_OX8   =    8           // 8点
 var COMB_TYPE_OX9   =    9           // 9点
 var COMB_TYPE_SAN_GONG  =    10      // 三公
-var COMB_TYPE_LEI_GONG  =    11      // 雷公
-var COMB_TYPE_SAN_TIAO  =    12      // 三条
-var COMB_TYPE_BAO_SAN   =    13      // 爆三
-var COMB_TYPE_TIAN_GONG = 	 14		 // 天公
+var COMB_TYPE_SAN_TIAO  =    11      // 三条
+var COMB_TYPE_BAO_SAN   =    12      // 爆三
 
 //获取牌型
 module.exports.getType = function(handCard) {
@@ -28,21 +26,12 @@ module.exports.getType = function(handCard) {
 		  result.card = handCard[i]
 		}
 	}
-	var WangNum = 0
 	var GongNum = 0
 	//计算王和公数量
 	for(var i = 0;i < 3;i++){
-		if(handCard[i].num == 14){
-			WangNum++
-		}else if(handCard[i].num < 14 && handCard[i].num > 10){
+    if(handCard[i].num < 14 && handCard[i].num > 10){
 			GongNum++
 		}
-	}
-	//天公
-	if(WangNum == 2 && GongNum == 1){
-		result.type = COMB_TYPE_TIAN_GONG
-		result.award = 9
-		return result
 	}
 	//爆三
 	if(handCard[0].num == 3 && handCard[1].num == 3 && handCard[2].num == 3){
@@ -56,12 +45,6 @@ module.exports.getType = function(handCard) {
 		result.award = 5
 		return result
 	}
-	//雷公
-	if(WangNum == 1 && GongNum == 2){
-		result.type = COMB_TYPE_LEI_GONG
-		result.award = 5
-		return result
-	}	
 	//三公
 	if(GongNum == 3){
 		result.type = COMB_TYPE_SAN_GONG
