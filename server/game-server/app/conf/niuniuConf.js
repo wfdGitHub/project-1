@@ -29,6 +29,8 @@ conf.TID_SETTLEMENT = 10000           //结算时间
 conf.TID_ZHAJINNIU = 80000			 //诈金牛模式玩家操作时间
 conf.TID_ZHAJINNIU_SETTLEMENT = 3000 //炸金牛结算时间
 
+conf.TID_ZHAJINHUA = 30000			 //炸金花模式玩家操作时间
+
 conf.TID_MINGPAIQZ_ROB_TIME = 10000  //明牌抢庄模式抢庄时间
 
 conf.MING_CARD_NUM = 4               //明牌数量
