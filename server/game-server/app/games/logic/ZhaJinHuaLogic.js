@@ -25,23 +25,16 @@ var CARD_VALUE = {
 module.exports.getType = function(handCard) {
 	var result = {
 		"type" : 0,              
-		"card" : {}
+		"cards" : {}
 	}
   var handCard = deepCopy(handCard)
-	//先找出最大的单张牌
-	result.card = handCard[0]
-	for(var i = 1;i < 3;i++){
-		if(CARD_VALUE[handCard[i].num] > CARD_VALUE[result.card.num]){
-		  result.card = handCard[i]
-		}
-	}
   //同花标志
   var tongHuaFlag = false
   
   if(handCard[0].type == handCard[1].type && handCard[1].type == handCard[2].type){
     tongHuaFlag = true
   }
-  //顺子标志
+  
   //排序
   for(var i = 0;i < 3 - 1;i++){
     for(var j = i + 1; j < 3;j++){
@@ -52,6 +45,10 @@ module.exports.getType = function(handCard) {
       }
     }
   }
+  for(var i = 0;i < 3;i++){
+    result["cards"][i] = deepCopy(handCard[i])
+  }
+  //顺子标志
   var shunFlag = false
   if(CARD_VALUE[handCard[0].num] == CARD_VALUE[handCard[1].num] - 1 && CARD_VALUE[handCard[1].num] == CARD_VALUE[handCard[2].num] - 1){
     shunFlag = true
@@ -78,17 +75,20 @@ module.exports.getType = function(handCard) {
   }
   //对子
   if(handCard[0].num == handCard[1].num){
-    result.duiCard = handCard[2]
+    result.duiCard = handCard[0]
+    result.singleCard = handCard[2]
     result.type = COMB_TYPE_DUI
     return result
   }
   if(handCard[1].num == handCard[2].num){
-    result.duiCard = handCard[0]
+    result.duiCard = handCard[1]
+    result.singleCard = handCard[0]
     result.type = COMB_TYPE_DUI
     return result
   }
   if(handCard[0].num == handCard[2].num){
-    result.duiCard = handCard[1]
+    result.duiCard = handCard[2]
+    result.singleCard = handCard[1]
     result.type = COMB_TYPE_DUI
     return result
   }
@@ -98,15 +98,28 @@ module.exports.getType = function(handCard) {
 
 //对比手牌   返回true为第一个玩家赢，false为第二个玩家赢
 module.exports.compare = function(result1,result2) {
+    //先判断牌型
     if(result1.type > result2.type){
         return true
     }
-    if(result1.type == result2.type && result1.card.num > result2.card.num){
-        return true
-    }
-    if(result1.type == result2.type && result1.card.num == result2.card.num 
-      && (result1.type == COMB_TYPE_DUI && result1.duiCard.num > result2.duiCard.num)){
-      return true
+    //牌型相同  对子先比较对子牌  再比较单牌   其他牌型比较单牌
+    if(result1.type == result2.type){
+        if(result1.type == COMB_TYPE_DUI){
+          if(CARD_VALUE[result1.duiCard.num] > CARD_VALUE[result2.duiCard.num] 
+            || (CARD_VALUE[result1.duiCard.num] == CARD_VALUE[result2.duiCard.num] 
+              && CARD_VALUE[result1.singleCard.num] > CARD_VALUE[result2.singleCard.num])){
+            return true
+          }
+        }else{
+          for(var i = 2;i >= 0;i--){
+            if(CARD_VALUE[result1.cards[i].num] > CARD_VALUE[result2.cards[i].num]){
+              return true
+            }
+            if(CARD_VALUE[result1.cards[i].num] < CARD_VALUE[result2.cards[i].num]){
+              return false
+            }
+          }
+        }
     }
     return false
 }

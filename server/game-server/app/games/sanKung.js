@@ -885,6 +885,9 @@ var MING_CARD_NUM = 3               //明牌数量
         consumeMode : room.consumeMode,
         bankerMode : room.bankerMode,
         roomId : room.roomId,
+        TID_ROB_TIME : conf.TID_ROB_TIME, 
+        TID_BETTING : conf.TID_BETTING,
+        TID_SETTLEMENT : conf.TID_SETTLEMENT,        
         betList : betList,
         state : gameState,
         roomType : room.roomType
