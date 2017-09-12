@@ -121,14 +121,7 @@ module.exports.sendLoginHttp = function(notify) {
       data.region = tmpData.data.region
       data.city = tmpData.data.city  
     }
-    // var keys = Object.keys(data).sort()
-    // var string = ""
-    // for(var i = 0;i < keys.length;i++){
-    //   string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
-    // }
-    // string += "key=niuniuyiyousecretkey"
-    // data.sign = md5(string)
-    var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
+    var req=http.request('http://pay.5d8d.com/gold_admin.php/api/userLogin?'+require('querystring').stringify(data),function(res){
     })
     req.on("error",function(err){
       console.log(err.message)
