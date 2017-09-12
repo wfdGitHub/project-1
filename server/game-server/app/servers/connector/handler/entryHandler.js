@@ -124,6 +124,14 @@ handler.visitorEnter = function(msg, session, next) {
           notify.cmd = "userInfo"
           notify.data = data
           notify.data.nickname = strReplace(notify.data.nickname)
+          notify.openId = ""
+          notify.unionid = userId
+          notify.allGames = data.history ? data.history.allGames : 0
+          notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
+          notify.useDiamond = data.useDiamond
+          notify.gold = data.gold
+          notify.platform  = msg.platform
+
           // console.log("===========")
           // console.log(data)
           //判断账号是否冻结
@@ -197,6 +205,7 @@ handler.visitorEnter = function(msg, session, next) {
         if(!self.gameChanel.getMember(playerId)){
           self.gameChanel.add(playerId,self.app.get('serverId'))
         }
+        httpConf.sendLoginHttp(notify)
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)    
         //通知gameServer
@@ -233,24 +242,24 @@ handler.visitorEnter = function(msg, session, next) {
   next(null,{"flag" : true})
 }
 //H5登录
-handler.h5Enter = function(msg,session,next) {
-  if(!msg.code || typeof(msg.code) !== "string"){
-    next(false)
-    return
-  }
-  var self = this
-  httpConf.H5GetData(msg.code,0,function(data) {
-    if(data.errcode){
-      console.log(data.errmsg)
-      next(null,{"flag" : false , "err" : data.errmsg})
-      return
-    }
-    msg.openId = data.data.open_id
-    msg.token = data.data.access_token
-    var enterFun = handler.enter.bind(self)
-    enterFun(msg,session,next)
-  })
-}
+// handler.h5Enter = function(msg,session,next) {
+//   if(!msg.code || typeof(msg.code) !== "string"){
+//     next(false)
+//     return
+//   }
+//   var self = this
+//   httpConf.H5GetData(msg.code,0,function(data) {
+//     if(data.errcode){
+//       console.log(data.errmsg)
+//       next(null,{"flag" : false , "err" : data.errmsg})
+//       return
+//     }
+//     msg.openId = data.data.open_id
+//     msg.token = data.data.access_token
+//     var enterFun = handler.enter.bind(self)
+//     enterFun(msg,session,next)
+//   })
+// }
 //登录
 handler.enter = function(msg, session, next) {
   var self = this
