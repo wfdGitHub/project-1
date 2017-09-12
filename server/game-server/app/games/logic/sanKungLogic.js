@@ -27,7 +27,7 @@ module.exports.getType = function(handCard) {
 		}
 	}
 	var GongNum = 0
-	//计算王和公数量
+	//计算公数量
 	for(var i = 0;i < 3;i++){
     if(handCard[i].num < 14 && handCard[i].num > 10){
 			GongNum++

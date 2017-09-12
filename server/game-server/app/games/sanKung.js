@@ -412,7 +412,7 @@ var MING_CARD_NUM = 3               //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]           
           }
       }
       //进入下注
@@ -799,7 +799,7 @@ var MING_CARD_NUM = 3               //明牌数量
       player[chair].handCard = new Array(3)   //手牌
       player[chair].score = 0                 //当前积分
       player[chair].bankerCount = 0           //坐庄次数
-      player[chair].cardsList  = {}           //总战绩列表
+      //player[chair].cardsList  = {}           //总战绩列表
       player[chair].ip  = undefined           //玩家ip地址
   }
     //玩家离开

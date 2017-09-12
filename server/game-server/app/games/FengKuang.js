@@ -756,7 +756,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]           
           }
       }
       var trueResult = deepCopy(result)
@@ -990,7 +990,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       player[chiar].handCard = new Array(5)   //手牌
       player[chiar].score = 0                 //当前积分
       player[chiar].bankerCount = 0           //坐庄次数
-      player[chiar].cardsList  = {}           //总战绩列表
+      //player[chiar].cardsList  = {}           //总战绩列表
       player[chiar].ip  = undefined           //玩家ip地址
   }
   //房间是否已开始游戏
