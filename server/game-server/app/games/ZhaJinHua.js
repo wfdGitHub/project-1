@@ -51,6 +51,8 @@ var MAX_ROUND = 10
     }
     //下注信息
     var betAmount = 0
+    //比牌信息
+        
 
     room.runCount = 0
    //房间初始化
@@ -387,9 +389,8 @@ var MAX_ROUND = 10
             cb(false)
           }
           return
-        case "bet":
-          //下注
-          console.log("bet : "+param.bet)
+        case "gen" :
+          //跟注
           if(curPlayer !== chair){
             cb(false)
             return
@@ -403,29 +404,138 @@ var MAX_ROUND = 10
             cb(false)
             return
           }
-          //参数检测    
-          if(!param.bet || typeof(param.bet) != "number" || param.bet != Math.floor(param.bet) 
-            || param.bet <= 0 || param.bet > room.maxBet || param.bet < curBet){
-            cb(false)
-            return
-          }
-          curBet = param.bet
+          var tmpBet = curBet
           if(player[chair].isShowCard == true){
-            param.bet *= 2
+            tmpBet *= 2
           }
-          betList[chair] += param.bet
+          betList[chair] += tmpBet
           var notify = {
             "cmd" : "bet",
-            "bet" : param.bet,
+            "bet" : tmpBet,
             "chair" : chair,
             "playerBet" : betList[chair]
           }
           local.sendAll(notify)
           //轮到下一个玩家操作
           actionFlag = true
-          console.log("=======")
           local.nextCurPlayer()
-          cb(true)
+          cb(true)          
+        return
+        case "addOne" :
+          //加一分
+          if(curPlayer !== chair){
+            cb(false)
+            return
+          }
+          if(player[chair].state !== 0){
+            cb(false)
+            return
+          }     
+          //最后一轮不能下注
+          if(curRound == MAX_ROUND){
+            cb(false)
+            return
+          }
+          //加注不能超过单注上限
+          if(curBet + 1 > room.maxBet){
+            cb(false)
+            return
+          }
+          curBet += 1
+          var tmpBet = curBet
+          if(player[chair].isShowCard == true){
+            tmpBet *= 2
+          }
+          betList[chair] += tmpBet
+          var notify = {
+            "cmd" : "bet",
+            "bet" : tmpBet,
+            "chair" : chair,
+            "playerBet" : betList[chair]
+          }
+          local.sendAll(notify)
+          //轮到下一个玩家操作
+          actionFlag = true
+          local.nextCurPlayer()
+          cb(true)           
+        return
+        case "addTwo" :
+          //加两分
+          if(curPlayer !== chair){
+            cb(false)
+            return
+          }
+          if(player[chair].state !== 0){
+            cb(false)
+            return
+          }     
+          //最后一轮不能下注
+          if(curRound == MAX_ROUND){
+            cb(false)
+            return
+          }
+          //加注不能超过单注上限
+          if(curBet + 2 > room.maxBet){
+            cb(false)
+            return
+          }
+          curBet += 2
+          var tmpBet = curBet
+          if(player[chair].isShowCard == true){
+            tmpBet *= 2
+          }
+          betList[chair] += tmpBet
+          var notify = {
+            "cmd" : "bet",
+            "bet" : tmpBet,
+            "chair" : chair,
+            "playerBet" : betList[chair]
+          }
+          local.sendAll(notify)
+          //轮到下一个玩家操作
+          actionFlag = true
+          local.nextCurPlayer()
+          cb(true)           
+        return          
+        case "bet":
+          //下注
+          // console.log("bet : "+param.bet)
+          // if(curPlayer !== chair){
+          //   cb(false)
+          //   return
+          // }
+          // if(player[chair].state !== 0){
+          //   cb(false)
+          //   return
+          // }     
+          // //最后一轮不能下注
+          // if(curRound == MAX_ROUND){
+          //   cb(false)
+          //   return
+          // }
+          // //参数检测    
+          // if(!param.bet || typeof(param.bet) != "number" || param.bet != Math.floor(param.bet) 
+          //   || param.bet <= 0 || param.bet > room.maxBet || param.bet < curBet){
+          //   cb(false)
+          //   return
+          // }
+          // curBet = param.bet
+          // if(player[chair].isShowCard == true){
+          //   param.bet *= 2
+          // }
+          // betList[chair] += param.bet
+          // var notify = {
+          //   "cmd" : "bet",
+          //   "bet" : param.bet,
+          //   "chair" : chair,
+          //   "playerBet" : betList[chair]
+          // }
+          // local.sendAll(notify)
+          // //轮到下一个玩家操作
+          // actionFlag = true
+          // console.log("=======")
+          // local.nextCurPlayer()
+          cb(false)
           return
         case "giveUp":
           if(curPlayer !== chair){
@@ -450,7 +560,12 @@ var MAX_ROUND = 10
           if(player[chair].state !== 0){
             cb(false)
             return
-          }        
+          }
+          //第三轮开始才能比牌
+          if(curRound < 3){
+            cb(false)
+            return
+          }
           var target = param.target
           if(target === undefined || target == chair || typeof(target) !== "number" || 
             !player[target] || !player[target].isActive 
