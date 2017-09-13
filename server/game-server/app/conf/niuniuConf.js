@@ -85,4 +85,12 @@ conf.ROUND_TIMES = 1 						//最大洗牌次数
 conf.TYPE_WEIGHT = 2 						//低于此权重洗牌
 conf.typeWeight = [0,1,2,3,4,5,6,7,10,20,30,50,80,100,200]
 conf.FengKuangtypeWeight = [0,1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,21]
+
+
+//三公控制
+conf.SANKUNG_ROUND_TIMES = 1 				//最大洗牌次数
+conf.SANKUNG_TYPE_WEIGHT = 2                //低于此权重洗牌
+conf.sanKungTypeWeight = [0,1,2,3,4,5,6,8,10,12,15,20,25]
+
+
 module.exports.niuConf = conf

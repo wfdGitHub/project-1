@@ -24,7 +24,7 @@ var CARD_VALUE = {
 //获取牌型
 module.exports.getType = function(handCard) {
 	var result = {
-		"type" : 0,              
+		"type" : 0,
 		"cards" : {}
 	}
   var handCard = deepCopy(handCard)

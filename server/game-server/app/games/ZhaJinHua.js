@@ -52,7 +52,7 @@ var MAX_ROUND = 10
     //下注信息
     var betAmount = 0
     //比牌信息
-        
+    var compareList = []
 
     room.runCount = 0
    //房间初始化
@@ -250,6 +250,7 @@ var MAX_ROUND = 10
           }
       }
       betAmount = 0
+      compareList = []
       //换一副新牌
       cards = {}                       //牌组
       cardCount = 0                    //卡牌剩余数量
@@ -283,6 +284,7 @@ var MAX_ROUND = 10
           }
       }
       //开始第一轮
+      curBet = 1
       curRound = 1
       banker += 1
       while(player[banker].isActive == false || player[banker].isReady == false){
@@ -344,6 +346,7 @@ var MAX_ROUND = 10
         "cmd" : "nextPlayer",
         "chair" : curPlayer,
         "curBet" : curBet,
+        "allBet" : betAmount,
         "curRound" : curRound
       }
       local.sendAll(notify)
@@ -587,7 +590,13 @@ var MAX_ROUND = 10
             "playerBet" : betList[chair]
           }
           local.sendAll(notify)
-
+          //计算剩余玩家数量
+          var tmpPlayerCount = 0
+          for(var i = 0; i < GAME_PLAYER;i++){
+            if(player[i].isReady && player[i].state == 0){
+              tmpPlayerCount++
+            }
+          }
           //输的人状态为比牌失败
           var notify2 = {
             "cmd" : "compare",
@@ -609,10 +618,40 @@ var MAX_ROUND = 10
               local.sendUid(player[i].uid,notify2)
             }
           }
+          //记录比牌数据
+          if(tmpPlayerCount == 2){
+            //只剩最后两位玩家比牌时，所有人都可见            
+            for(var i = 0; i < GAME_PLAYER;i++){
+              if(player[i].isReady){
+                if(target != i){
+                  if(!compareList[i]){
+                    compareList[i] = []
+                  }
+                  compareList[i].push(target)
+                }
+                if(chair != i){
+                  if(!compareList[i]){
+                    compareList[i] = []
+                  }
+                  compareList[i].push(chair)
+                }
+              }
+            }
+          }else{
+            if(!compareList[chair]){
+              compareList[chair] = []
+            }
+            compareList[chair].push(target)
+            if(!compareList[target]){
+              compareList[target] = []
+            }
+          }
+          
           //发送玩家手牌
           var handCard = deepCopy(player[lose].handCard)
           notify2.handCard = handCard
           local.sendUid(player[lose].uid,notify2)
+
           actionFlag = true
           local.nextCurPlayer()
           cb(true)
@@ -623,6 +662,7 @@ var MAX_ROUND = 10
 
     //结算
     local.settlement = function() {
+      console.log(betList)
       clearTimeout(timer)
       room.runCount++
       //还在场的玩家为赢家
@@ -662,13 +702,15 @@ var MAX_ROUND = 10
       for(var i = 0;i < GAME_PLAYER;i++){
           realScores[i] = player[i].score
       }
+      //玩家只能看见自己比过或跟自己比过的玩家的手牌
       //发送当局结算消息
       var notify = {
         "cmd" : "settlement",
         "result" : result,
         "curScores" : curScores,
         "realScores" : realScores,
-        "player" : player
+        "player" : player,
+        "compareList" : compareList
       }
       local.sendAll(notify)
       //记录牌局流水

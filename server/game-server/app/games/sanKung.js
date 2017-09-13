@@ -348,25 +348,21 @@ var MING_CARD_NUM = 3               //明牌数量
               }
               tmpAllCount++
               tmpResult[i] = logic.getType(player[i].handCard)
-              tmpTypeCount += conf.typeWeight[tmpResult[i].type]
+              tmpTypeCount += conf.sanKungTypeWeight[tmpResult[i].type]
             }
         }
         var dealFlag = false
         //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
+        if((tmpTypeCount / tmpAllCount) < conf.SANKUNG_TYPE_WEIGHT){
             dealFlag = true
         }
-      }while(dealFlag && randTimes < conf.ROUND_TIMES)
+      }while(dealFlag && randTimes < conf.SANKUNG_ROUND_TIMES)
       //找出剩余牌
       var tmpCards = {}
       var tmpCardCount = 0
       for(var i = index;i < cardCount;i++){
         tmpCards[tmpCardCount++] = deepCopy(cards[i])
       }
-
-      console.log("============1")
-      console.log(tmpCards)
-      console.log("============1")
       //执行控制   
       //先计算每个人的运气值   -1 到 1之间     
       var luckyValue = {}
