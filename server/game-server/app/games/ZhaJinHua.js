@@ -5,8 +5,6 @@ var errorLogger = require("pomelo-logger").getLogger("error-log");
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 3               //明牌数量
-var MAX_ROUND = 10
-//游戏状态
 
 //创建房间
   module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
@@ -38,6 +36,9 @@ var MAX_ROUND = 10
     var curRound = 0                     //当前轮数
     var curBet = 1                       //当前单注
     room.maxBet = 10                     //单注上限
+    room.maxRound = 10                   //单局最大轮数
+    room.stuffyRound = 0                 //闷牌轮数
+
 
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
@@ -113,17 +114,34 @@ var MAX_ROUND = 10
       }
       //默认底分
       if(!param.basic || typeof(param.basic) !== "number" || 
-        param.basic < 0 || param.basic > 3){
+        (param.basic != 1 && param.basic != 2 && param.basic != 5)){
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return
       }   
+      //最大单注
       if(!param.maxBet || typeof(param.maxBet) !== "number" || 
         param.maxBet < 0 || param.maxBet > 20){
         log("newRoom error   param.maxBet : "+param.maxBet)
         cb(false)
         return
-      }       
+      }
+      //轮数上限
+      if(!param.maxRound || typeof(param.maxRound) !== "number" || 
+        (param.maxRound != 7 && param.maxRound != 10)){
+        log("newRoom error   param.maxRound : "+param.maxRound)
+        cb(false)
+        return
+      }
+      //闷牌限制
+      if(!param.stuffyRound || typeof(param.stuffyRound) !== "number" || 
+         param.stuffyRound < 0 || param.stuffyRound > 3){
+        log("newRoom error   param.stuffyRound : "+param.stuffyRound)
+        cb(false)
+        return
+      }      
+
+
       if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
       }
@@ -146,6 +164,8 @@ var MAX_ROUND = 10
       room.basic = Math.floor(param.basic)                           //房间底分
       room.maxBet = Math.floor(param.maxBet)                         //单注上限
       room.needDiamond = Math.ceil(room.gameNumber / 10)             //本局每人消耗钻石
+      room.maxRound = param.maxRound                                 //单局最大轮数
+      room.stuffyRound = param.stuffyRound                           //闷牌轮数
       cb(true)
     }
     room.handle.agency = function(uid,sid,param,cb) {
@@ -341,7 +361,7 @@ var MAX_ROUND = 10
       if(bankerFlag){
         curRound++
         //轮数超过最后一轮时进入结算
-        if(curRound > MAX_ROUND){
+        if(curRound > room.maxRound){
           console.log("ERROR!!!")
           errorLogger.info("炸金花结算错误1111111")
           local.settlement()
@@ -377,6 +397,11 @@ var MAX_ROUND = 10
       switch(param.cmd){
         case "look":
           //看牌
+          //闷牌轮数内不能看牌
+          if(curRound <= room.stuffyRound){
+            cb(false)
+            return
+          }
           if(player[chair].isReady && player[chair].state == 0 && player[chair].isShowCard == false){
             player[chair].isShowCard = true
             //发送玩家手牌
@@ -409,7 +434,7 @@ var MAX_ROUND = 10
             return
           }     
           //最后一轮不能下注
-          if(curRound == MAX_ROUND){
+          if(curRound == room.maxRound){
             cb(false)
             return
           }
@@ -441,7 +466,7 @@ var MAX_ROUND = 10
             return
           }     
           //最后一轮不能下注
-          if(curRound == MAX_ROUND){
+          if(curRound == room.maxRound){
             cb(false)
             return
           }
@@ -479,7 +504,7 @@ var MAX_ROUND = 10
             return
           }     
           //最后一轮不能下注
-          if(curRound == MAX_ROUND){
+          if(curRound == room.maxRound){
             cb(false)
             return
           }
@@ -518,7 +543,7 @@ var MAX_ROUND = 10
           //   return
           // }     
           // //最后一轮不能下注
-          // if(curRound == MAX_ROUND){
+          // if(curRound == room.maxRound){
           //   cb(false)
           //   return
           // }
@@ -651,6 +676,7 @@ var MAX_ROUND = 10
             if(!compareList[target]){
               compareList[target] = []
             }
+            compareList[target].push(chair)
           }
           
           //发送玩家手牌
@@ -920,7 +946,9 @@ var MAX_ROUND = 10
         curBet : curBet,
         maxBet : room.maxBet,
         betAmount : betAmount,
-        basic : room.basic
+        basic : room.basic,
+        maxRound : room.maxRound,
+        stuffyRound : room.stuffyRound 
       }
       return notify
     }

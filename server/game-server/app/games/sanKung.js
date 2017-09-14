@@ -3,7 +3,7 @@ var logic = require("./logic/SanKungLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
-var MING_CARD_NUM = 3               //明牌数量
+var MING_CARD_NUM = 2               //明牌数量
 //游戏状态
 
 //创建房间
@@ -117,7 +117,12 @@ var MING_CARD_NUM = 3               //明牌数量
         log("newRoom error   param.bankerMode : "+param.bankerMode)
         cb(false)
         return
-      }   
+      }
+      if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
+        log("newRoom error   param.cardMode : "+param.cardMode)
+        cb(false)
+        return
+      }      
       if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
       }
@@ -140,7 +145,7 @@ var MING_CARD_NUM = 3               //明牌数量
       room.bankerMode = param.bankerMode                 //定庄模式
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
-      // room.cardMode = param.cardMode                     //明牌模式
+      room.cardMode = param.cardMode                     //明牌模式
       room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
       cb(true)
     }
@@ -299,7 +304,6 @@ var MING_CARD_NUM = 3               //明牌数量
       //console.log("index : "+index)
       num = robList[index]
       banker = num
-
       local.gameBegin()
     }
 
@@ -307,6 +311,7 @@ var MING_CARD_NUM = 3               //明牌数量
     local.gameBegin = function(argument) {
       log("gameBegin") 
       gameState = conf.GS_GAMEING
+      player[banker].bankerCount++
       //第一次开始游戏调用游戏开始回调
       if(room.gameNumber === room.maxGameNumber){
         roomBeginCB(room.roomId,room.agencyId)
@@ -417,6 +422,22 @@ var MING_CARD_NUM = 3               //明牌数量
             cardHistory[i].push(result[i])        
           }
       }
+      //明牌模式发牌
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        var notify = {
+          "cmd" : "MingCard"
+        }
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            var tmpCards = {}
+            for(var j = 0;j < MING_CARD_NUM;j++){
+                tmpCards[j] = player[i].handCard[j];
+            }
+            notify.Cards = tmpCards
+            local.sendUid(player[i].uid,notify)    
+          }
+        }
+      }      
       //进入下注
       local.betting()
     }
@@ -877,7 +898,11 @@ var MING_CARD_NUM = 3               //明牌数量
       if(gameState < conf.GS_DEAL){
         for(var i = 0; i < GAME_PLAYER;i++){
           delete newPlayer[i].handCard
-        }        
+        }
+        if(room.cardMode == conf.MODE_CARD_SHOW){
+          newPlayer[chair].handCard = deepCopy(player[chair].handCard)
+          delete newPlayer[chair].handCard[2]
+        }
       }
       var notify = {
         cmd : "roomPlayer",
@@ -893,7 +918,8 @@ var MING_CARD_NUM = 3               //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,        
         betList : betList,
         state : gameState,
-        roomType : room.roomType
+        roomType : room.roomType,
+        cardMode : room.cardMode
       }
       return notify
     }

@@ -239,6 +239,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    		//检查钻石是否足够
 				var diamond = data
 				needMond = Math.ceil(params.gameNumber / 10) * 3
+				if(params.gameType == "sanKung"){
+					needMond = Math.ceil(params.gameNumber / 10) * 5
+				}
 				if(diamond < needMond){
 					cb(false,{"code" : tips.NO_DIAMOND})
 					return
