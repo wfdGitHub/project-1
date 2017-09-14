@@ -381,7 +381,7 @@ var MING_CARD_NUM = 4               //明牌数量
             }
             luckyValue[i] -= 2
         }
-
+      }
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
         if(luckyValue[i]){
