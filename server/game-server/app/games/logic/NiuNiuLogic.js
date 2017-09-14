@@ -136,13 +136,13 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
     //换好牌
     var value = 6
     var tmpRand = Math.random()
-    var times = 5
+    var times = 10
     if(tmpRand < 0.4){
       value = 7
-      times = 10
+      times = 20
     }else if(tmpRand < 0.1){
       value = 8
-      times = 20
+      times = 30
     }
     if(tmpResult.type < value){
       for(var z = 0;z < 5;z++){

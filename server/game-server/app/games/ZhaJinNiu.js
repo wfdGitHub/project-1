@@ -371,10 +371,18 @@ var MING_CARD_NUM = 3               //明牌数量
             luckyValue[i] = luckyValue[i] * 0.6
           }
       }
-      console.log("luckyValue : ")
-      console.log(luckyValue)
+      //代理增加运气值   值为负则好牌概率高
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isReady &&  parseInt(player[i].playerInfo.limits) >= 1){
+            if(!luckyValue[i]){
+              luckyValue[i] = 0
+            }
+            luckyValue[i] -= 2
+        }
+      }
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
+        if(luckyValue[i]){
           if(player[i].isActive && player[i].isReady){
               if(luckyValue[i] < 0){
                 if(Math.random() < -luckyValue[i]){
@@ -387,7 +395,8 @@ var MING_CARD_NUM = 3               //明牌数量
                     logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
                 }
               }
-          }
+          }          
+        }
       }
 
       //记录参与游戏人数
