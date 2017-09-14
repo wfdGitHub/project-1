@@ -108,7 +108,7 @@ var MAX_ROUND = 10
       }
       //默认底分
       if(!param.basic || typeof(param.basic) !== "number" || 
-        param.basic < 0 || param.basic > 5){
+        param.basic < 0 || param.basic > 3){
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return
@@ -982,7 +982,7 @@ var MAX_ROUND = 10
 
 
 var log = function(str) {
-    // console.log("LOG NiuNiu : "+str)
+    console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {
