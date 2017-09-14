@@ -97,6 +97,11 @@ var MING_CARD_NUM = 3               //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           local.initChairInfo(i)
       }    
+      //牌型历史
+      var cardHistory = {}
+      for(var i = 0;i < GAME_PLAYER;i++){
+        cardHistory[i] = []
+      }      
          //console.log("enter init=====================================222")
         //channel清空
         channelService.destroyChannel(roomId)
@@ -392,7 +397,8 @@ var MING_CARD_NUM = 3               //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            //player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]      
+            cardHistory[i].push(result[i])
           }
       }
       //TODO 下个阶段
@@ -502,7 +508,8 @@ var MING_CARD_NUM = 3               //明牌数量
       room.state = true
       var notify = {
         "cmd" : "gameOver",
-        "player" : player
+        "player" : player,
+        "cardHistory" : cardHistory
       }
       local.sendAll(notify)
       room.endTime = (new Date()).valueOf()

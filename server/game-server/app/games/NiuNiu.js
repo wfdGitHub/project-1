@@ -66,6 +66,11 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       cards[cardCount++] = {num : i,type : j}
     }
   }
+  //牌型历史
+  var cardHistory = {}
+  for(var i = 0;i < GAME_PLAYER;i++){
+    cardHistory[i] = []
+  }  
   //下注信息
   
   var betAmount = 0
@@ -945,7 +950,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard); 
-            //player[i].cardsList[room.runCount] = result[i]           
+            //player[i].cardsList[room.runCount] = result[i]
+            cardHistory[i].push(result[i])   
           }
       }
       var trueResult = deepCopy(result)
@@ -1182,7 +1188,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.state = true
     var notify = {
       "cmd" : "gameOver",
-      "player" : player
+      "player" : player,
+      "cardHistory" : cardHistory
     }
 
     local.sendAll(notify)

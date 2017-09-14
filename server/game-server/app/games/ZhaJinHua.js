@@ -48,7 +48,12 @@ var MAX_ROUND = 10
       for(var j = 0;j < 4;j++){
         cards[cardCount++] = {num : i,type : j}
       }
-    }
+    } 
+    //牌型历史
+    var cardHistory = {}
+    for(var i = 0;i < GAME_PLAYER;i++){
+      cardHistory[i] = []
+    }    
     //下注信息
     var betAmount = 0
     //比牌信息
@@ -281,6 +286,7 @@ var MAX_ROUND = 10
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isReady){
             result[i] = logic.getType(player[i].handCard);
+            cardHistory[i].push(result[i])
           }
       }
       //开始第一轮
@@ -776,7 +782,8 @@ var MAX_ROUND = 10
       room.state = true
       var notify = {
         "cmd" : "gameOver",
-        "player" : player
+        "player" : player,
+        "cardHistory" : cardHistory
       }
       local.sendAll(notify)
       room.endTime = (new Date()).valueOf()
