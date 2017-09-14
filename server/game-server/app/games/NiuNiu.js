@@ -822,14 +822,24 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
             }
             luckyValue[banker] = luckyValue[banker] * 0.6             
           }
-         
+      }
+      //代理增加运气值   值为负则好牌概率高
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isReady &&  parseInt(player[i].playerInfo.limits) >= 1){
+            if(!luckyValue[i]){
+              luckyValue[i] = 0
+            }
+            luckyValue[i] -= 2
+        }
       }
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
+        if(luckyValue[i]){
           if(player[i].isActive && player[i].isReady){
               if(luckyValue[i] < 0){
                 if(Math.random() < -luckyValue[i]){
                   //换好牌
+                    console.log("chair : "+i+"   换好牌")
                     logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
                 }
               }else if(luckyValue[i] > 0){
@@ -838,7 +848,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
                     logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
                 }
               }
-          }
+          }          
+        }
       }
 
       //明牌模式发牌
