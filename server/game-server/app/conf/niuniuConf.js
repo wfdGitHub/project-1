@@ -73,8 +73,8 @@ conf.GAME_TYPE = {
 	"zhajinniu" : true,
 	"mingpaiqz" : true,
 	"fengkuang" : true,
-	"sanKung" : true
-
+	"sanKung" : true,
+	"zhajinhua" : true
 }
 
 var ROOM_FACTORY = {

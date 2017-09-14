@@ -281,8 +281,8 @@ var gemeOver = function(roomId,players,flag,cb) {
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
 			var tmpDiamond = Math.floor(maxGameNumber/10) * 3
 			if(GameRemote.roomList[roomId].roomType == "zhajinhua"){
-				tmpDiamond = diamond * 5
-			}			
+				tmpDiamond = Math.floor(maxGameNumber/10) * 5
+			}
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
 			httpConf.coinChangeRecord(agencyId,6,tmpDiamond)

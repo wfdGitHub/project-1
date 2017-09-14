@@ -49,6 +49,11 @@ var MING_CARD_NUM = 4               //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
+    //牌型历史
+    var cardHistory = {}
+    for(var i = 0;i < GAME_PLAYER;i++){
+      cardHistory[i] = []
+    }     
     var betType = {
       "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
       "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
@@ -91,11 +96,7 @@ var MING_CARD_NUM = 4               //明牌数量
           cards[cardCount++] = {num : i,type : j}
         }
       }
-      //牌型历史
-      var cardHistory = {}
-      for(var i = 0;i < GAME_PLAYER;i++){
-        cardHistory[i] = []
-      }      
+
       //console.log("enter init=====================================111111111111111")
       //下注信息
       betList = new Array(GAME_PLAYER)

@@ -122,6 +122,10 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }  
+	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
+	    	cb(false)
+	    	return
+	    }
 	  async.waterfall([
 			function(next) {
 				//获取玩家钻石
@@ -134,17 +138,32 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				//判断是否满足准入数额
 				var diamond = data
 				var needMond = Math.ceil(params.gameNumber / 10)
-				switch(params.consumeMode){
-					case conf.MODE_DIAMOND_HOST : 
-						needMond = needMond * 3
-					break;
-					case conf.MODE_DIAMOND_EVERY :
-						needMond = needMond
-					break;
-					case conf.MODE_DIAMOND_WIN : 
-						needMond = needMond * 3
-					break;
-				}
+
+				if(params.gameType == "sanKung"){
+					switch(params.consumeMode){
+						case conf.MODE_DIAMOND_HOST : 
+							needMond = needMond * 5
+						break;
+						case conf.MODE_DIAMOND_EVERY :
+							needMond = needMond
+						break;
+						case conf.MODE_DIAMOND_WIN : 
+							needMond = needMond * 5
+						break;
+					}					
+				}else{
+					switch(params.consumeMode){
+						case conf.MODE_DIAMOND_HOST : 
+							needMond = needMond * 3
+						break;
+						case conf.MODE_DIAMOND_EVERY :
+							needMond = needMond
+						break;
+						case conf.MODE_DIAMOND_WIN : 
+							needMond = needMond * 3
+						break;
+					}					
+				}			
 				if(diamond >= needMond && GameRemote.GameService.userMap[uid] === undefined){
 					next(null)
 				}else{
@@ -239,7 +258,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    		//检查钻石是否足够
 				var diamond = data
 				needMond = Math.ceil(params.gameNumber / 10) * 3
-				if(params.gameType == "sanKung"){
+				if(params.gameType == "zhajinhua"){
 					needMond = Math.ceil(params.gameNumber / 10) * 5
 				}
 				if(diamond < needMond){

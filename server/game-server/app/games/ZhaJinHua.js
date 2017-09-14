@@ -134,7 +134,7 @@ var MING_CARD_NUM = 3               //明牌数量
         return
       }
       //闷牌限制
-      if(!param.stuffyRound || typeof(param.stuffyRound) !== "number" || 
+      if(param.stuffyRound === undefined || typeof(param.stuffyRound) !== "number" || 
          param.stuffyRound < 0 || param.stuffyRound > 3){
         log("newRoom error   param.stuffyRound : "+param.stuffyRound)
         cb(false)
@@ -378,7 +378,7 @@ var MING_CARD_NUM = 3               //明牌数量
       local.sendAll(notify)
       //设定时器到下一位玩家
       actionFlag = false
-      timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINNIU)
+      timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
     }
 
 
