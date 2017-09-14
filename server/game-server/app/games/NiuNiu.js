@@ -1133,6 +1133,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
         "result" : trueResult,
         "curScores" : curScores,
         "realScores" : realScores,
+        "player" : player,
         "bankerTime" : bankerTime
       }
       local.sendAll(notify)
