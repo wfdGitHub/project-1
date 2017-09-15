@@ -314,14 +314,13 @@ var MING_CARD_NUM = 3               //明牌数量
           cards[tmpIndex] = tmpCard
         }
         //发牌
-        var result = {}
         index = 0
         var tmpAllCount = 0     //总玩家数
         var tmpTypeCount = 0    //牌型权重 
         
         for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
-              for(var j = 0;j < 5;j++){
+              for(var j = 0;j < 3;j++){
                 player[i].handCard[j] = cards[index++];
               }
               tmpAllCount++
@@ -332,7 +331,7 @@ var MING_CARD_NUM = 3               //明牌数量
         }
         var dealFlag = false
         //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < 1){
+        if((tmpTypeCount / tmpAllCount) < 2){
             dealFlag = true
         }
       }while(dealFlag && randTimes < 2000)
