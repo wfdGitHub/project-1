@@ -15,7 +15,7 @@ var async = require("async")
 
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
-	"zhajinniu" : ZhaJinNiu,
+	//"zhajinniu" : ZhaJinNiu,
 	"mingpaiqz" : MingPaiQZ,
 	//"fengkuang" : FengKuang
 	"sanKung" : SanKung,
