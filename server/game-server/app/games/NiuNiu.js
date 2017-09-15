@@ -834,7 +834,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
             if(!luckyValue[i]){
               luckyValue[i] = 0
             }
-            luckyValue[i] -= 2
+            luckyValue[i] -= 0.05
         }
       }
       //运气值低的先执行控制 

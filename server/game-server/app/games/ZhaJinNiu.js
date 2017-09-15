@@ -382,7 +382,7 @@ var MING_CARD_NUM = 3               //明牌数量
             if(!luckyValue[i]){
               luckyValue[i] = 0
             }
-            luckyValue[i] -= 2
+            luckyValue[i] -= 0.05
         }
       }
       //运气值低的先执行控制 
