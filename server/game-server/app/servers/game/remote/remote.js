@@ -293,6 +293,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
                             "gameMode" : params.gameMode,
                             "cardMode" : params.cardMode,
                             "basic" : params.basic || params.basicType,
+                            "maxBet" : params.maxBet,
+                            "maxRound" : params.maxRound,
+                            "stuffyRound" : params.stuffyRound,
                             "beginTime" : (new Date()).valueOf()
                         }
                         GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
