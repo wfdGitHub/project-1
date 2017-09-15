@@ -650,7 +650,7 @@ var MING_CARD_NUM = 3               //明牌数量
            }
            betList[chair] += tmpBet
           var notify = {
-            "cmd" : "bet",
+            "cmd" : "compareBet",
             "bet" : tmpBet,
             "chair" : chair,
             "playerBet" : betList[chair]
