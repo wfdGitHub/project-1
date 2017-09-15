@@ -64,7 +64,7 @@ var MING_CARD_NUM = 3               //明牌数量
    //房间初始化
     local.init = function() {
       //console.log("enter init=====================================")
-      room.gameMode = 0                    //游戏模式
+      room.gameMode = 8                    //游戏模式
       room.gameNumber = 0                  //游戏局数
       room.maxGameNumber = 0               //游戏最大局数
       room.consumeMode = 0                 //消耗模式
@@ -284,57 +284,57 @@ var MING_CARD_NUM = 3               //明牌数量
           cards[cardCount++] = {num : i,type : j}
         }
       }
-      // //洗牌
-      // for(var i = 0;i < cardCount;i++){
-      //   var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-      //   var tmpCard = cards[i]
-      //   cards[i] = cards[tmpIndex]
-      //   cards[tmpIndex] = tmpCard
-      // }
-      // //发牌
-      // var tmpResult = {}
-      // var index = 0
-      // for(var i = 0;i < GAME_PLAYER;i++){
-      //     if(player[i].isActive && player[i].isReady){
-      //       for(var j = 0;j < 3;j++){
-      //         player[i].handCard[j] = cards[index++];
-      //       }
-      //     }
-      // }
-
-      //增加大牌概率，当牌型权重较低时重新洗牌
-      var randTimes = 0
-      do{
-        randTimes++
-        //洗牌
-        for(var i = 0;i < cardCount;i++){
-          var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-          var tmpCard = cards[i]
-          cards[i] = cards[tmpIndex]
-          cards[tmpIndex] = tmpCard
-        }
-        //发牌
-        index = 0
-        var tmpAllCount = 0     //总玩家数
-        var tmpTypeCount = 0    //牌型权重 
-        
-        for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
-              for(var j = 0;j < 3;j++){
-                player[i].handCard[j] = cards[index++];
-              }
-              tmpAllCount++
-              result[i] = logic.getType(player[i].handCard)
-              //console.log("type : "+result[i].type)
-              tmpTypeCount += result[i].type
+      //洗牌
+      for(var i = 0;i < cardCount;i++){
+        var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+        var tmpCard = cards[i]
+        cards[i] = cards[tmpIndex]
+        cards[tmpIndex] = tmpCard
+      }
+      //发牌
+      var tmpResult = {}
+      var index = 0
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            for(var j = 0;j < 3;j++){
+              player[i].handCard[j] = cards[index++];
             }
-        }
-        var dealFlag = false
-        //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < 2){
-            dealFlag = true
-        }
-      }while(dealFlag && randTimes < 2000)
+          }
+      }
+
+      // //增加大牌概率，当牌型权重较低时重新洗牌
+      // var randTimes = 0
+      // do{
+      //   randTimes++
+      //   //洗牌
+      //   for(var i = 0;i < cardCount;i++){
+      //     var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+      //     var tmpCard = cards[i]
+      //     cards[i] = cards[tmpIndex]
+      //     cards[tmpIndex] = tmpCard
+      //   }
+      //   //发牌
+      //   index = 0
+      //   var tmpAllCount = 0     //总玩家数
+      //   var tmpTypeCount = 0    //牌型权重 
+        
+      //   for(var i = 0;i < GAME_PLAYER;i++){
+      //       if(player[i].isActive && player[i].isReady){
+      //         for(var j = 0;j < 3;j++){
+      //           player[i].handCard[j] = cards[index++];
+      //         }
+      //         tmpAllCount++
+      //         result[i] = logic.getType(player[i].handCard)
+      //         //console.log("type : "+result[i].type)
+      //         tmpTypeCount += result[i].type
+      //       }
+      //   }
+      //   var dealFlag = false
+      //   //判断是否重新洗牌
+      //   if((tmpTypeCount / tmpAllCount) < 2){
+      //       dealFlag = true
+      //   }
+      // }while(dealFlag && randTimes < 2000)
 
       //计算牌型
       result = {}

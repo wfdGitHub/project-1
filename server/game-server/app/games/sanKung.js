@@ -50,17 +50,18 @@ var MING_CARD_NUM = 2               //明牌数量
     }
     //下注信息
     var betAmount = 0
-
     //下注上限
-    var maxBet = 0
-
+    var betType = {
+      "0" : {"1" : 1,"2" : 2,"3" : 3,"4" : 5},
+      "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
+    }
     //斗公牛模式积分池
     var robState,betList
     room.runCount = 0
    //房间初始化
     local.init = function() {
       //console.log("enter init=====================================")
-      room.gameMode = 0                    //游戏模式
+      room.gameMode = 7                    //游戏模式
       room.gameNumber = 0                  //游戏局数
       room.maxGameNumber = 0               //游戏最大局数
       room.consumeMode = 0                 //消耗模式
@@ -106,12 +107,12 @@ var MING_CARD_NUM = 2               //明牌数量
         log("newRoom error   param.consumeMode : "+param.consumeMode)
         cb(false)
         return
-      } 
+      }
       if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
-      }    
+      }
       if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
         (param.bankerMode != 1 && param.bankerMode != 2 && param.bankerMode != 6)){
         log("newRoom error   param.bankerMode : "+param.bankerMode)
@@ -122,7 +123,10 @@ var MING_CARD_NUM = 2               //明牌数量
         log("newRoom error   param.cardMode : "+param.cardMode)
         cb(false)
         return
-      }      
+      }
+      if(typeof(param.basicType) !== "number" || !betType[param.basicType]){
+            param.basicType = 1
+      }
       if(typeof(param.isWait) !== "boolean"){
         param.isWait = true
       }
@@ -131,6 +135,7 @@ var MING_CARD_NUM = 2               //明牌数量
       if(param.halfwayEnter === false){
         room.halfwayEnter = false
       }
+      room.basicType = param.basicType
       //房间初始化
       local.init()
       room.state = false
@@ -146,6 +151,7 @@ var MING_CARD_NUM = 2               //明牌数量
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式
+
       room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
       cb(true)
     }
@@ -157,7 +163,7 @@ var MING_CARD_NUM = 2               //明牌数量
             room.agencyId = uid
           }
           cb(flag)
-      })  
+      })
     }
     //创建房间
     room.handle.newRoom = function(uid,sid,param,cb) {
@@ -661,15 +667,15 @@ var MING_CARD_NUM = 2               //明牌数量
         return
       }
       if(param.bet && typeof(param.bet) == "number"
-        && param.bet > 0 && param.bet <= 5 && betList[chair] == 0){
-        var tmpbet = param.bet
+        && param.bet > 0 && betList[chair] == 0 && betType[room.basicType][param.bet]){
+        var tmpbet = betType[room.basicType][param.bet]
         betList[chair] += tmpbet
         betAmount += tmpbet
         local.betMessege(chair,tmpbet)
       }else{
         cb(false)
         return
-      }
+      }        
       cb(true)
       //判断所有人都下注进入发牌阶段
       var flag = true
@@ -919,7 +925,8 @@ var MING_CARD_NUM = 2               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        cardMode : room.cardMode
+        cardMode : room.cardMode,
+        basicType : room.basicType
       }
       return notify
     }
