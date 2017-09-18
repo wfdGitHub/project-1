@@ -316,7 +316,22 @@ var MING_CARD_NUM = 2               //明牌数量
     local.gameBegin = function(argument) {
       log("gameBegin") 
       gameState = conf.GS_GAMEING
-      player[banker].bankerCount++
+      if(banker !== -1){
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }
+        //console.log("banker : "+banker)
+        player[banker].isBanker = true    
+        player[banker].bankerCount++
+        //广播庄家信息
+        var notify = {
+          "cmd" : "banker",
+          chair : banker
+        }
+        local.sendAll(notify)   
+      } 
       //第一次开始游戏调用游戏开始回调
       if(room.gameNumber === room.maxGameNumber){
         roomBeginCB(room.roomId,room.agencyId)
