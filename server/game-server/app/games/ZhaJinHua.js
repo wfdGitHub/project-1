@@ -955,7 +955,7 @@ var MING_CARD_NUM = 3               //明牌数量
       var newPlayer = deepCopy(player)
       for(var i = 0; i < GAME_PLAYER;i++){
         if(i == chair){
-          if(player[chair].state == 0){
+          if(player[chair].state == 0 && player[chair].isShowCard == false){
             delete newPlayer[i].handCard
           }
         }else{
