@@ -318,7 +318,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 				if(players[index].isActive){
 					GameRemote.app.rpc.db.remote.setHistory(null,players[index].uid,record,null)
 				}
-			}	
+			}
 		}
 
 		//记录日志
@@ -339,7 +339,10 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"consumeMode" : GameRemote.roomList[roomId].consumeMode,
 			"basic" : GameRemote.roomList[roomId].basic,
 			"room_uid" : GameRemote.roomList[roomId].agencyId || players[0].uid,
-			"basicType" : GameRemote.roomList[roomId].basicType
+			"basicType" : GameRemote.roomList[roomId].basicType,
+			"maxBet" : GameRemote.roomList[roomId].maxBet,
+			"maxRound" : GameRemote.roomList[roomId].maxRound,
+			"stuffyRound" : GameRemote.roomList[roomId].stuffyRound
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
