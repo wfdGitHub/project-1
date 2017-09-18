@@ -157,7 +157,6 @@ var MING_CARD_NUM = 3               //明牌数量
       gameState = conf.GS_FREE         //游戏状态
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
-      room.gameMode = Math.floor(param.gameMode)                     //游戏模式
       room.gameNumber = Math.floor(param.gameNumber)                 //游戏局数
       room.maxGameNumber = Math.floor(param.gameNumber)              //游戏最大局数
       room.consumeMode = Math.floor(param.consumeMode)               //消耗模式

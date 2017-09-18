@@ -145,7 +145,6 @@ var MING_CARD_NUM = 2               //明牌数量
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
-      room.gameMode = param.gameMode                     //游戏模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.bankerMode = param.bankerMode                 //定庄模式
       room.maxGameNumber = param.gameNumber              //游戏最大局数

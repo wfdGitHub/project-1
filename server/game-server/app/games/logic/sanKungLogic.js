@@ -144,7 +144,7 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
       times = 5
     }
     if(tmpResult.type > value){
-      for(var z = 0;z < 5;z++){
+      for(var z = 0;z < 3;z++){
         cards[endCount++] = deepCopy(handCard[z])
       }
       var randTimes = 0
@@ -160,8 +160,8 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
           cards[tmpIndex] = tmpCard
         }
         //发牌
-        for(var i = 0; i < 5; i++){
-          handCard[i] = cards[endCount - 5 + i]
+        for(var i = 0; i < 3; i++){
+          handCard[i] = cards[endCount - 3 + i]
         }
         tmpResult = module.exports.getType(handCard)
         if(tmpResult.type > value){
