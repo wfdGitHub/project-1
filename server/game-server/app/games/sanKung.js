@@ -242,7 +242,7 @@ var MING_CARD_NUM = 2               //明牌数量
         return
       }
       var tmpBanker = -1
-      if(room.bankerMode == conf.MODE_BANKER_JIUDIAN){
+      if(room.bankerMode == conf.MODE_BANKER_JIUDIAN || room.bankerMode == conf.MODE_BANKER_HOST){
         tmpBanker = banker
       }
       frame.ready(uid,chair,player,gameState,local, local.chooseBanker,tmpBanker,cb)
