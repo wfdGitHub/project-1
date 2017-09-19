@@ -104,7 +104,7 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
     }else if(tmpRand < 0.1 && tmpRand >= 0.01){
       value = 9
       times = 30
-    }else{
+    }else if(tmpRand < 0.01){
       value = 10
       times = 50      
     }
