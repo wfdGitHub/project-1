@@ -194,6 +194,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					}
 					//记录房间对应游戏服务器
 					GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
+					GameRemote.GameService.roomTime[roomId] = (new Date()).getTime()
+
 					params.gid = GameRemote.GameService.roomList[roomId]
 					//与游戏服务器连接
 					self.app.rpc.gameNode.remote.newRoom(null,params,uid,sid,roomId,function (flag) {
@@ -211,6 +213,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						}else{
 							GameRemote.GameService.roomState[roomId] = true
 							GameRemote.GameService.roomList[roomId] = false
+							delete GameRemote.GameService.roomTime[roomId]
 						}
 						cb(flag)
 					})
@@ -278,6 +281,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 				}
 				//记录房间对应游戏服务器
 				GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
+				GameRemote.GameService.roomTime[roomId] = (new Date()).getTime()
 				params.gid = GameRemote.GameService.roomList[roomId]
 				//与游戏服务器连接
 				self.app.rpc.gameNode.remote.agencyRoom(null,params,uid,sid,roomId,function (flag) {
@@ -304,6 +308,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					}else{
 						GameRemote.GameService.roomState[roomId] = true
 						GameRemote.GameService.roomList[roomId] = false
+						delete GameRemote.GameService.roomTime[roomId]
 						cb(false)
 					}
 				})    		
@@ -314,6 +319,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						//删除房间
 						GameRemote.GameService.roomState[roomId] = true
 						GameRemote.GameService.roomList[roomId] = false
+						delete GameRemote.GameService.roomTime[roomId]
 						cb(false)
 						return
 					}
@@ -391,6 +397,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 
 	GameRemote.GameService.roomState[roomId] = true
 	GameRemote.GameService.roomList[roomId] = false
+	delete GameRemote.GameService.roomTime[roomId]
 	delete GameRemote.GameService.RoomMap[roomId]
 	if(cb){
 		cb()

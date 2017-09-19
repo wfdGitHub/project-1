@@ -88,6 +88,11 @@ var Handler = function(app) {
 						Handler.channelService.broadcast("connector","onNotify",rolling)
 						local.write(res,{"flag" : true})
 					return
+					case "getRooms" :
+						local.getRooms(function(data) {
+							local.write(res,data)
+						})
+					return
 					default :
 						local.write(res,{"flag" : false})
 						break
@@ -118,6 +123,16 @@ local.write = function(res,notidy) {
 	res.write(JSON.stringify(notidy))
 	res.end()
 }
+
+
+//获取房间列表
+local.getRooms = function(cb) {
+	Handler.app.rpc.game.monitor.roomInfos(null,function(data) {
+		console.log(data)
+		cb(data)
+	})
+}
+
 
 //更新公告
 local.updateNotify = function(notify,source,cb){

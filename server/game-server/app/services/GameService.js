@@ -15,9 +15,11 @@ GameService.name = "GameService"
 var roomCallback = function(roomId,players,flag,cb) {
 }
 //房间所在游戏服务映射
-GameService.roomList = {};
+GameService.roomList = {}
 //房间状态
-GameService.roomState = {};
+GameService.roomState = {}
+//开房时间
+GameService.roomTime = {}
 //用户房间映射表
 GameService.userMap = {}		
 //房间与用户映射表
