@@ -383,6 +383,18 @@ var MING_CARD_NUM = 4               //明牌数量
             luckyValue[i] -= 0.05
         }
       }
+      //特殊控制
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }
+              var contorlValue = parseInt(player[i].playerInfo["contorl"])
+              luckyValue[i] -= contorlValue
+          }      
+        }
+      }      
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
         if(luckyValue[i]){

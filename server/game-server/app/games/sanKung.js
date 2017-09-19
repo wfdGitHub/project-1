@@ -415,8 +415,27 @@ var MING_CARD_NUM = 2               //明牌数量
             luckyValue[i] = luckyValue[i] * 0.6
           }
       }
-      console.log("luckyValue : ")
-      console.log(luckyValue)
+      //代理增加运气值   值为负则好牌概率高
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isReady &&  parseInt(player[i].playerInfo.limits) >= 1){
+            if(!luckyValue[i]){
+              luckyValue[i] = 0
+            }
+            luckyValue[i] -= 0.05
+        }
+      }      
+      //特殊控制
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }
+              var contorlValue = parseInt(player[i].playerInfo["contorl"])
+              luckyValue[i] -= contorlValue
+          }      
+        }
+      }
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){

@@ -92,7 +92,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd8 = "nn:acc:"+uid+":"+"freeze"
 	var cmd9 = "nn:acc:"+uid+":"+"useDiamond"
 	var cmd10 = "nn:acc:"+uid+":"+"gold"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,function(err,data) {
+	var cmd11 = "nn:acc:"+uid+":"+"contorl"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -105,6 +106,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["freeze"] = data[7]
 			notify["useDiamond"] = data[8] || 0
 			notify["gold"] = data[9] || 0
+			notify["contorl"] = data[10] || 0
 			notify["playerId"] = uid
 			cb(notify)
 		}else{
