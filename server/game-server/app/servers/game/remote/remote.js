@@ -85,36 +85,31 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	var self = this
 	//加入房间需要用户不在房间内
 	if(code == "join"){
-		if(!GameRemote.GameService.userMap[uid]){
-			//无效条件判断
-			if(typeof(params.roomId) != "number" || params.roomId < 0 
-				|| GameRemote.GameService.roomList[params.roomId] === undefined || GameRemote.GameService.roomState[params.roomId]){
-				//console.log("params.roomId : "+params.roomId)
-				//console.log("type : "+typeof(params.roomId))
-                //console.log(GameRemote.GameService.roomList[roomId])
-                cb(false,{"code" : tips.NO_ROOM})
-                return
-			}
-			var roomId = params.roomId
-			params.gid = GameRemote.GameService.roomList[roomId]
-			self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
-				if(flag === true){
-					GameRemote.GameService.userMap[uid] = roomId;
-					if(GameRemote.GameService.RoomMap[roomId]){
-						var info = {
-							"uid" : playerInfo.uid,
-							"nickname" : playerInfo.nickname,
-							"head" : playerInfo.head
-						}
-						GameRemote.GameService.RoomMap[roomId].push(info)						
-					}
-				}
-				cb(flag,msg)
-			})
-		}else{
-			cb(false)
-			return
+		//无效条件判断
+		if(typeof(params.roomId) != "number" || params.roomId < 0 
+			|| GameRemote.GameService.roomList[params.roomId] === undefined || GameRemote.GameService.roomState[params.roomId]){
+			//console.log("params.roomId : "+params.roomId)
+			//console.log("type : "+typeof(params.roomId))
+            //console.log(GameRemote.GameService.roomList[roomId])
+            cb(false,{"code" : tips.NO_ROOM})
+            return
 		}
+		var roomId = params.roomId
+		params.gid = GameRemote.GameService.roomList[roomId]
+		self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
+			if(flag === true){
+				GameRemote.GameService.userMap[uid] = roomId;
+				if(GameRemote.GameService.RoomMap[roomId]){
+					var info = {
+						"uid" : playerInfo.uid,
+						"nickname" : playerInfo.nickname,
+						"head" : playerInfo.head
+					}
+					GameRemote.GameService.RoomMap[roomId].push(info)						
+				}
+			}
+			cb(flag,msg)
+		})
 	}else if(code == "newRoom"){
 		cb(false)
 		return
@@ -410,16 +405,17 @@ GameRemote.prototype.kick = function(uid,cb) {
 
 //检测是否需要重连
 GameRemote.prototype.reconnection = function(uid, sid,cb) {
-	if(GameRemote.GameService.userMap[uid] !== undefined){
-		var roomId = GameRemote.GameService.userMap[uid]
-		var params = {}
-		params.gid = GameRemote.GameService.roomList[roomId]
-		this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (flag){
-			cb(flag)
-		})
-	}else{
-		cb()
-	}
+	// if(GameRemote.GameService.userMap[uid] !== undefined){
+	// 	var roomId = GameRemote.GameService.userMap[uid]
+	// 	var params = {}
+	// 	params.gid = GameRemote.GameService.roomList[roomId]
+	// 	this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (flag){
+	// 		cb(flag)
+	// 	})
+	// }else{
+	// 	cb()
+	// }
+	cb()
 }
 
 //用户退出房间

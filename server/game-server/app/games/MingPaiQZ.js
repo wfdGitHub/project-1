@@ -229,6 +229,11 @@ var MING_CARD_NUM = 4               //明牌数量
 
     //玩家加入
     room.handle.join = function(uid,sid,param,cb) {
+      //玩家已在房间中改为重连
+      if(room.chairMap[uid]){
+        room.reconnection(uid,sid,param,cb)
+        return
+      }
       log("serverId"+sid)
       //房间未创建不可加入
       if(room.state == true){
@@ -628,34 +633,34 @@ var MING_CARD_NUM = 4               //明牌数量
             return
           case "bet" : 
             //游戏状态为BETTING
-            // if(gameState !== conf.GS_BETTING){
-            //   cb(false)
-            //   return
-            // }
-            // //不在游戏中不能下注
-            // if(!player[chair].isReady){
-            //   cb(false)
-            //   return
-            // }  
-            // //庄家不能下注
-            // if(chair == banker){
-            //   cb(false)
-            //   return
-            // }
-            // //已下注不能下注
-            // if(betList[chair] !== 0){
-            //   cb(false)
-            //   return
-            // }
-            // //下注只能按预设的分下
-            // if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
-            //   cb(false)
-            //   return
-            // }
-            // betList[chair] += param.bet
-            // betAmount += param.bet
-            // local.betMessege(chair,param.bet)
-            // local.isAllBet()
+            if(gameState !== conf.GS_BETTING){
+              cb(false)
+              return
+            }
+            //不在游戏中不能下注
+            if(!player[chair].isReady){
+              cb(false)
+              return
+            }  
+            //庄家不能下注
+            if(chair == banker){
+              cb(false)
+              return
+            }
+            //已下注不能下注
+            if(betList[chair] !== 0){
+              cb(false)
+              return
+            }
+            //下注只能按预设的分下
+            if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
+              cb(false)
+              return
+            }
+            betList[chair] += param.bet
+            betAmount += param.bet
+            local.betMessege(chair,param.bet)
+            local.isAllBet()
             cb(false)
             return
         case "allIn" :
