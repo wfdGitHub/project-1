@@ -366,8 +366,8 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 		GameRemote.GameService.setAgencyRoomByID(agencyId,roomId,agencyRoomInfo)
 	}
 
-	GameRemote.GameService.roomState[roomId] = true
-	GameRemote.GameService.roomList[roomId] = false
+	// GameRemote.GameService.roomState[roomId] = true
+	// GameRemote.GameService.roomList[roomId] = false
 	delete GameRemote.GameService.RoomMap[roomId]
 	if(cb){
 		cb()

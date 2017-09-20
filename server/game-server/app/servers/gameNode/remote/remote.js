@@ -41,6 +41,8 @@ GameRemote.roomLock = {}
 GameRemote.lockState = {}
 //解散请求计时器
 GameRemote.lockTimer = {}
+//战绩记录
+GameRemote.historyList = {}
 //新建房间
 GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 	console.log("rid : "+roomId+"    uid : "+uid)
@@ -102,62 +104,70 @@ var finishGameOfTimer = function(index) {
 		}
 	}
 }
-//加入房间
+
+//加入房间   若房间已结束则返回战绩
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
-	var self = this
-	async.waterfall([
-	function(next) {
-		//获取玩家钻石，判断是否满足准入数额
-		self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
-			next(null,data)
-		})
-	},
-	function(data,next) {
-		var diamond = data
-		var needMond = 0
-		switch(GameRemote.roomList[roomId].consumeMode){
-			case conf.MODE_DIAMOND_HOST : 
-				needMond = 0
-			break;
-			case conf.MODE_DIAMOND_EVERY :
-				needMond = GameRemote.roomList[roomId].needDiamond
-			break;
-			case conf.MODE_DIAMOND_WIN : 
-				needMond = GameRemote.roomList[roomId].needDiamond * 3;
-			break;
-		} 
-		if(diamond >= needMond){
-			next()
-		}else{
-			cb(false,{"code" :tips.NO_DIAMOND})
-			return
-		}
-	},
-	function(next) {
-		//获取玩家信息
-		self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
-			next(null,data)
-		})
-	},
-	function(playerInfo) {
-		delete playerInfo["history"]
-		//加入房间
-		var roomId = params.roomId
-		var ip = params.ip;
-		GameRemote.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag,code) {
-			if(flag){
-				GameRemote.userMap[uid] = roomId
+
+	if(GameRemote.roomList[roomId]){
+		var self = this
+		async.waterfall([
+		function(next) {
+			//获取玩家钻石，判断是否满足准入数额
+			self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data){
+				next(null,data)
+			})
+		},
+		function(data,next) {
+			var diamond = data
+			var needMond = 0
+			switch(GameRemote.roomList[roomId].consumeMode){
+				case conf.MODE_DIAMOND_HOST : 
+					needMond = 0
+				break;
+				case conf.MODE_DIAMOND_EVERY :
+					needMond = GameRemote.roomList[roomId].needDiamond
+				break;
+				case conf.MODE_DIAMOND_WIN : 
+					needMond = GameRemote.roomList[roomId].needDiamond * 3;
+				break;
+			} 
+			if(diamond >= needMond){
+				next()
+			}else{
+				cb(false,{"code" :tips.NO_DIAMOND})
+				return
 			}
-			cb(flag,{"code" : code,},playerInfo)
+		},
+		function(next) {
+			//获取玩家信息
+			self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+				next(null,data)
+			})
+		},
+		function(playerInfo) {
+			delete playerInfo["history"]
+			//加入房间
+			var roomId = params.roomId
+			var ip = params.ip;
+			GameRemote.roomList[roomId].handle.join(uid,sid,{ip : ip,playerInfo : playerInfo},function (flag,code) {
+				if(flag){
+					GameRemote.userMap[uid] = roomId
+				}
+				cb(flag,{"code" : code,},playerInfo)
+			})
+		}
+		],function(err,result) {
+		//console.log(err)
+		//console.log(result)
+		cb(false)
+		return
 		})
+	}else{
+		//返回战绩
+		cb(true,{"code" : "history"},GameRemote.historyList[roomId])
 	}
-	],function(err,result) {
-	//console.log(err)
-	//console.log(result)
-	cb(false)
-	return
-	})
 }
+
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 	GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
@@ -323,6 +333,13 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"basic" : GameRemote.roomList[roomId].basic,
 			"room_uid" : GameRemote.roomList[roomId].agencyId || players[0].uid
 		}
+
+		//记录战绩
+		GameRemote.historyList[roomId] = {
+			"player" : players,
+			"streamData" : deepCopy(streamData)
+		}		
+
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
 		info += "beginTime : "+streamData.beginTime + "     endTime : "+streamData.endTime+"\r\n"
@@ -349,8 +366,20 @@ var gemeOver = function(roomId,players,flag,cb) {
 	GameRemote.app.rpc.game.remote.gameOver(null,roomId,players,flag,agencyId,maxGameNumber,function() {})
 	//删除房间
 	GameRemote.roomList[roomId] = false
+
 	cb()
 }
 
+
+
 //解散房间
 GameRemote.prototype.onFrame = freeFrame.onFrame
+
+
+var deepCopy = function(source) {
+  var result={}
+  for (var key in source) {
+        result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
+     } 
+  return result;
+}
