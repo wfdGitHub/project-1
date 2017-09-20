@@ -58,8 +58,8 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //奖励类型
     var awardList = {
-      "0" : [1,1,1,1,1,1,1,1,2,2,4],
-      "1" : [1,1,1,1,1,1,1,2,2,3,4]
+      "0" : [1,1,1,1,1,1,1,1,2,2,4,5,6,8],
+      "1" : [1,1,1,1,1,1,1,2,2,3,4,5,6,8]
     }
     room.awardType = 0
     //下注上限
@@ -159,6 +159,17 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       }
+      //特殊牌型
+      if(typeof(param.wuhuaniu) != "boolean" || typeof(param.zhadanniu) != "boolean" || typeof(param.wuxiaoniu) != "boolean"){
+        log("newRoom error   param.wuhuaniu : "+param.wuhuaniu + "   param.zhadanniu : "+param.zhadanniu+"  param.wuxiaoniu : "+param.wuxiaoniu)
+        cb(false)
+        return
+      }
+      room.wuhuaniu = param.wuhuaniu
+      room.zhadanniu = param.zhadanniu
+      room.wuxiaoniu = param.wuxiaoniu
+      logic.setFlag(room.wuhuaniu,room.zhadanniu,room.wuxiaoniu)
+
       room.awardType = param.awardType
       //离线等待
       if(typeof(param.isWait) !== "boolean"){
@@ -289,12 +300,12 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //游戏开始
     local.gameBegin = function(argument) {
-      log("gameBegin") 
-      gameState = conf.GS_GAMEING   
+      log("gameBegin")
+      gameState = conf.GS_GAMEING
       //第一次开始游戏调用游戏开始回调
       if(room.gameNumber === room.maxGameNumber){
         roomBeginCB(room.roomId,room.agencyId)
-      }       
+      }
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
         if(banker !== -1){
           //重置庄家信息
@@ -303,7 +314,7 @@ var MING_CARD_NUM = 4               //明牌数量
               player[i].isBanker = false
           }
           //console.log("banker : "+banker)
-          player[banker].isBanker = true    
+          player[banker].isBanker = true
         }
       }
       room.gameNumber--
@@ -312,7 +323,7 @@ var MING_CARD_NUM = 4               //明牌数量
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isReady){
             betList[i] = 0
-            player[i].isShowCard = false    
+            player[i].isShowCard = false
           }
       }
       betAmount = 0
@@ -340,7 +351,7 @@ var MING_CARD_NUM = 4               //明牌数量
         var tmpResult = {}
         index = 0
         var tmpAllCount = 0     //总玩家数
-        var tmpTypeCount = 0    //牌型权重 
+        var tmpTypeCount = 0    //牌型权重
 
         for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
@@ -364,8 +375,8 @@ var MING_CARD_NUM = 4               //明牌数量
       for(var i = index;i < cardCount;i++){
         tmpCards[tmpCardCount++] = deepCopy(cards[i])
       }
-      //执行控制   
-      //先计算每个人的运气值   -1 到 1之间     
+      //执行控制
+      //先计算每个人的运气值   -1 到 1之间
       var luckyValue = {}
       var randomMaxScore = 500 + Math.floor(Math.random() * 300)
       var randomMinScore = 400 + Math.floor(Math.random() * 200)
@@ -1013,7 +1024,10 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
-        allowAllin : allowAllin
+        allowAllin : allowAllin,
+        wuhuaniu : room.wuhuaniu,
+        zhadanniu : room.zhadanniu,
+        wuxiaoniu : room.wuxiaoniu
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
