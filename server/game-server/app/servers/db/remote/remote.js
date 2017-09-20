@@ -26,6 +26,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"freeze",0)
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
 		DBRemote.dbService.setPlayer(uid,"gold",0)
+		DBRemote.dbService.setPlayer(uid,"contorl",0)
 		var history = {}
 		history.allGames = 0
 		history.List = {}
