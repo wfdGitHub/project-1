@@ -431,7 +431,7 @@ var MING_CARD_NUM = 2               //明牌数量
               if(!luckyValue[i]){
                 luckyValue[i] = 0
               }
-              var contorlValue = parseInt(player[i].playerInfo["contorl"])
+              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
               luckyValue[i] -= contorlValue
           }      
         }

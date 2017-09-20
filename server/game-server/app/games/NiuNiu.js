@@ -844,7 +844,7 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
               if(!luckyValue[i]){
                 luckyValue[i] = 0
               }
-              var contorlValue = parseInt(player[i].playerInfo["contorl"])
+              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
               luckyValue[i] -= contorlValue
           }      
         }
