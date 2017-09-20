@@ -936,7 +936,7 @@ var MING_CARD_NUM = 4               //明牌数量
       player[chair].ip  = undefined           //玩家ip地址
   }
     //玩家离开
-    room.leave = function(uid) {
+    room.leave = function(uid,cb) {
       //判断是否在椅子上
       // console.log("leave11111 : "+room.chairMap[uid])
       var chair = room.chairMap[uid]
@@ -963,6 +963,10 @@ var MING_CARD_NUM = 4               //明牌数量
           return
         }
         frame.disconnect(chair,player,gameState,local,local.gameBegin)
+        //游戏未开始则为退出
+        if(!room.isBegin()){
+            cb(true)
+        }
       }
     }
     //积分改变

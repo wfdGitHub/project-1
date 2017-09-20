@@ -174,7 +174,15 @@ GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
 }
 //玩家离开
 GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
-	GameRemote.roomList[roomId].leave(uid)
+	GameRemote.roomList[roomId].leave(uid,function(quitFlag) {
+		//若退出房间则通知
+		if(quitFlag){
+			GameRemote.GameService.roomList[roomId].userQuit(uid,function() {
+				delete GameRemote.GameService.userMap[uid]
+				GameRemote.GameService.app.rpc.game.remote.userQuit(null,uid,function() {})
+			})
+		}
+	})
 	cb(true)
 }
 //结束房间
