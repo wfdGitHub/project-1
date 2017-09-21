@@ -43,6 +43,9 @@ handler.getAgencyRoom = function(msg,session,next) {
       })      
     }
 }
+//绑定手机
+
+
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {
     var self = this
