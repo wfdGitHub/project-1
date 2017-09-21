@@ -64,8 +64,8 @@ handler.bindPhone = function(msg,session,next) {
     }else{
       this.app.rpc.game.smsServer.bindPhone(session,uid,code,function(data) {
         next(null,{"flag" : data})
-      })      
-    }  
+      })
+    }
 }
 
 
@@ -114,6 +114,7 @@ handler.visitorEnter = function(msg, session, next) {
           })
         }
       },
+
       function(cb){
         result.openId = playerId
         result.sex = 1

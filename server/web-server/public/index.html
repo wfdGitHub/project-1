@@ -272,8 +272,36 @@
           pomelo.request("connector.entryHandler.bindPhone", {"code" : code}, function(data) {
               console.log("flag is : "+data.flag)
             }
-          );        
+          )
+      }
+      //生成红包
+      var createRedPacket = function(diamond) {
+          pomelo.request("connector.redPacket.createRedPacket", {"diamond" : diamond}, function(data) {
+              console.log(data)
+            }
+          )
+      }
+      //查询红包
+      var queryRedPacket = function(redId) {
+          pomelo.request("connector.redPacket.queryRedPacket", {"redId" : redId}, function(data) {
+              console.log(data)
+            }
+          )
       }      
+      //领取红包
+      var drawRedPacket = function(redId) {
+          pomelo.request("connector.redPacket.drawRedPacket", {"redId" : redId}, function(data) {
+              console.log(data)
+            }
+          )
+      }       
+      //查询个人红包记录
+      var queryUserRed = function(redId) {
+          pomelo.request("connector.redPacket.queryUserRed", {}, function(data) {
+              console.log(data)
+            }
+          )
+      }
     </script>
   </head>
   <body>
