@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      host = "192.168.1.65";
+      host = "127.0.0.1";
       //host = "120.77.157.99"
       var port = "3010";
       function show() {
@@ -259,6 +259,21 @@
               console.log(data)
           });
       }
+
+      //获取验证码
+      var getCaptcha = function(phone) {
+          pomelo.request("connector.entryHandler.getCaptcha", {"phone" : phone}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );        
+      }
+      //绑定手机
+      var bindPhone = function(code) {
+          pomelo.request("connector.entryHandler.bindPhone", {"code" : code}, function(data) {
+              console.log("flag is : "+data.flag)
+            }
+          );        
+      }      
     </script>
   </head>
   <body>

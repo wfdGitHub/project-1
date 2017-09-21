@@ -43,7 +43,30 @@ handler.getAgencyRoom = function(msg,session,next) {
       })      
     }
 }
+//获取验证码
+handler.getCaptcha = function(msg,session,next) {
+    var uid = session.get("uid")
+    var phone = msg.phone
+    if(!uid || !phone){
+      next(null,{"flag" : false})
+    }else{
+      this.app.rpc.game.smsServer.sendCaptcha(session,uid,phone,function(data) {
+        next(null,{"flag" : data})
+      })      
+    }
+}
 //绑定手机
+handler.bindPhone = function(msg,session,next) {
+    var uid = session.get("uid")
+    var code = msg.code
+    if(!uid || !code){
+      next(null,{"flag" : false})
+    }else{
+      this.app.rpc.game.smsServer.bindPhone(session,uid,code,function(data) {
+        next(null,{"flag" : data})
+      })      
+    }  
+}
 
 
 //获取自身数据
