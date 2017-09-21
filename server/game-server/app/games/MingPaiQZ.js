@@ -135,19 +135,21 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       }
-      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+      //选择6人或9人
+      if(!param.playerCount || typeof(param.playerCount) !== "number" || (param.playerCount !== 6 && param.playerCount !== 9)){
+        log("newRoom error   param.playerCount : "+param.playerCount)
+        cb(false)
+        return
+      }
+      if(!param.gameNumber || typeof(param.gameNumber) !== "number" 
+        || (param.playerCount == 6 param.gameNumber != 10 && param.gameNumber != 20)
+        || (param.playerCount == 9 param.gameNumber != 12 && param.gameNumber != 24)){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
       }
       if(!param.basic || typeof(param.basic) !== "number" || !betType[param.basic]){
         log("newRoom error   param.basic : "+param.basic)
-        cb(false)
-        return
-      }
-      //选择6人或9人
-      if(!param.playerCount || typeof(param.playerCount) !== "number" || (param.playerCount !== 6 && param.playerCount !== 9)){
-        log("newRoom error   param.playerCount : "+param.playerCount)
         cb(false)
         return
       }

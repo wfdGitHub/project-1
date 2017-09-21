@@ -240,7 +240,19 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function(data,next) {
 	    		//检查钻石是否足够
 				var diamond = data
-				needMond = Math.ceil(params.gameNumber * params.playerCount / 10) * 1
+				if(params.playerCount == 6){
+					if(params.gameNumber == 10){
+						needMond = 1
+					}else{
+						needMond = 2
+					}
+				}else if(params.playerCount == 9){
+					if(params.gameNumber == 12){
+						needMond = 2
+					}else{
+						needMond = 4
+					}					
+				}
 				if(diamond < needMond){
 					cb(false,{"code" : tips.NO_DIAMOND})
 					return
