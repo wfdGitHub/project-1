@@ -18,31 +18,24 @@ var remote = Remote.prototype
 
 //请求发送验证码
 remote.sendCaptcha = function(uid,phone,cb) {
-	//已绑定过手机则不能绑定
-	this.app.rpc.db.remote.getValue(null,uid,"phone",function(data) {
-		if(data == 0){
-			var tmpCode = Math.floor(Math.random() * 8999) + 1000
-			//发送短信
-			Remote.smsClient.sendSMS({
-			    PhoneNumbers: phone,
-			    SignName: '大番薯',
-			    TemplateCode: 'SMS_97880040',
-			    TemplateParam: JSON.stringify({"code" : tmpCode , "product" : "大番薯"})
-			}).then(function (res) {
-			    let {Code}=res
-			    if (Code === 'OK') {
-			        //处理返回参数
-			        // console.log(res)
-			        Remote.captchaList[uid] = {"code" : tmpCode,"phone" : phone}
-			        cb(true)
-			    }
-			}, function (err) {
-			    // console.log(err)
-			    cb(false)
-			})			
-		}else{
-			cb(false)
-		}
+	var tmpCode = Math.floor(Math.random() * 8999) + 1000
+	//发送短信
+	Remote.smsClient.sendSMS({
+	    PhoneNumbers: phone,
+	    SignName: '大番薯',
+	    TemplateCode: 'SMS_97880040',
+	    TemplateParam: JSON.stringify({"code" : tmpCode , "product" : "大番薯"})
+	}).then(function (res) {
+	    let {Code}=res
+	    if (Code === 'OK') {
+	        //处理返回参数
+	        // console.log(res)
+	        Remote.captchaList[uid] = {"code" : tmpCode,"phone" : phone}
+	        cb(true)
+	    }
+	}, function (err) {
+	    // console.log(err)
+	    cb(false)
 	})
 }
 
