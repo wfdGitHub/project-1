@@ -302,6 +302,14 @@
             }
           )
       }
+
+      //获取房间信息
+      var getRoomInfo = function(roomId) {
+          pomelo.request("connector.entryHandler.getRoomInfo", {"roomId" : roomId}, function(data) {
+              console.log(data)
+            }
+          )
+      }
     </script>
   </head>
   <body>

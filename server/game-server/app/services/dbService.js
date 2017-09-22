@@ -108,7 +108,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["useDiamond"] = data[8] || 0
 			notify["gold"] = data[9] || 0
 			notify["contorl"] = data[10] || 0
-			notify["contorl"] = data[11]
+			notify["phone"] = data[11]
 			notify["playerId"] = uid
 			cb(notify)
 		}else{

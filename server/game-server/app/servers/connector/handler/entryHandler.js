@@ -67,7 +67,16 @@ handler.bindPhone = function(msg,session,next) {
       })
     }
 }
-
+//加入房间前获取房间信息
+handler.getRoomInfo = function(msg,session,next) {
+    if(session.get("uid") && msg.roomId){
+      this.app.rpc.game.remote.getRoomInfo(session,msg.roomId,function(data) {
+        next(null,data)
+      })      
+    }else{
+      next(false)
+    }
+}
 
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {

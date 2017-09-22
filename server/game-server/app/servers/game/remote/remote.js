@@ -38,6 +38,20 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 	}
 }
 
+//获取房间数据
+GameRemote.prototype.getRoomInfo = function(roomId,cb) {
+	if(GameRemote.GameService.roomList[roomId]){
+		var roomInfo = {
+			"roomType" : GameRemote.GameService.roomList[roomId].roomType,
+			"roomPlayer" : GameRemote.GameService.RoomMap[roomId]
+		}
+		cb(roomInfo)
+	}else{
+		cb(false)
+	}
+}
+
+
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	if(GameRemote.GameService.userMap[uid] !== undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
