@@ -346,7 +346,7 @@ var MING_CARD_NUM = 3               //明牌数量
       //开始第一轮
       curBet = 1
       curRound = 1
-      banker += 1
+      banker = (banker + 1)%GAME_PLAYER
       while(player[banker].isActive == false || player[banker].isReady == false){
         banker = (banker + 1)%GAME_PLAYER
       }
@@ -381,7 +381,7 @@ var MING_CARD_NUM = 3               //明牌数量
       if(curPlayerCount < 2){
         local.settlement()
         return
-      }    
+      }
       //下一个玩家开始操作
       actionFlag = false
       var bankerFlag = false    //是否轮回到庄家
@@ -399,7 +399,7 @@ var MING_CARD_NUM = 3               //明牌数量
           console.log("ERROR!!!")
           errorLogger.info("炸金花结算错误1111111")
           local.settlement()
-          return  
+          return
         }
       }
       var notify = {
