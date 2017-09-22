@@ -41,7 +41,7 @@ dbService.prototype.start = function(cb){
 			if(data === null){
 		        console.log("\033[33m[INFO] DataBase check - nn:game:switch\033[0m");
 		        var tmpTable = {
-		        	"niuniu" : false,
+		        	"niuniu" : true,
 		        	"zhajinniu" : false,
 		        	"mingpaiqz" : true,
 		        	"fengkuang" : false,
