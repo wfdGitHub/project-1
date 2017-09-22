@@ -36,6 +36,21 @@ dbService.prototype.start = function(cb){
 		        db.set("nn:notifys",JSON.stringify(notify));
     		}
 		})
+		//游戏类型开关
+		dbService.db.get("nn:game:switch",function(err,data) {
+			if(data === null){
+		        console.log("\033[33m[INFO] DataBase check - nn:game:switch\033[0m");
+		        var tmpTable = {
+		        	"niuniu" : false,
+		        	"zhajinniu" : false,
+		        	"mingpaiqz" : true,
+		        	"fengkuang" : false,
+		        	"sanKung" : true,
+		        	"zhajinhua" : true
+		        }
+		        db.set("nn:game:switch",JSON.stringify(tmpTable));
+    		}
+		})
 	})
 	cb()
 }

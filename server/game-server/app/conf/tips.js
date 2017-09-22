@@ -11,6 +11,7 @@ conf[14] = "已在房间中"
 conf[15] = "该房不允许中途进入"
 conf[16] = "该用户非您发展，不能赠送"
 conf[17] = "房间已满"
+conf[18] = "该游戏正在维护中。。"
 
 conf.NO_DIAMOND = 10
 conf.FULL_ROOM = 11
@@ -20,5 +21,6 @@ conf.IN_ROOM = 14
 conf.CANT_HALF_JOIN = 15
 conf.CANT_GIVE = 16
 conf.ROOM_FULL = 17
+conf.GAME_CLOSE = 18
 
 module.exports.tipsConf = conf

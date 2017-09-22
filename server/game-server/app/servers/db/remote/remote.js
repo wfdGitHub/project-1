@@ -210,3 +210,20 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 DBRemote.prototype.getValue = function(uid,name,cb) {
 	DBRemote.dbService.getPlayer(uid,name,cb)
 }
+
+
+//检查游戏开关
+DBRemote.prototype.checkGameSwitch = function(type,cb) {
+	DBRemote.dbService.db.get("nn:game:switch",function(err,data) {
+		if(!data){
+			cb(true)
+			return
+		}
+		var tmpData = JSON.parse(data)
+		if(tmpData[type] != undefined  && tmpData[type] == false){
+			cb(false)
+		}else{
+			cb(true)
+		}
+	})
+}
