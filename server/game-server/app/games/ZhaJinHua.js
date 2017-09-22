@@ -30,7 +30,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var timer                            //定时器句柄
     room.GAME_PLAYER = 6                 //游戏人数
     GAME_PLAYER = 6
-
+    var betList = []
     //炸金花特殊数据
     var curPlayer = -1                   //当前操作玩家
     var curRound = 0                     //当前轮数
@@ -406,7 +406,6 @@ var MING_CARD_NUM = 3               //明牌数量
         "cmd" : "nextPlayer",
         "chair" : curPlayer,
         "curBet" : curBet,
-        "allBet" : betAmount,
         "curRound" : curRound
       }
       local.sendAll(notify)
