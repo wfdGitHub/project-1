@@ -56,6 +56,7 @@ var MING_CARD_NUM = 4               //明牌数量
       "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
       "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
     }
+    room.basicType = 1
     //奖励类型
     var awardList = {
       "0" : [1,1,1,1,1,1,1,1,2,2,4,5,6,8],
@@ -124,17 +125,17 @@ var MING_CARD_NUM = 4               //明牌数量
       //console.log("newRoom")
       log("newRoom"+uid)
         //无效条件判断
-      if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
-        log("newRoom error   param.consumeMode : "+param.consumeMode)
-        cb(false)
-        return
-      }
-      if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
-        (param.bankerMode != 1 && param.bankerMode != 5)){
-        log("newRoom error   param.bankerMode : "+param.bankerMode)
-        cb(false)
-        return
-      }
+      // if(!param.consumeMode || typeof(param.consumeMode) !== "number" || param.consumeMode > 3 || param.consumeMode < 0){
+      //   log("newRoom error   param.consumeMode : "+param.consumeMode)
+      //   cb(false)
+      //   return
+      // }
+      // if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
+      //   (param.bankerMode != 1 && param.bankerMode != 5)){
+      //   log("newRoom error   param.bankerMode : "+param.bankerMode)
+      //   cb(false)
+      //   return
+      // }
       //选择6人或9人
       if(!param.playerCount || typeof(param.playerCount) !== "number" || (param.playerCount !== 6 && param.playerCount !== 9)){
         log("newRoom error   param.playerCount : "+param.playerCount)
@@ -156,7 +157,7 @@ var MING_CARD_NUM = 4               //明牌数量
       GAME_PLAYER = param.playerCount
       room.GAME_PLAYER = GAME_PLAYER      
       //选择倍率类型
-      if(!param.awardType || typeof(param.awardType) !== "number" || !awardList[param.awardType]){
+      if(typeof(param.awardType) !== "number" || !awardList[param.awardType]){
         log("newRoom error   param.awardType : "+param.awardType)
         cb(false)
         return
@@ -200,7 +201,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
-      room.bankerMode = param.bankerMode                 //定庄模式
+      room.bankerMode = conf.MODE_BANKER_ROB             //定庄模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
@@ -670,7 +671,7 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             //下注只能按预设的分下
-            if(!param || typeof(param.bet) !== "number" || (!betType[basicType][param.bet])){
+            if(!param || typeof(param.bet) !== "number" || (!betType[room.basicType][param.bet])){
               cb(false)
               return
             }
@@ -744,7 +745,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
-            betList[i] = betType[basicType]["default"]
+            betList[i] = betType[room.basicType]["default"]
             local.betMessege(i,betList[i])
           }
       }
@@ -1043,7 +1044,7 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basicType : basicType,
+        basicType : room.basicType,
         maxRob : room.maxRob,
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,

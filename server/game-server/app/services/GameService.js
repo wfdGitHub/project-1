@@ -39,7 +39,7 @@ GameService.prototype.start = function(cb) {
 //分配房间号
 GameService.getUnusedRoom = function(roomType) {
 	//随机分配房间号
-	var roomId = typeof((new Date()).getTime() + "" + Math.floor(Math.random() * 100000))
+	var roomId = Math.floor((new Date()).getTime() + "" + Math.floor(Math.random() * 100000))
 	return roomId
 }
 

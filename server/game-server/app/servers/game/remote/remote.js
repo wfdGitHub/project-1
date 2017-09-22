@@ -40,6 +40,8 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 
 //获取房间数据
 GameRemote.prototype.getRoomInfo = function(roomId,cb) {
+	console.log("GameRemote.GameService.roomList[roomId]")
+	console.log(GameRemote.GameService.roomList[roomId])
 	if(GameRemote.GameService.roomList[roomId]){
 		var roomInfo = {
 			"roomType" : GameRemote.GameService.roomList[roomId].roomType,
@@ -239,6 +241,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	function(next) {
 	    		//检查有没有空闲房间
 	    		roomId = GameRemote.GameService.getUnusedRoom(params.gameType)
+	    		console.log("roomId ： "+roomId)
 	    		if(roomId !== false){
 	    			next()
 	    		}else{
@@ -310,7 +313,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						cb(false)
 					}
 				})    		
-	    	},function(roomId) {
+	    	},function() {
 				//扣除钻石
 				GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
 					if(!flag){
