@@ -1055,7 +1055,7 @@ var MING_CARD_NUM = 4               //明牌数量
         wuhuaniu : room.wuhuaniu,
         zhadanniu : room.zhadanniu,
         wuxiaoniu : room.wuxiaoniu,
-        playerCount : room.playerCount
+        GAME_PLAYER : room.GAME_PLAYER
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
