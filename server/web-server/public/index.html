@@ -164,7 +164,7 @@
         });
       };
       var test = function(roomId) {
-          pomelo.request("connector.entryHandler.sendFrame",{"code" : "join","params" : {"roomId" : roomId}},function(data) {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "join","params" : {"roomId" : roomId}},function(data) {
             console.log(data)
           });
       }
