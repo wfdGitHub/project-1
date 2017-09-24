@@ -1107,9 +1107,11 @@ var MING_CARD_NUM = 4               //明牌数量
     }else{
       //清除座位信息
       local.initChairInfo(chair) 
-      var tsid =  room.channel.getMember(uid)['sid']
-      if(tsid){
-        room.channel.leave(uid,tsid)
+      if(room.channel.getMember(uid)){
+        var tsid =  room.channel.getMember(uid)['sid']
+        if(tsid){
+          room.channel.leave(uid,tsid)
+        }        
       }
       delete room.chairMap[uid]
       var notify = {
