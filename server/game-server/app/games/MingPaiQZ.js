@@ -529,8 +529,16 @@ var MING_CARD_NUM = 4               //明牌数量
       num = robList[index]
       room.maxRob = maxRob
       banker = num
+      for(var i = 0;i < GAME_PLAYER;i++){
+        player[i].isBanker = false
+      }
       player[banker].isBanker = true
       player[banker].bankerCount++
+      var notify = {
+        "cmd" : "endRob",
+        "banker" : banker
+      }
+      local.sendAll(notify)
       gameState = conf.GS_NONE
       setTimeout(local.betting,1000)
     }
