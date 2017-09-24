@@ -372,6 +372,7 @@ handler.sendData = function(msg, session, next){
             msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
           }
         }
+        console.log()
         self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
             next(null,{flag : flag,msg : msg})
         }) 
@@ -387,10 +388,12 @@ handler.sendFrame = function(msg, session, next) {
     var uid = session.get("uid")
     //console.log("uid : "+uid)  
     if(!!uid){
+        console.log("===============1111")
         self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
             next(null,{flag : flag,msg : msg})
         })   
     }else{
+       console.log("===============22222")
         next(null,{flag : false})
     }
 }

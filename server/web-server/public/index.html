@@ -107,7 +107,8 @@
       }
       var agency = function(argument) {
           pomelo.request("connector.entryHandler.sendData", {"code" : "agency","params" : {gameMode : 4,
-            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerAmount: 6,basic : 1 ,gameType : "zhajinniu"}}, function(data,msg) {
+            consumeMode: 1,gameNumber: 10,bankerMode : 1,cardMode : 1,playerCount: 6,basic : 1 ,
+            gameType : "mingpaiqz","wuhuaniu" : true,"zhadanniu" : true,"wuxiaoniu" : true,"awardType" : 0}}, function(data,msg) {
               console.log("flag is : "+data.flag)
               console.log(data.msg)
             }
