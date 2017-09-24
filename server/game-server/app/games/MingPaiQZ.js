@@ -50,11 +50,10 @@ var MING_CARD_NUM = 4               //明牌数量
       }
     }
     var betType = {
-      "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
-      "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
-      "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
-      "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
-      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
+      "1" : true,
+      "2" : true,
+      "4" : true,
+      "5" : true
     }
     room.basicType = 1
     //奖励类型
@@ -149,7 +148,8 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       }
-      if(!param.basic || typeof(param.basic) !== "number" || !betType[param.basic]){
+      if(!param.basic || typeof(param.basic) !== "number" || 
+        (param.basic != 1 && param.basic != 3 && param.basic != 5)){
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return
@@ -544,12 +544,15 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //下注阶段
     local.betting = function() {
-      for(var i = 0; i < GAME_PLAYER;i++){
-        if(player[i].isReady && i != banker){
-          betList[i] = basic
-        }
+      //状态改变
+      gameState = conf.GS_BETTING
+      //通知客户端
+      var notify = {
+        cmd : "beginBetting",
+        banker : banker
       }
-      local.deal()
+      local.sendAll(notify)      
+      timer = setTimeout(local.deal,conf.TID_BETTING)      
     }
     //发送聊天
     room.handle.say = function(uid,sid,param,cb) {
@@ -679,7 +682,7 @@ var MING_CARD_NUM = 4               //明牌数量
               return
             }
             //下注只能按预设的分下
-            if(!param || typeof(param.bet) !== "number" || (!betType[room.basicType][param.bet])){
+            if(!param || typeof(param.bet) !== "number" || (!betType[param.bet])){
               cb(false)
               return
             }
@@ -799,43 +802,43 @@ var MING_CARD_NUM = 4               //明牌数量
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
                   var tmpAward = awardList[room.awardType][result[i].type]
-                  curScores[i] += betList[i] * tmpAward * room.maxRob
-                  curScores[banker] -= betList[i] * tmpAward * room.maxRob
+                  curScores[i] += betList[i] * tmpAward * room.maxRob * room.basic
+                  curScores[banker] -= betList[i] * tmpAward * room.maxRob * room.basic
               }else{
                   //庄家赢
                   var tmpAward = awardList[room.awardType][result[banker].type]
-                  curScores[i] -= betList[i] * tmpAward * room.maxRob
-                  curScores[banker] += betList[i] * tmpAward * room.maxRob
+                  curScores[i] -= betList[i] * tmpAward * room.maxRob * room.basic
+                  curScores[banker] += betList[i] * tmpAward * room.maxRob * room.basic
               }              
           }
         }
         //牛牛坐庄模式换庄
         //room.maxResultFlag = false
-        var maxResultFlag = false
-        var maxResultIndex = -1
-        if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
-          for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
-                if(result[i].type >= 10){
-                  if(maxResultFlag == false){
-                    maxResultFlag = true
-                    maxResultIndex = i
-                  }else{
-                    if(logic.compare(result[i],result[maxResultIndex])){
-                      maxResultIndex = i
-                    }
-                  }
-                }
-            }
-          }
-          if(maxResultFlag){
-            banker = maxResultIndex
-          }else{
-            do{
-              banker = (banker + 1) % GAME_PLAYER
-            }while(!player[banker].isActive)
-          }
-        }        
+        // var maxResultFlag = false
+        // var maxResultIndex = -1
+        // if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+        //   for(var i = 0;i < GAME_PLAYER;i++){
+        //     if(player[i].isActive && player[i].isReady){
+        //         if(result[i].type >= 10){
+        //           if(maxResultFlag == false){
+        //             maxResultFlag = true
+        //             maxResultIndex = i
+        //           }else{
+        //             if(logic.compare(result[i],result[maxResultIndex])){
+        //               maxResultIndex = i
+        //             }
+        //           }
+        //         }
+        //     }
+        //   }
+        //   if(maxResultFlag){
+        //     banker = maxResultIndex
+        //   }else{
+        //     do{
+        //       banker = (banker + 1) % GAME_PLAYER
+        //     }while(!player[banker].isActive)
+        //   }
+        // }        
         //积分改变
         for(var i = 0;i < GAME_PLAYER;i++){
             if(curScores[i] != 0){
