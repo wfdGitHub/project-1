@@ -2,3 +2,10 @@ server/game-server/logs/pomelo-connector-server-1.log.1
 server/game-server/logs/
 server/.idea/modules.xml
 server/.idea/
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/project-1.iml
+.idea/vcs.xml
+.idea/workspace.xml

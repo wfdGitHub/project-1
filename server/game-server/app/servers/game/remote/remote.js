@@ -89,7 +89,7 @@ GameRemote.prototype.userConnect = function(uid,sid,cb) {
 }
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
-	// //console.log("uid : "+uid+"code : "+code)
+	console.log("uid : "+uid+"code : "+code)
 	// //房间已锁定则拒绝操作
 	// if(GameRemote.GameService.userMap[uid]){
 	// 	var roomId = GameRemote.GameService.userMap[uid]
@@ -112,6 +112,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		}
 		var roomId = params.roomId
 		params.gid = GameRemote.GameService.roomList[roomId]
+		console.log("params.gid : "+params.gid )
 		self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
 			if(flag === true){
 				GameRemote.GameService.userMap[uid] = roomId;

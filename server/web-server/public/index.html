@@ -19,8 +19,8 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      host = "127.0.0.1";
-      //host = "120.77.157.99"
+      // host = "127.0.0.1";
+      host = "120.77.157.99"
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler. getNotify",null, function(data) {
@@ -162,8 +162,10 @@
           });
         });
       };
-      var test = function() {
-          pomelo.request("connector.entryHandler.test",null,null);
+      var test = function(roomId) {
+          pomelo.request("connector.entryHandler.sendFrame",{"code" : "join","params" : {"roomId" : roomId}},function(data) {
+            console.log(data)
+          });
       }
       var finish = function() {
           pomelo.request("connector.entryHandler.sendFrame", {"code" : "finish"},null, function(data) {
