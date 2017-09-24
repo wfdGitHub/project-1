@@ -756,7 +756,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
-            betList[i] = betType[room.basicType]["default"]
+            betList[i] = 1
             local.betMessege(i,betList[i])
           }
       }
