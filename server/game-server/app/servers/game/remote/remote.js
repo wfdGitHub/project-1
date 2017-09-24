@@ -226,16 +226,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	cb(false)
 	    	return
 	    }
-		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
-	      console.log("agency error   param.gameNumber : "+params.gameNumber)
-	      cb(false)
-	      return
-	    }
 		if(!params.playerCount || typeof(params.playerCount) !== "number" || (params.playerCount != 6 && params.playerCount != 9)){
 	      console.log("agency error   param.playerCount : "+params.playerCount)
 	      cb(false)
 	      return
 	    }
+		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || 
+        || (params.playerCount == 6 && params.gameNumber != 10 && params.gameNumber != 20)
+        || (params.playerCount == 9 && params.gameNumber != 12 && params.gameNumber != 24)){
+	      console.log("agency error   params.gameNumber : "+params.gameNumber)
+	      cb(false)
+	      return
+	    }	    
 	    var roomId = 0
 	    var needMond = 0
 	    async.waterfall([
