@@ -227,7 +227,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 						"cmd" : "updateDiamond",
 						"data" : value
 					}
-					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})		
+					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})		
 					//通知后台
 					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")	
 				break

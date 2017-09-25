@@ -21,6 +21,10 @@ var ROOM_FACTORY = {
 	"goldNiuNiu-2-diamond" : goldNiuNiu,
 	"goldNiuNiu-3-diamond" : goldNiuNiu	
 }
+var ROOM_TYPE = {
+	"niuniu" : goldNiuNiu,
+	"mingpaiqz" : goldMingpai
+}
 module.exports = function(app) {
 	return new GameRemote(app);
 }
@@ -35,7 +39,7 @@ var local = {}
 GameRemote.roomList = {}
 GameRemote.userMap = {}
 GameRemote.liveTimer = {}
-//新建房间
+//自动匹配房间
 GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 	if(!ROOM_FACTORY[params.gameType]){
 		cb(false)
@@ -43,8 +47,20 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 	}
 	var currencyType = params.gameType.split("-")[2]
 	console.log("currencyType : "+currencyType)
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(currencyType,params.gameType,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
-    GameRemote.roomList[roomId].newRoom(uids,sids,infos,function (flag) {
+	var rate = 10
+    switch(parseInt(params.gameType.split("-")[1])){
+      case 1:
+        rate = 10
+      break
+      case 2:
+        rate = 50
+      break
+      case 3:
+        rate = 100
+      break
+    }
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(currencyType,params.gameType,rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
+    GameRemote.roomList[roomId].newRoom(uids,sids,infos,false,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
 			goldLogger.info(info)
@@ -54,7 +70,36 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 			}
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
-			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),10 * 60 * 1000)
+			cb(true,uids,roomId)
+		}else{
+			delete GameRemote.roomList[roomId]
+			cb(false)
+		}
+    })
+}
+
+//主动创建房间
+GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb) {
+	console.log("params.gameType : "+params.gameType)
+	console.log(ROOM_TYPE)
+	if(!ROOM_TYPE[params.gameType]){
+		cb(false)
+		return
+	}
+	var currencyType = "diamond"
+	GameRemote.roomList[roomId] = ROOM_TYPE[params.gameType].createRoom(currencyType,params.gameType,rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
+    GameRemote.roomList[roomId].newRoom(uids,sids,infos,params,function (flag) {
+		if(flag){
+			var info = "   newRoom   gold roomId  : "+ roomId
+			goldLogger.info(info)
+			//console.log(uids)
+			for(var i = 0;i < uids.length;i++){
+				GameRemote.userMap[uids[i]] = roomId
+			}
+			//房间计时器
+			clearTimeout(GameRemote.liveTimer[roomId])
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),10 * 60 * 1000)
 			cb(true,uids,roomId)
 		}else{
 			delete GameRemote.roomList[roomId]
@@ -234,7 +279,8 @@ local.give = function(uid,targetChair,roomId,giveId,cb) {
 //房间超时回调
 var finishGameOfTimer = function(index) {
 	return function() {
-		if(GameRemote.roomList[index].isFree()){
+		//房间内无玩家则解散
+		if(!GameRemote.roomList[index].isHaveHumen()){
 			//房间空闲则解散
 			//记录日志
 			var info = "finishGameOfTimer   gold Room finish   roomId  : "+ index
@@ -242,7 +288,7 @@ var finishGameOfTimer = function(index) {
 			GameRemote.roomList[index].finishGame(true)
 		}else{
 			//正在游戏中则过一段时间后再次发起再次解散
-			GameRemote.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
+			GameRemote.liveTimer[index] = setTimeout(finishGameOfTimer(index),10 * 60 * 1000)
 		}
 	}
 }

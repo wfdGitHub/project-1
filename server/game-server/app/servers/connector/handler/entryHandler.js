@@ -437,15 +437,7 @@ local.sendGoldRoomData = function(msg,session,next) {
             msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
           }
         }
-        self.app.rpc.goldGame.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-            if(flag == true){
-              session.set("area","goldRoom")
-              session.push("area", function(err) {
-                if(err) {
-                  console.error('set area for session failed! error is : %j', err.stack)
-                }
-              })
-            }          
+        self.app.rpc.goldGame.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){        
             next(null,{flag : flag,msg : msg})
         })
     }else{

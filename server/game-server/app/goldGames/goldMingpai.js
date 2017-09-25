@@ -4,9 +4,20 @@ var tips = require("../conf/tips.js").tipsConf
 var robotFactory = require("./robot/mingpaiRobot.js")
 //var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 4  //明牌数量
-
+var betType = {
+  "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
+  "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
+  "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
+  "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
+  "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
+}
+var rateType = {
+  "0" : 10,
+  "1" : 50,
+  "2" : 100
+}
 //创建房间
-  module.exports.createRoom = function(currencyType,gameType,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
+  module.exports.createRoom = function(currencyType,gameType,rate,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
     console.log("createRoom"+roomId)
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
@@ -27,17 +38,10 @@ var MING_CARD_NUM = 4  //明牌数量
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
-    switch(parseInt(gameType.split("-")[1])){
-      case 1:
-        room.rate = 10
-      break
-      case 2:
-        room.rate = 50
-      break
-      case 3:
-        room.rate = 100
-      break
+    if(rateType[rate]){
+      room.rate = rateType[rate]
     }
+
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -66,13 +70,7 @@ var MING_CARD_NUM = 4  //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
-    var betType = {
-      "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
-      "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
-      "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
-      "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
-      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
-    }    
+
     var robState,betList
     room.runCount = 0
    //房间初始化
@@ -119,7 +117,7 @@ var MING_CARD_NUM = 4  //明牌数量
       room.channel = channelService.getChannel(roomId,true)
     }
     //初始化房间
-    room.newRoom = function(uids,sids,infos,cb) {
+    room.newRoom = function(uids,sids,infos,params,cb) {
       local.init()
       room.halfwayEnter = true
       basicType = 4
@@ -133,6 +131,21 @@ var MING_CARD_NUM = 4  //明牌数量
       room.bankerMode = conf.MODE_BANKER_ROB             //定庄模式
       room.cardMode = conf.MODE_CARD_HIDE                //明牌模式
       room.needGold = 0                                  //本局每人消耗金币
+      //设置游戏参数
+      if(params !== false){
+        if(params.cardMode !== conf.MODE_CARD_HIDE && params.cardMode !== conf.MODE_CARD_SHOW){
+          console.log("params.cardMode error : "+params.cardMode)
+          cb(false)
+          return
+        }
+        room.cardMode = params.cardMode
+        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU){
+          console.log("params.bankerMode error : "+params.bankerMode)
+          cb(false)
+          return
+        }
+        room.bankerMode = params.bankerMode
+      }
       //设置下注上限
       maxBet = 10
       for(var i = 0; i < uids.length; i++){
@@ -988,10 +1001,7 @@ var MING_CARD_NUM = 4  //明牌数量
           uid: uid,
           chair : chair
         }
-        local.sendAll(notify)      
-        if(room.bankerMode == conf.MODE_BANKER_NIUNIU && banker == chair){
-          return
-        }
+        local.sendAll(notify)
       }
     }
     //积分改变
@@ -1117,6 +1127,15 @@ var MING_CARD_NUM = 4  //明牌数量
   //房间是否空闲
   room.isFree = function(){
     return gameState === conf.GS_FREE
+  }
+  room.isHaveHumen = function() {
+    var flag = false
+    for(var i = 0;i < GAME_PLAYER;i++){
+      if(player[i].isActive && !player[i].isRobot){
+        flag = true
+      }
+    }
+    return flag
   }
   room.getPlayer = function() {
     return player

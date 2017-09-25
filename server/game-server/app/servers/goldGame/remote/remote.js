@@ -10,6 +10,12 @@ var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
 var ROOM_ALL_AMOUNT = 10000
 var matchingTimer = 0
+var ENTER_RATE = 100
+var rateType = {
+  "0" : 10,
+  "1" : 50,
+  "2" : 100
+}
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -86,6 +92,9 @@ var GameRemote = function(app) {
 		GameRemote.typeRoomMap = {}
 		//房间号与房间类型映射表
 		GameRemote.roomTypeMap = {}
+		//玩家开房标记
+		GameRemote.roomInitiativeFlag = {}
+		GameRemote.roomInitiativeBasic = {}
 		//玩家匹配队列映射表
 		GameRemote.matchMap = {}
 		for(var index in gameType){
@@ -99,6 +108,7 @@ var GameRemote = function(app) {
 		for(var i = ROOM_BEGIN_INDEX;i < ROOM_ALL_AMOUNT + ROOM_BEGIN_INDEX;i++){
 			GameRemote.roomState[i] = true
 			GameRemote.roomList[i] = false
+			GameRemote.roomInitiativeFlag[i] = false
 		}
 		//开启定时匹配
 		matchingTimer = setTimeout(local.matching,10000)
@@ -111,6 +121,49 @@ GameRemote.prototype.userConnect = function(uid,sid,cb) {
 		cb()
 	}
 }
+
+
+GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
+	console.log(params)
+	var self = this
+	switch(code){
+		case "joinMatch" :
+			local.joinMatch(parseInt(uid),sid,params,cb)
+		return
+		case "leaveMatch" :
+			local.leaveMatch(uid,cb)
+		return
+		case "userQuit" :
+			local.userQuit(uid,cb)
+		return
+		case "joinInitiativeRoom":
+			local.joinInitiativeRoom(uid,params.roomId,cb)
+		return
+		case "createInitiativeRoom":
+			local.createInitiativeRoom(uid,params,cb)
+		return
+		default : 
+			if(GameRemote.userMap[uid] !== undefined){
+				var roomId = GameRemote.userMap[uid];
+				if(roomId != undefined){
+					if(!params){
+						params = {}
+					}
+					params.gid = GameRemote.roomList[roomId]
+					self.app.rpc.goldNode.remote.receive(null,params,uid,sid,roomId,code,function (flag){
+						cb(flag)
+					})
+				}else{
+				    cb(false)
+				}
+			}
+			else{
+				cb(false)
+			}
+		return	
+	}
+}
+
 
 //将队首玩家加入房间
 local.joinRoom = function(type,roomId){
@@ -241,6 +294,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 	GameRemote.app.rpc.goldNode.remote.newRoom(null,params,users,sids,infos,roomId,function(flag,players,roomId) {
 		if(flag == true){
 			GameRemote.roomList[roomId] = params.gid
+			GameRemote.roomInitiativeFlag[roomId] = false
 			console.log("GameRemote.roomList[roomId]  :  "+GameRemote.roomList[roomId])
 			GameRemote.typeRoomMap[type].push(roomId)
 			GameRemote.RoomMap[roomId] = users
@@ -364,7 +418,6 @@ local.matching = function(){
 			}
 			//动态添加机器人
 			for(var i = 0;i < tmpRoomList.length; i++){
-				runTime = 0
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
 				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 1){
@@ -486,40 +539,122 @@ local.leaveMatch = function(uid,cb) {
 	cb(false)
 }
 
-GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
-	console.log(params)
-	var self = this
-	switch(code){
-		case "joinMatch" :
-			local.joinMatch(parseInt(uid),sid,params,cb)
-		break
-		case "leaveMatch" :
-			local.leaveMatch(uid,cb)
-		break
-		case "userQuit" :
-			local.userQuit(uid,cb)
-		break 
-		default : 
-			if(GameRemote.userMap[uid] !== undefined){
-				var roomId = GameRemote.userMap[uid];
-				if(roomId != undefined){
-					if(!params){
-						params = {}
-					}
-					params.gid = GameRemote.roomList[roomId]
-					self.app.rpc.goldNode.remote.receive(null,params,uid,sid,roomId,code,function (flag){
-						cb(flag)
-					})
-				}else{
-				    cb(false)
-				}
-			}
-			else{
-				cb(false)
-			}
-		return	
+//直接加入游戏
+local.joinInitiativeRoom = function(uid,roomId,cb) {
+	//在匹配队列中不能再次创建
+	if(GameRemote.matchMap[uid]){
+		console.log("can't newRoom user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		console.log(GameRemote.matchList)
+		console.log(GameRemote.matchMap)
+		cb(false,{"msg" : tips.IN_MATCHING})
+		return
 	}
-};
+	//在房间中不能加入
+	if(GameRemote.userMap[uid]){
+		console.log("can't newRoom user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		cb(false,{"msg" : tips.WAIT_GAME_OVER})
+		return
+	}
+	//非玩家主动创房不能加入
+	if(!GameRemote.roomInitiativeFlag[roomId] || !rateType[GameRemote.roomInitiativeBasic[roomId]]){
+		cb(false,{"msg" : tips.NO_ROOM})
+		return		
+	}
+	//获取用户信息、检测金币
+	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+		if(data !== false){
+			if(data.diamond < GameRemote.roomInitiativeBasic[roomId] * ENTER_RATE){
+				cb(false,{"msg" : tips.NO_DIAMOND})
+				return
+			}
+			var params = {}
+			params.gid = GameRemote.roomList[roomId]			
+			var player = {
+				"uid" : uid,
+				"sid" : GameRemote.userConnectorMap[uid],
+				"info" : data
+			}
+			GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
+				if(flag == true){
+					GameRemote.RoomMap[roomId].push(uid)
+					GameRemote.userMap[uid] = roomId
+					cb(true)
+				}else{
+					cb(false)
+				}
+			})			
+		}else{
+			cb(false)
+		}
+	})
+}
+
+//创建新房间
+local.createInitiativeRoom = function(uid,params,cb) {
+	var type = params.gameType
+	var rate = params.rate
+	var gid
+	//预判断房间倍率
+	if(!rateType[rate]){
+		console.log("params.rate error : "+rate)
+		cb(false)
+		return
+	}		
+	//在匹配队列中不能再次创建
+	if(GameRemote.matchMap[uid]){
+		console.log("can't newRoom user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		console.log(GameRemote.matchList)
+		console.log(GameRemote.matchMap)
+		cb(false,{"msg" : tips.IN_MATCHING})
+		return
+	}
+	//在房间中不能创建
+	if(GameRemote.userMap[uid]){
+		console.log("can't newRoom user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		cb(false,{"msg" : tips.WAIT_GAME_OVER})
+		return
+	}
+	//获取用户信息、检测金币
+	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+		if(data !== false){
+			if(data.diamond < rateType[rate] * ENTER_RATE){
+				cb(false,{"msg" : tips.NO_DIAMOND})
+				return
+			}
+
+			var roomId = local.getUnusedRoom()
+			GameRemote.roomState[roomId] = false
+
+			GameRemote.NodeNumber++
+			var nodeLength = GameRemote.app.getServersByType('goldNode').length
+			if(GameRemote.NodeNumber >= nodeLength){
+				GameRemote.NodeNumber = 0
+			}
+			params.gid = GameRemote.NodeNumber
+			gid = params.gid
+			var users = [uid]
+			var sids = [GameRemote.userConnectorMap[uid]]
+			var infos = [data]
+			GameRemote.app.rpc.goldNode.remote.createRoom(null,params,users,sids,infos,rate,roomId,function(flag,players,roomId) {
+				if(flag == true){
+					GameRemote.roomList[roomId] = gid
+					GameRemote.roomInitiativeFlag[roomId] = true
+					GameRemote.roomInitiativeBasic[roomId] = rate
+					GameRemote.RoomMap[roomId] = users
+					GameRemote.userMap[uid] = roomId
+					cb(true)
+				}else{
+					//TODO通知匹配失败 删除RoomMap与userMap
+					delete GameRemote.RoomMap[roomId]
+					GameRemote.roomState[roomId] = true
+					cb(false)
+				}
+			})
+		}else{
+			cb(false)
+		}
+	})
+}
 
 //游戏结束回调
 GameRemote.prototype.gameOver = function(roomId,players,type,cb) {
@@ -533,6 +668,7 @@ GameRemote.prototype.gameOver = function(roomId,players,type,cb) {
 	}
 	GameRemote.roomState[roomId] = true
 	GameRemote.roomList[roomId] = false
+	GameRemote.roomInitiativeFlag[roomId] = false
 	delete GameRemote.RoomMap[roomId]
 	console.log(GameRemote.typeRoomMap[type])
 	for(var i = 0; i < GameRemote.typeRoomMap[type].length;i++){

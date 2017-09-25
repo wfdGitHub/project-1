@@ -4,10 +4,19 @@ var tips = require("../conf/tips.js").tipsConf
 var robotFactory = require("./robot/niuniuRobot.js")
 //var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 4  //明牌数量
-
+var betType = {
+  "0" : {"1" : 1,"2" : 2,"3" : 3,"4" : 5},
+  "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
+}
+var rateType = {
+  "0" : 10,
+  "1" : 50,
+  "2" : 100
+}
 //创建房间
-  module.exports.createRoom = function(currencyType,gameType,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
+  module.exports.createRoom = function(currencyType,gameType,rate,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
     console.log("createRoom"+roomId)
+
     var settlementCB = settlementCB
     var quitRoomFun = quitRoom
     var gameOverCB = gemeOver
@@ -27,17 +36,10 @@ var MING_CARD_NUM = 4  //明牌数量
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
-    switch(parseInt(gameType.split("-")[1])){
-      case 1:
-        room.rate = 10
-      break
-      case 2:
-        room.rate = 50
-      break
-      case 3:
-        room.rate = 100
-      break
+    if(rateType[rate]){
+      room.rate = rateType[rate]
     }
+
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -66,6 +68,7 @@ var MING_CARD_NUM = 4  //明牌数量
         cards[cardCount++] = {num : i,type : j}
       }
     }
+
     var robState,betList
     room.runCount = 0
    //房间初始化
@@ -112,7 +115,8 @@ var MING_CARD_NUM = 4  //明牌数量
       room.channel = channelService.getChannel(roomId,true)
     }
     //初始化房间
-    room.newRoom = function(uids,sids,infos,cb) {
+    room.newRoom = function(uids,sids,infos,params,cb) {
+      console.log("22222222")
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -126,6 +130,29 @@ var MING_CARD_NUM = 4  //明牌数量
       room.bankerMode = conf.MODE_BANKER_ROB             //定庄模式
       room.cardMode = conf.MODE_CARD_SHOW                //明牌模式
       room.needGold = 0                                  //本局每人消耗金币
+      room.basicType = 1
+      //设置游戏参数
+      if(params !== false){
+        if(params.cardMode !== conf.MODE_CARD_HIDE && params.cardMode !== conf.MODE_CARD_SHOW){
+          console.log("params.cardMode error : "+params.cardMode)
+          cb(false)
+          return
+        }
+        room.cardMode = params.cardMode
+        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU){
+          console.log("params.bankerMode error : "+params.bankerMode)
+          cb(false)
+          return
+        }
+        room.bankerMode = params.bankerMode
+        if(!betType[params.basicType]){
+          console.log("params.basicType error : "+params.basicType)
+          cb(false)
+          return
+        }
+        room.basicType = params.basicType
+      }     
+      console.log("222222223333333") 
       //设置下注上限
       maxBet = 20
       for(var i = 0; i < uids.length; i++){
@@ -137,6 +164,7 @@ var MING_CARD_NUM = 4  //明牌数量
         })
       }
       local.readyBegin()
+      console.log("222222224444444")
       cb(true)
     }
     
@@ -629,6 +657,7 @@ var MING_CARD_NUM = 4  //明牌数量
     }
     //玩家下注
     room.handle.bet = function(uid,sid,param,cb){
+      console.log("enter Bet")
       //游戏状态为BETTING
       if(gameState !== conf.GS_BETTING){
         console.log(111111)
@@ -647,27 +676,23 @@ var MING_CARD_NUM = 4  //明牌数量
         console.log(1111113333)
         cb(false)
         return
-      }    
+      }
       //庄家不能下注
       if(chair == banker){
         console.log("1111114444" + "banker : "+banker+"  chair : "+chair)
         cb(false)
         return
       }
-      //下注金额必须低于自身金钱
-      if(param.bet && typeof(param.bet) == "number" 
-        && param.bet > 0 && (param.bet + betList[chair]) <= maxBet 
-        && (param.bet + betList[chair]) * room.rate <= player[chair].score){
-        betList[chair] += parseInt(param.bet)
-        betAmount += parseInt(param.bet)
-        local.betMessege(chair,param.bet)     
+      //下注
+      if(typeof(param.bet) == "number" && betList[chair] == 0 && betType[room.basicType][param.bet]){
+        var tmpBet = betType[room.basicType][param.bet]
+        betList[chair] += parseInt(tmpBet)
+        betAmount += parseInt(tmpBet)
+        local.betMessege(chair,tmpBet)
       }else{
-        console.log("betList[chair] : "+betList[chair])
-        console.log("param.bet : "+param.bet)
-        console.log("flag : "+(param.bet + betList[chair]) * room.rate <= player[chair].score)
         cb(false)
         return
-      }      
+      }
       cb(true)
       //判断所有人都下注进入发牌阶段
       var flag = true
@@ -1049,7 +1074,8 @@ var MING_CARD_NUM = 4  //明牌数量
         allowAllin : allowAllin,
         rate : room.rate,
         initialTime : room.initialTime,
-        curTime : (new Date()).valueOf()
+        curTime : (new Date()).valueOf(),
+        basicType : room.basicType
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
@@ -1100,6 +1126,15 @@ var MING_CARD_NUM = 4  //明牌数量
   //房间是否空闲
   room.isFree = function(){
     return gameState === conf.GS_FREE
+  }
+  room.isHaveHumen = function() {
+    var flag = false
+    for(var i = 0;i < GAME_PLAYER;i++){
+      if(player[i].isActive && !player[i].isRobot){
+        flag = true
+      }
+    }
+    return flag
   }
   room.getPlayer = function() {
     return player
