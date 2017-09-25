@@ -142,9 +142,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						var diamond = data
 						var needMond = Math.ceil(params.gameNumber / 10)
 
-						if(params.gameType == "sanKung"){
+						if(params.gameType == "zhajinhua"){
 							switch(params.consumeMode){
-								case conf.MODE_DIAMOND_HOST : 
+								case conf.MODE_DIAMOND_HOST :
 									needMond = needMond * 5
 								break;
 								case conf.MODE_DIAMOND_EVERY :
