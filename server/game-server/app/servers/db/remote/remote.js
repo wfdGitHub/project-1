@@ -27,10 +27,16 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
 		DBRemote.dbService.setPlayer(uid,"gold",0)
 		DBRemote.dbService.setPlayer(uid,"contorl",0)
+		//历史战绩
 		var history = {}
 		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
+		//每日刷新数据
+		var refreshList = {}
+		refreshList.shareTime = 0 					//分享领取奖励
+		refreshList.shareCount = 0 					
+		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)		
 		cb(false)
 	})
 }
