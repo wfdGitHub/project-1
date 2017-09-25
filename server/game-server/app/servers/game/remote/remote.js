@@ -323,7 +323,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							delete GameRemote.GameService.roomTime[roomId]
 							cb(false)
 						}
-					})    		
+					})
 		    	},function(roomId) {
 					//扣除钻石
 					GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-(needMond),function(flag) {
@@ -339,14 +339,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						GameRemote.app.rpc.db.remote.setValue(null,uid,"useDiamond",needMond,function() {})
 						httpConf.coinChangeRecord(uid,7,-needMond)
 						cb(true,{"roomId" : roomId})
-					})	    		
+					})
 		    	}
 		    	], function (err, result) {
 				console.log(err)
 				console.log(result)
 				cb(false)
 				return
-		  })			    		
+		  })
 	    	}else{
 	    		cb(false,{"code" : tips.GAME_CLOSE})
 	    	}

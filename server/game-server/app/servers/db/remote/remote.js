@@ -111,8 +111,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			value = parseInt(data) + parseInt(value)
 			//console.log('value :'+value)
 			if(value < 0){
-				cb(false)
-				return
+				value = 0
 			}
 			DBRemote.dbService.setPlayer(uid,name,value,cb)
 			if(name === "diamond"){
