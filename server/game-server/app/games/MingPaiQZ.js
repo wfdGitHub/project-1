@@ -655,7 +655,7 @@ var MING_CARD_NUM = 4               //明牌数量
               cb(false)
               return
             }
-            //上一局赢了才能推注              
+            //上一局赢了才能推注
             if(lastScore[chair] <= 0){
               cb(false)
               return

@@ -23,15 +23,13 @@
     "gate":[
        {"id": "gate-server-1", "host": "127.0.0.1", "port": 3850, "clientHost": "127.0.0.1", "clientPort": 3900, "frontend": true}
     ],
-    "gameNode":[
-       {"id": "game-node-server-1", "host": "127.0.0.1", "port": 3901},
-       {"id": "game-node-server-2", "host": "127.0.0.1", "port": 3902},
-       {"id": "game-node-server-3", "host": "127.0.0.1", "port": 3903}
-    ],
     "goldNode":[
        {"id": "gold-node-server-1", "host": "127.0.0.1", "port": 3951},
        {"id": "gold-node-server-2", "host": "127.0.0.1", "port": 3952},
-       {"id": "gold-node-server-3", "host": "127.0.0.1", "port": 3953}
+       {"id": "gold-node-server-3", "host": "127.0.0.1", "port": 3953},
+       {"id": "gold-node-server-4", "host": "127.0.0.1", "port": 3954},
+       {"id": "gold-node-server-5", "host": "127.0.0.1", "port": 3955},
+       {"id": "gold-node-server-6", "host": "127.0.0.1", "port": 3956}
     ]             
   },
   "production":{ 
@@ -42,9 +40,6 @@
     ],
     "login":[
       {"id":"login-server","host":"127.0.0.1","port":3160}
-    ],
-    "game":[
-      {"id":"game-server","host":"127.0.0.1","port":3210}
     ],
     "goldGame":[
       {"id":"gold-server","host":"127.0.0.1","port":3220}
@@ -61,7 +56,10 @@
     "goldNode":[
        {"id": "gold-node-server-1", "host": "127.0.0.1", "port": 3951},
        {"id": "gold-node-server-2", "host": "127.0.0.1", "port": 3952},
-       {"id": "gold-node-server-3", "host": "127.0.0.1", "port": 3953}
+       {"id": "gold-node-server-3", "host": "127.0.0.1", "port": 3953},
+       {"id": "gold-node-server-4", "host": "127.0.0.1", "port": 3954},
+       {"id": "gold-node-server-5", "host": "127.0.0.1", "port": 3955},
+       {"id": "gold-node-server-6", "host": "127.0.0.1", "port": 3956}
     ]   
   }
 }

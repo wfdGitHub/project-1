@@ -172,33 +172,18 @@ handler.visitorEnter = function(msg, session, next) {
         })
       },
       function(cb){
-        //先判断是否在房卡房间，再判断是否在金币场房间
-        self.app.rpc.game.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-            if(data){
-              data.area = "cardRoom"
-              notify.reconnection = data
-              session.set("area","cardRoom")
-              session.push("area", function(err) {
-                if(err) {
-                  console.error('set area for session failed! error is : %j', err.stack)
-                }
-              })
-              cb(null)
-            }else{
-              self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-                if(data){
-                  data.area = "goldRoom"
-                  notify.reconnection = data
-                  session.set("area","goldRoom")
-                  session.push("area", function(err) {
-                    if(err) {
-                      console.error('set area for session failed! error is : %j', err.stack)
-                    }
-                  })
-                }
-                cb(null)
-              })
-            }
+        self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
+          if(data){
+            data.area = "goldRoom"
+            notify.reconnection = data
+            session.set("area","goldRoom")
+            session.push("area", function(err) {
+              if(err) {
+                console.error('set area for session failed! error is : %j', err.stack)
+              }
+            })
+          }
+          cb(null)
         })
       },
       function() {
@@ -209,7 +194,6 @@ handler.visitorEnter = function(msg, session, next) {
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)    
         //通知gameServer
-        self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})    
         self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
         var myDate = new Date()
         var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())      
@@ -351,33 +335,18 @@ handler.enter = function(msg, session, next) {
         })
       },
       function(cb){
-        //先判断是否在房卡房间，再判断是否在金币场房间
-        self.app.rpc.game.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-            if(data){
-              data.area = "cardRoom"
-              notify.reconnection = data
-              session.set("area","cardRoom")
-              session.push("area", function(err) {
-                if(err) {
-                  console.error('set area for session failed! error is : %j', err.stack)
-                }
-              })
-              cb(null)
-            }else{
-              self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-                if(data){
-                  data.area = "goldRoom"
-                  notify.reconnection = data
-                  session.set("area","goldRoom")
-                  session.push("area", function(err) {
-                    if(err) {
-                      console.error('set area for session failed! error is : %j', err.stack)
-                    }
-                  })
-                }
-                cb(null)
-              })
-            }
+        self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
+          if(data){
+            data.area = "goldRoom"
+            notify.reconnection = data
+            session.set("area","goldRoom")
+            session.push("area", function(err) {
+              if(err) {
+                console.error('set area for session failed! error is : %j', err.stack)
+              }
+            })
+          }
+          cb(null)
         })
       },
       function() {
@@ -388,7 +357,6 @@ handler.enter = function(msg, session, next) {
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
         //通知gameServer
-        self.app.rpc.game.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
         self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
         var myDate = new Date()
         var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
@@ -424,58 +392,45 @@ handler.sendData = function(msg, session, next){
   console.log("code : "+msg.code)
   var uid = session.get("uid")
     if(!!uid){
-        //joinMatch  leaveMatch属于金币场命令
-        if(msg.code == "joinMatch" || msg.code == "leaveMatch"){
-          var fun = local.sendGoldRoomData.bind(this)
-          fun(msg, session, next)
-        }else{
-          //判断玩家在哪个场
-          var area = session.get("area")
-          if(area === "goldRoom"){
-             var fun = local.sendGoldRoomData.bind(this)
-            fun(msg, session, next)
-          }else{
-            var fun = local.sendCardRoomData.bind(this)
-            fun(msg, session, next)
-          }
-        }
+        var fun = local.sendGoldRoomData.bind(this)
+        fun(msg, session, next)
     }else{
         next(null,{flag : false})
     }  
 }
 //发送房卡房间数据
-local.sendCardRoomData = function(msg, session, next) {
-    var self = this
-    //判断登录
-    var uid = session.get("uid")
-    //console.log("uid : "+uid)  
-    if(!!uid){
-        if(msg.code == "join" || msg.code == "newRoom"){
-          if(msg.params){
-            msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
-          }
-        }
-        self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-            if(flag == true){
-              session.set("area","cardRoom")
-              session.push("area", function(err) {
-                if(err) {
-                  console.error('set area for session failed! error is : %j', err.stack)
-                }
-              })                
-            }
-            next(null,{flag : flag,msg : msg})
-        }) 
-    }else{
-        next(null,{flag : false})
-    }
-}
+// local.sendCardRoomData = function(msg, session, next) {
+//     var self = this
+//     //判断登录
+//     var uid = session.get("uid")
+//     //console.log("uid : "+uid)  
+//     if(!!uid){
+//         if(msg.code == "join" || msg.code == "newRoom"){
+//           if(msg.params){
+//             msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
+//           }
+//         }
+//         self.app.rpc.game.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+//             if(flag == true){
+//               session.set("area","cardRoom")
+//               session.push("area", function(err) {
+//                 if(err) {
+//                   console.error('set area for session failed! error is : %j', err.stack)
+//                 }
+//               })                
+//             }
+//             next(null,{flag : flag,msg : msg})
+//         }) 
+//     }else{
+//         next(null,{flag : false})
+//     }
+// }
 //发送金币场数据
 local.sendGoldRoomData = function(msg,session,next) {
     var self = this
     //判断登录
     var uid = session.get("uid")
-    //console.log("uid : "+uid)  
+    //console.log("uid : "+uid)
     if(!!uid){
         if(msg.code == "joinMatch"){
           if(msg.params){
@@ -489,7 +444,7 @@ local.sendGoldRoomData = function(msg,session,next) {
                 if(err) {
                   console.error('set area for session failed! error is : %j', err.stack)
                 }
-              })                
+              })
             }          
             next(null,{flag : flag,msg : msg})
         })
@@ -498,20 +453,20 @@ local.sendGoldRoomData = function(msg,session,next) {
     }
 }
 
-handler.sendFrame = function(msg, session, next) {
-    //console.log("code : "+msg.code)
-    var self = this
-    //判断登录
-    var uid = session.get("uid")
-    //console.log("uid : "+uid)  
-    if(!!uid){
-        self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-            next(null,{flag : flag,msg : msg})
-        })   
-    }else{
-        next(null,{flag : false})
-    }
-}
+// handler.sendFrame = function(msg, session, next) {
+//     //console.log("code : "+msg.code)
+//     var self = this
+//     //判断登录
+//     var uid = session.get("uid")
+//     //console.log("uid : "+uid)  
+//     if(!!uid){
+//         self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
+//             next(null,{flag : flag,msg : msg})
+//         })   
+//     }else{
+//         next(null,{flag : false})
+//     }
+// }
 //用户离开事件处理
 var onUserLeave = function(self, session) {
   // console.log(self)
@@ -520,12 +475,7 @@ var onUserLeave = function(self, session) {
     return
   }
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
-  var area = session.get("area")
-  if(area === "goldRoom"){
-    self.app.rpc.goldGame.remote.kick(session,session.uid,null)
-  }else{
-    self.app.rpc.game.remote.kick(session,session.uid,null)
-  }  
+  self.app.rpc.goldGame.remote.kick(session,session.uid,null)
 }
 
 
