@@ -15,7 +15,7 @@ module.exports.H5GetData = function(code,count,cb) {
     var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
     +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
     //var string = "http://pay.5d8d.com/H5Index/getAccessToken?code="+code
-    var req=http.get(string,function(res){
+    var req=https.get(string,function(res){
         var data = data
         res.on("data",function(chunk) {
           data += chunk
