@@ -1,8 +1,4 @@
 var async = require('async')
-var lottoConf = require("../../../conf/lotto.js")
-var giftBagConf = require("../../../conf/giftBag.js")
-var giveCfg = require("../../../conf/give.js")
-var goldConf = require("../../../conf/goldConf.js")
 
 module.exports = function(app) {
   return new Handler(app)
@@ -46,7 +42,6 @@ handler.shareAward = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}
-
 }
 
 local.getDateString = function() {
