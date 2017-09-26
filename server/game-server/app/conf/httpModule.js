@@ -12,9 +12,9 @@ var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
 var timer = false
 var local = {}
 module.exports.H5GetData = function(code,count,cb) {
-    // var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
-    // +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
-    var string = "http://pay.5d8d.com/H5Index/getAccessToken?code="+code
+    var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
+    +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
+    //var string = "http://pay.5d8d.com/H5Index/getAccessToken?code="+code
     var req=http.get(string,function(res){
         var data = data
         res.on("data",function(chunk) {
