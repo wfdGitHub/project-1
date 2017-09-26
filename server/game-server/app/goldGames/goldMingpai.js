@@ -140,7 +140,7 @@ var rateType = {
           return
         }
         room.cardMode = params.cardMode
-        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU && params.){
+        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU && params.bankerMode !== conf.MODE_BANKER_ORDER){
           console.log("params.bankerMode error : "+params.bankerMode)
           cb(false)
           return
@@ -230,7 +230,7 @@ var rateType = {
       cb(false)
     }
     local.readyBegin = function() {
-      console.log("readyBegin")
+      // console.log("readyBegin")
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
@@ -462,21 +462,39 @@ var rateType = {
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      if(room.bankerMode == conf.MODE_BANKER_ROB){
-        gameState = conf.GS_ROB_BANKER
-        //初始化抢庄状态为-1
-        for(var i = 0; i < GAME_PLAYER;i++){
-          robState[i] = -1
-        }
-        //抢庄
-        var notify = {
-          "cmd" : "beginRob"
-        }
-        local.sendAll(notify)
-        timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)         
-      }else{
-        local.betting()
+      switch(room.bankerMode){
+        case conf.MODE_BANKER_ROB :
+          //抢庄
+          gameState = conf.GS_ROB_BANKER
+          for(var i = 0; i < GAME_PLAYER;i++){
+            robState[i] = 0
+          }
+          //抢庄
+          var notify = {
+            "cmd" : "beginRob"
+          }
+          local.sendAll(notify)
+          timer = setTimeout(local.endRob,conf.TID_ROB_TIME)
+          return
+        case conf.MODE_BANKER_ORDER :
+          //轮庄
+          do{
+              banker = (banker + 1)%GAME_PLAYER
+          }while(player[banker].isActive == false || player[banker].isReady == false)
+          break
+        default:
+          break
       }
+      if(banker !== -1){
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }
+        //console.log("banker : "+banker)
+        player[banker].isBanker = true    
+      }
+      local.gameBegin()
     }
     //结束抢庄
     local.endRob = function() {

@@ -127,10 +127,9 @@ local.changeRanklist = function(players) {
 		if(players.hasOwnProperty(i)){
 			//今日金币榜
 			//若玩家金币大于总金币榜中最低值则加入榜单
-	  		var myDate = new Date()
-	  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
+	  		var dateString = getDateString()
 			if(players[i].refreshList.dayGoldTime !== dateString){
-				//console.log(players[i].refreshList.dayGoldTime)
+				// console.log(players[i].refreshList.dayGoldTime)
 				continue
 			}
 			players[i].refreshList.dayGoldValue = parseInt(players[i].refreshList.dayGoldValue)
@@ -171,7 +170,7 @@ local.changeRanklist = function(players) {
 
 	// console.log(goldDayRanklist)
 	// console.log(goldAllRanklist)
-	refreshTime = setTimeout(local.refreshRanklist,5000)
+	refreshTime = setTimeout(local.refreshRanklist,30 * 60 * 1000)
 }
 
 dbService.updateDiamond = function(value) {
@@ -379,4 +378,18 @@ var deepCopy = function(source) {
         result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
      } 
   return result;
+}
+
+var getDateString = function() {
+	var myDate = new Date()
+	var month = myDate.getMonth()
+	var date = myDate.getDate()
+	if(month < 10){
+		month = "0"+month
+	}
+	if(date < 10){
+		date = "0"+date
+	}
+	var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	return dateString
 }

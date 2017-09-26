@@ -345,6 +345,19 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			}
 		}
 	}
+	//通知可以抽奖
+	for(var index in player){
+		if(player.hasOwnProperty(index)){
+			if(player[index].isActive){
+				if(player[index].gameCount >= 5){
+					var notify = {
+						"cmd" : "canLotto"
+					}
+					GameRemote.roomList[roomId].sendUid(player[index].uid,notify)
+				}
+			}
+		}
+	}
 }
 
 //房间结束回调

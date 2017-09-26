@@ -371,7 +371,8 @@ local.matching = function(){
 			//console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
-			//console.log(tmpRoomList)
+
+
 			//从该类型的所有房间中找空闲房间
 			var runTime = 0
 			for(var i = 0;i < tmpRoomList.length; i++){

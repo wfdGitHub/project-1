@@ -28,7 +28,7 @@ var rateType = {
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}                     //玩家操作
-    room.gameMode = 2
+    room.gameMode = 1
     room.halfwayEnter = true             //允许中途加入
     room.agencyId = 0                    //代开房玩家ID 
     room.beginTime = (new Date()).valueOf()
@@ -139,7 +139,7 @@ var rateType = {
           return
         }
         room.cardMode = params.cardMode
-        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU){
+        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU  && params.bankerMode !== conf.MODE_BANKER_ORDER){
           console.log("params.bankerMode error : "+params.bankerMode)
           cb(false)
           return
@@ -153,7 +153,6 @@ var rateType = {
         room.basicType = params.basicType
         room.initiativeFlag = true
       }     
-      console.log("222222223333333") 
       //设置下注上限
       maxBet = 20
       for(var i = 0; i < uids.length; i++){
@@ -165,7 +164,6 @@ var rateType = {
         })
       }
       local.readyBegin()
-      console.log("222222224444444")
       cb(true)
     }
     
@@ -236,7 +234,7 @@ var rateType = {
     }
 
     local.readyBegin = function() {
-      console.log("readyBegin")
+      // console.log("readyBegin")
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
@@ -478,10 +476,10 @@ var rateType = {
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      gameState = conf.GS_ROB_BANKER
       switch(room.bankerMode){
         case conf.MODE_BANKER_ROB :
-          //初始化抢庄状态为false
+          //抢庄
+          gameState = conf.GS_ROB_BANKER
           for(var i = 0; i < GAME_PLAYER;i++){
             robState[i] = 0
           }
