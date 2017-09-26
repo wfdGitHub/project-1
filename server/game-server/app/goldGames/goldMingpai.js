@@ -38,6 +38,7 @@ var rateType = {
     room.MatchStream = {}
     room.maxResultFlag = false
     room.rate = 10
+    room.initiativeFlag = false
     if(rateType[rate]){
       room.rate = rateType[rate]
     }
@@ -139,12 +140,13 @@ var rateType = {
           return
         }
         room.cardMode = params.cardMode
-        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU){
+        if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU && params.){
           console.log("params.bankerMode error : "+params.bankerMode)
           cb(false)
           return
         }
         room.bankerMode = params.bankerMode
+        room.initiativeFlag = true
       }
       //设置下注上限
       maxBet = 10
@@ -229,14 +231,13 @@ var rateType = {
     }
     local.readyBegin = function() {
       console.log("readyBegin")
+      //准备开始游戏    在场玩家自动准备  离线玩家踢出
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
-      //准备开始游戏    在场玩家自动准备  离线玩家踢出
       timer = setTimeout(function() {
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive){
             if(player[i].isOnline){
-              player[i].isReady = true
               player[i].gameCount++
             }else{
               quitRoomFun(player[i].uid,room.roomId)
@@ -257,13 +258,14 @@ var rateType = {
             }
           }
         }
+        // console.log("flag : "+flag)
         if(flag){
           //随机退出一个机器人
           var rand = Math.floor(Math.random() * 1000) % GAME_PLAYER
           if(robotCount > 1){
             for(var i = rand;i < GAME_PLAYER + rand;i++){
               var chair = i % GAME_PLAYER
-              if(player[chair].isActive){
+              if(player[chair].isActive && player[chair].isRobot){
                 player[chair].isReady = false
                 quitRoomFun(player[chair].uid,room.roomId)
                 break
@@ -275,13 +277,31 @@ var rateType = {
           }
         }
         //游戏开始
+        //若场内只有一个玩家则等待其他玩家加入
+        var tmpCount = 0
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isOnline){
+            tmpCount++
+          }
+        }        
+        if(tmpCount <= 1){
+          clearTimeout(timer)
+          timer = setTimeout(local.readyBegin,conf.TID_WAITING_TIME)
+          return
+        }
+        //在场玩家自动准备
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isOnline){
+            player[i].isReady = true
+          }
+        }
         notify = {
           "cmd" : "gameStart"
         }
         local.sendAll(notify)
         local.gameBegin()
       },conf.TID_WAITING_TIME)
-    }
+    }  
     //游戏开始
     local.gameBegin = function() {
       log("gameBegin")
@@ -1077,7 +1097,8 @@ var rateType = {
         allowAllin : allowAllin,
         rate : room.rate,
         initialTime : room.initialTime,
-        curTime : (new Date()).valueOf()
+        curTime : (new Date()).valueOf(),
+        initiativeFlag : room.initiativeFlag
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER

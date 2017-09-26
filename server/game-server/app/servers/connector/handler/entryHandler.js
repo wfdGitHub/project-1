@@ -32,17 +32,7 @@ handler.getTicket = function(msg,session,next) {
 handler.getLoginFlag = function(msg,session,next) {
   next(null,true)
 }
-//获取代开房记录
-handler.getAgencyRoom = function(msg,session,next) {
-    var uid = session.get("uid")
-    if(!uid){
-      next(null,{"flag" : false})
-    }else{
-      this.app.rpc.game.remote.getAgencyRoom(session,uid,function(data) {
-        next(null,data)
-      })      
-    }
-}
+
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {
     var self = this

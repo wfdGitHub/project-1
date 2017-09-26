@@ -32,32 +32,32 @@ handler.onlineUser = function(msg,session,next) {
     }
   next(null,uidInfos)
 }
-//获取代开房数据
-handler.getAgencyList = function(msg,session,next) {
-	this.app.rpc.game.monitor.getAgencyList(session,function(data) {
-		//console.log(data)
-		next(null,data)
-	})	
-}
+// //获取代开房数据
+// handler.getAgencyList = function(msg,session,next) {
+// 	this.app.rpc.game.monitor.getAgencyList(session,function(data) {
+// 		//console.log(data)
+// 		next(null,data)
+// 	})	
+// }
 
-//房间列表
-handler.roomInfos = function(msg,session,next) {
-	this.app.rpc.game.monitor.roomInfos(session,function(data) {
-		//console.log(data)
-		next(null,data)
-	})
-}
+// //房间列表
+// handler.roomInfos = function(msg,session,next) {
+// 	this.app.rpc.game.monitor.roomInfos(session,function(data) {
+// 		//console.log(data)
+// 		next(null,data)
+// 	})
+// }
 
-//结束单个房间
-handler.finishRoom = function(msg,session,next) {
-	this.app.rpc.game.monitor.finishRoom(session,msg.roomId,function() {
-		next(null)
-	})	
-}
+// //结束单个房间
+// handler.finishRoom = function(msg,session,next) {
+// 	this.app.rpc.game.monitor.finishRoom(session,msg.roomId,function() {
+// 		next(null)
+// 	})	
+// }
 
-//结束全部房间
-handler.finishAllRoom = function(msg,session,next) {
-	this.app.rpc.game.monitor.finishAllRoom(session,function(data) {
-		next(null,data)
-	})	
-}
+// //结束全部房间
+// handler.finishAllRoom = function(msg,session,next) {
+// 	this.app.rpc.game.monitor.finishAllRoom(session,function(data) {
+// 		next(null,data)
+// 	})	
+// }

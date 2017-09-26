@@ -35,6 +35,7 @@ var rateType = {
     room.initialTime = room.beginTime    //游戏开始时间戳
     room.MatchStream = {}
     room.maxResultFlag = false
+    room.initiativeFlag = false
     room.rate = 10
     if(rateType[rate]){
       room.rate = rateType[rate]
@@ -116,7 +117,6 @@ var rateType = {
     }
     //初始化房间
     room.newRoom = function(uids,sids,infos,params,cb) {
-      console.log("22222222")
       local.init()
       room.halfwayEnter = true
       basic = 1
@@ -151,6 +151,7 @@ var rateType = {
           return
         }
         room.basicType = params.basicType
+        room.initiativeFlag = true
       }     
       console.log("222222223333333") 
       //设置下注上限
@@ -243,7 +244,6 @@ var rateType = {
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive){
             if(player[i].isOnline){
-              player[i].isReady = true
               player[i].gameCount++
             }else{
               quitRoomFun(player[i].uid,room.roomId)
@@ -283,6 +283,24 @@ var rateType = {
           }
         }
         //游戏开始
+        //若场内只有一个玩家则等待其他玩家加入
+        var tmpCount = 0
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isOnline){
+            tmpCount++
+          }
+        }        
+        if(tmpCount <= 1){
+          clearTimeout(timer)
+          timer = setTimeout(local.readyBegin,conf.TID_WAITING_TIME)
+          return
+        }
+        //在场玩家自动准备
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isOnline){
+            player[i].isReady = true
+          }
+        }
         notify = {
           "cmd" : "gameStart"
         }
@@ -1075,7 +1093,8 @@ var rateType = {
         rate : room.rate,
         initialTime : room.initialTime,
         curTime : (new Date()).valueOf(),
-        basicType : room.basicType
+        basicType : room.basicType,
+        initiativeFlag : room.initiativeFlag
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER

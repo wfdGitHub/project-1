@@ -142,7 +142,7 @@ DBRemote.prototype.loginCB = function(uid,cb) {
 							"cmd" : "signInAward",
 							"data" : signInConf[data.loginMax]
 						}
-						DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+						DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
               		})
               	}
               }
@@ -237,7 +237,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 						"cmd" : "updateGold",
 						"data" : value
 					}
-					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
 					//每日金币输赢更新
 					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
 						//console.log(data)
@@ -257,7 +257,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 						"cmd" : "updateCharm",
 						"data" : value
 					}
-					DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
 					//每日魅力值更新
 					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
 						//console.log(data)
@@ -306,7 +306,7 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 			"cmd" : "updateHistory",
 			"data" : data
 		}
-		DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})
+		DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
 		if(cb){
 			cb()
 		}
