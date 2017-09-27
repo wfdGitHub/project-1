@@ -162,9 +162,11 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 		})
-	}else{
+	}else if(GameRemote.historyList[roomId]){
 		//返回战绩
 		cb(true,{"code" : "history"},GameRemote.historyList[roomId])
+	}else{
+		cb(false)
 	}
 }
 
