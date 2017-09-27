@@ -1055,7 +1055,7 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basicType : room.basicType,
+        basic : room.basic,
         maxRob : room.maxRob,
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
