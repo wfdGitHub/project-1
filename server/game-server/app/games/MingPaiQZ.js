@@ -202,7 +202,7 @@ var MING_CARD_NUM = 4               //明牌数量
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
       room.bankerMode = conf.MODE_BANKER_ROB             //定庄模式
-      room.gameNumber = param.gameNumber                 //游戏局数
+      room.gameNumber = 2                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = conf.MODE_CARD_SHOW                //明牌模式
@@ -889,14 +889,17 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     local.gameOver = function(flag) {
       clearTimeout(timer)
+      room.endTime = (new Date()).valueOf()
       //总结算
       room.state = true
       var notify = {
         "cmd" : "gameOver",
-        "player" : player
+        "player" : player,
+        "roomId" : room.roomId,
+        "maxGameNumber" : room.maxGameNumber,
+        "endTime" : room.endTime
       }
       local.sendAll(notify)
-      room.endTime = (new Date()).valueOf()
       var tmpscores = {}
       for(var i = 0; i < GAME_PLAYER;i++){
         if(player[i].isActive){

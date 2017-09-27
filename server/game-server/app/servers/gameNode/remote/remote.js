@@ -107,8 +107,9 @@ var finishGameOfTimer = function(index) {
 
 //加入房间   若房间已结束则返回战绩
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
-
+	console.log("=======111111")
 	if(GameRemote.roomList[roomId]){
+		console.log("=======11111122222")
 		var self = this
 		async.waterfall([
 		function(next) {
@@ -163,9 +164,11 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		return
 		})
 	}else if(GameRemote.historyList[roomId]){
+		console.log("=======11111133333")
 		//返回战绩
-		cb(true,{"code" : "history"},GameRemote.historyList[roomId])
+		cb(true,{"code" : "history","history" : GameRemote.historyList[roomId]})
 	}else{
+		console.log("=======11111144444")
 		cb(false)
 	}
 }
@@ -186,15 +189,17 @@ GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
 }
 //玩家离开
 GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
-	GameRemote.roomList[roomId].leave(uid,function(quitFlag) {
-		//若退出房间则通知
-		if(quitFlag){
-			GameRemote.roomList[roomId].userQuit(uid,function() {
-				delete GameRemote.userMap[uid]
-				GameRemote.app.rpc.game.remote.userQuit(null,uid,function() {})
-			})
-		}
-	})
+	if(GameRemote.roomList[roomId]){
+		GameRemote.roomList[roomId].leave(uid,function(quitFlag) {
+			//若退出房间则通知
+			if(quitFlag){
+				GameRemote.roomList[roomId].userQuit(uid,function() {
+					delete GameRemote.userMap[uid]
+					GameRemote.app.rpc.game.remote.userQuit(null,uid,function() {})
+				})
+			}
+		})
+	}
 	cb(true)
 }
 //结束房间
@@ -339,9 +344,10 @@ var gemeOver = function(roomId,players,flag,cb) {
 		//记录战绩
 		GameRemote.historyList[roomId] = {
 			"player" : players,
-			"streamData" : deepCopy(streamData)
-		}		
-
+			"roomId" : GameRemote.roomList[roomId].roomId,
+			"maxGameNumber" : GameRemote.roomList[roomId].maxGameNumber,
+			"endTime" : GameRemote.roomList[roomId].endTime
+		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"
 		info += "beginTime : "+streamData.beginTime + "     endTime : "+streamData.endTime+"\r\n"

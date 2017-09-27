@@ -1164,14 +1164,17 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
       bonusPool = 0
     }
     //总结算
+    room.endTime = (new Date()).valueOf()
+    
     room.state = true
     var notify = {
       "cmd" : "gameOver",
-      "player" : player
+      "player" : player,
+      "roomId" : room.roomId,
+      "maxGameNumber" : room.maxGameNumber,
+      "endTime" : room.endTime
     }
-
     local.sendAll(notify)
-    room.endTime = (new Date()).valueOf()
     var tmpscores = {}
     for(var i = 0; i < GAME_PLAYER;i++){
       if(player[i].isActive){

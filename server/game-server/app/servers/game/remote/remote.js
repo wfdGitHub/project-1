@@ -115,14 +115,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		console.log("params.gid : "+params.gid )
 		self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
 			if(flag === true){
-				GameRemote.GameService.userMap[uid] = roomId;
-				if(GameRemote.GameService.RoomMap[roomId]){
-					var info = {
-						"uid" : playerInfo.uid,
-						"nickname" : playerInfo.nickname,
-						"head" : playerInfo.head
-					}
-					GameRemote.GameService.RoomMap[roomId].push(info)						
+				if(msg.code === "history"){
+					//当游戏已结束
+				}else{
+					GameRemote.GameService.userMap[uid] = roomId;
+					if(GameRemote.GameService.RoomMap[roomId]){
+						var info = {
+							"uid" : playerInfo.uid,
+							"nickname" : playerInfo.nickname,
+							"head" : playerInfo.head
+						}
+						GameRemote.GameService.RoomMap[roomId].push(info)						
+					}					
 				}
 			}
 			cb(flag,msg)
@@ -400,7 +404,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 
 	// GameRemote.GameService.roomState[roomId] = true
 	// GameRemote.GameService.roomList[roomId] = false
-	delete GameRemote.GameService.RoomMap[roomId]
+	//delete GameRemote.GameService.RoomMap[roomId]
 	if(cb){
 		cb()
 	}
