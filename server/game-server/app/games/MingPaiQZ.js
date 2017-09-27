@@ -539,7 +539,6 @@ var MING_CARD_NUM = 4               //明牌数量
         "banker" : banker
       }
       local.sendAll(notify)
-      gameState = conf.GS_NONE
       setTimeout(local.betting,1000)
     }
     //下注阶段
@@ -938,17 +937,9 @@ var MING_CARD_NUM = 4               //明牌数量
       if(!room.channel.getMember(uid)){
         room.channel.add(uid,sid)
       }
-      var notify = {
-        roomInfo : local.getRoomInfo(chair),
-        betList : betList,
-        state : gameState,
-        surplusGameNumber : room.maxGameNumber - room.gameNumber,
-        freeState : param
-      }
-      if(notify.state === conf.GS_NONE){
-        notify.state = conf.GS_ROB_BANKER
-      }
-      cb(notify)
+      notify = local.getRoomInfo()
+       local.sendUid(uid,notify)
+      cb(true)
     }
   //初始化椅子信息
   local.initChairInfo = function(chair) {
