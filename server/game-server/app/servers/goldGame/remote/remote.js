@@ -4,7 +4,7 @@ var tips = require("../../../conf/tips.js").tipsConf
 var robotManager = require("../../../conf/robotManager.js")
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var MATCHTIME = 500
+var MATCHTIME = 1000
 var MAXMATCHTIMER = 10
 var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
@@ -168,6 +168,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 //将队首玩家加入房间
 local.joinRoom = function(type,roomId){
 	console.log("joinRoom")
+	GameRemote.RoomMap[roomId].push(uid)
+	GameRemote.userMap[uid] = roomId
 	//从匹配队列删除
 	var uid = GameRemote.matchList[type][0]
 	if(GameRemote.matchMap[uid]){
@@ -194,9 +196,15 @@ local.joinRoom = function(type,roomId){
 				"info" : info
 			}
 			GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
-				if(flag == true){
-					GameRemote.RoomMap[roomId].push(uid)
-					GameRemote.userMap[uid] = roomId
+				if(!flag){
+					//失败移除玩家
+					for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
+						if(GameRemote.RoomMap[roomId][i] == uid){
+							GameRemote.RoomMap[roomId].splice(i,1)
+							break
+						}
+					}
+					delete GameRemote.userMap[uid]
 				}
 			})
 		}
@@ -371,41 +379,35 @@ local.matching = function(){
 			//console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
-
-
-			//从该类型的所有房间中找空闲房间
-			var runTime = 0
-			for(var i = 0;i < tmpRoomList.length; i++){
-				runTime = 0
-				if(playerList.length <= 0){
-					//等待队列空时结束本次匹配
-					break
+			//遍历每个玩家    先随机选择一个房间加入
+			for(var i = 0; i < playerList.length;i++){
+				//是否有空闲房间标志
+				var tmpFlag = false
+				var roomId = false
+				var tmpRand = Math.floor(Math.random() * tmpRoomList.length) % tmpRoomList.length
+				for(var i = tmpRand;i < tmpRand + tmpRoomList.length;i++){
+					roomId = tmpRoomList[i % tmpRoomList.length]
+					var playerCount = GameRemote.RoomMap[roomId].length
+					if(playerCount < ROOMPLAYERNUM){
+						tmpFlag = true
+						break
+					}
 				}
-				var roomId = tmpRoomList[i]
-				if(GameRemote.RoomMap[roomId].length < ROOMPLAYERNUM){
-					do{
-						runTime++
-						//console.log(GameRemote.typeRoomMap[type])
-						var playerCount = GameRemote.RoomMap[roomId].length
-						// console.log("playerCount : "+playerCount+ "  runTime : "+runTime)
-						// console.log(GameRemote.RoomMap[roomId])
-						local.joinRoom(type,roomId)
-						GameRemote.matchTimer[type] = 0		
-					}while(playerCount < ROOMPLAYERNUM && playerList.length > 0 && runTime < 100)					
+				if(tmpFlag){
+					//有空闲房间则加入
+					GameRemote.matchTimer[type] = 0
+					local.joinRoom(type,roomId)
 				}
 			}
-			//console.log(playerList.length)
-			if(playerList.length > 0 && runTime < 100){
-				//已有房间已满   尝试创建新房间
+			//若该类型还有剩余玩家、尝试创建新房间
+			if(playerList.length > 0){
 				GameRemote.matchTimer[type]++
-				//console.log("GameRemote.matchTimer[type] : "+GameRemote.matchTimer[type])
-				//人数超过6人或匹配次数到达预计则开始游戏
 				if(playerList.length >= ROOMPLAYERNUM || GameRemote.matchTimer[type] >= MAXMATCHTIMER){
 					GameRemote.matchTimer[type] = 0
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					if(Math.random() < 1){
+					if(Math.random() < 0.3){
 						//加一个机器人到队列中
 						var robotId = robotManager.getUnusedRobot()
 						if(robotId){
@@ -414,14 +416,14 @@ local.matching = function(){
 								local.robotJoinMatch(robotData.uid,params,robotData)
 							})
 						}
-					}
+					}					
 				}
 			}
 			//动态添加机器人
 			for(var i = 0;i < tmpRoomList.length; i++){
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
-				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 1){
+				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.2){
 					var robotId = robotManager.getUnusedRobot()
 					if(robotId){
 						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {

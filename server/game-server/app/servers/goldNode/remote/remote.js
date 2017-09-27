@@ -316,9 +316,6 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 //小结算回调
 local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	//TODO
-	//console.log("roomId : "+roomId)
-	//console.log(curScores)
-	//console.log(player)
 	//更改金币
 	if(currencyType !== "diamond"){
 		currencyType = "gold"
