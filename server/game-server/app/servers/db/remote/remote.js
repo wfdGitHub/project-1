@@ -31,6 +31,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
 		DBRemote.dbService.setPlayer(uid,"gold",5000)
 		DBRemote.dbService.setPlayer(uid,"charm",0)
+		DBRemote.dbService.setPlayer(uid,"signature","玩家很懒什么都没有留下")
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -38,15 +39,15 @@ var createAccount = function(result,cb) {
 		//每日刷新数据
 		var refreshList = {}
 		refreshList.lottoTime = 0 					//抽奖
-		refreshList.lottoCount = 0 				
+		refreshList.lottoCount = 0
 		refreshList.bankruptTime = 0				//破产保护
-		refreshList.bankruptTimeCount = 0			
+		refreshList.bankruptTimeCount = 0
 		refreshList.dayGoldTime = 0					//每日金币输赢
 		refreshList.dayGoldValue = 0
 		refreshList.charmTime = 0 					//今日魅力值
 		refreshList.charmValue = 0
 		refreshList.shareTime = 0 					//分享领取奖励
-		refreshList.shareCount = 0 					
+		refreshList.shareCount = 0
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
 		//连续登陆记录
   		var myDate = new Date()

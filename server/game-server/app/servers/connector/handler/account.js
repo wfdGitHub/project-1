@@ -13,6 +13,28 @@ var Handler = function(app) {
 
 var handler = Handler.prototype
 
+
+
+
+handler.changeSignature = function(msg,session,next) {
+	//更改签名档
+	var uid = session.get("uid")
+	if(!uid){
+		next(null,{"flag" : false})
+		return
+	}
+	var signature = msg.signature
+	if(typeof(signature) != "string" || signature.length > 256){
+		next(null,{"flag" : false})
+		return
+	}
+	self.app.rpc.db.remote.setPlayerString(null,uid,"signature",signature,function(flag) {
+		next(null,{"flag" : flag})
+	})
+}
+
+
+
 handler.bindWeiXinUnionid = function(msg, session, next) {
 	//游客账号绑定微信
 	var self = this

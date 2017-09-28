@@ -232,6 +232,10 @@ handler.give = function(msg,session,next) {
 		next(null,{flag : false})
 		return
 	}
+	var count = msg.value
+	if(!count || typeof(count) !== "number" || count < 0){
+		count = 1
+	}
 	if(!!uid){
 		async.waterfall([
 			function(cb) {
@@ -246,11 +250,11 @@ handler.give = function(msg,session,next) {
 				})				
 			},
 			function(cb) {
-				//查询赠送者钻石
-				self.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+				//查询赠送者金币
+				self.app.rpc.db.remote.getValue(null,uid,"gold",function(data) {
 					//console.log("diamond ： "+data)
-					needDiamond = giveCfg[giveId].needDiamond
-					if(data && data >= needDiamond){
+					needGold = giveCfg[giveId].needGold * count
+					if(data && data >= needGold){
 						cb()
 					}else{
 						next(null,{"flag" : false})
@@ -260,7 +264,7 @@ handler.give = function(msg,session,next) {
 			},
 			function(cb) {
 				//扣除赠送者钻石
-				self.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
+				self.app.rpc.db.remote.setValue(null,uid,"diamond",-needGold,function() {
 					//增加目标金币及魅力值
 					cb()
 				})
