@@ -31,6 +31,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
 		DBRemote.dbService.setPlayer(uid,"gold",5000)
 		DBRemote.dbService.setPlayer(uid,"charm",0)
+		DBRemote.dbService.setPlayer(uid,"contorl",0)
 		DBRemote.dbService.setPlayer(uid,"signature","玩家很懒什么都没有留下")
 		var history = {}
 		history.allGames = 0

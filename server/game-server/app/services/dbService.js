@@ -80,7 +80,8 @@ local.refreshRanklist = function() {
 }
 
 local.changeRanklist = function(players) {
-	//console.log(players)
+	refreshTime = setTimeout(local.refreshRanklist,30 * 60 * 1000)
+	// console.log(players)
 	goldAllRanklist = []
 	goldDayRanklist = []
 
@@ -170,7 +171,6 @@ local.changeRanklist = function(players) {
 
 	// console.log(goldDayRanklist)
 	// console.log(goldAllRanklist)
-	refreshTime = setTimeout(local.refreshRanklist,30 * 60 * 1000)
 }
 
 dbService.updateDiamond = function(value) {
@@ -230,7 +230,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd12 = "nn:acc:"+uid+":"+"charm"				//魅力值
 	var cmd13 = "nn:acc:"+uid+":"+"loginRecord" 		//连续登陆记录
 	var cmd14 = "nn:acc:"+uid+":"+"signature" 		    //签名档
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,cmd13,cmd14,function(err,data) {
+	var cmd15 = "nn:acc:"+uid+":"+"contorl" 			//特殊控制
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,cmd13,cmd14,cmd15,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = parseInt(data[0])
@@ -247,6 +248,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["charm"] = parseInt(data[11] || 0)
 			notify["loginRecord"] = data[12] ? JSON.parse(data[12]) : {}
 			notify["signature"] = data[13] || ""
+			notify["contorl"] = data[14] || 0
 			notify["playerId"] = uid
 			cb(notify)
 		}else{
