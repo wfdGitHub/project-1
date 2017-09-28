@@ -391,12 +391,7 @@ var rateType = {
             dealFlag = true
         }
       }while(dealFlag && randTimes < conf.ROUND_TIMES)
-      //找出剩余牌
-      // var tmpCards = {}
-      // var tmpCardCount = 0
-      // for(var i = index;i < cardCount;i++){
-      //   tmpCards[tmpCardCount++] = deepCopy(cards[i])
-      // }
+
       // //执行控制   
       // //先计算每个人的运气值   -1 到 1之间     
       // var randomMaxScore = 500 + Math.floor(Math.random() * 300)
@@ -418,6 +413,12 @@ var rateType = {
       //       luckyValue[i] = luckyValue[i] * 0.6
       //     }
       // }
+      //找出剩余牌
+      var tmpCards = {}
+      var tmpCardCount = 0
+      for(var i = index;i < cardCount;i++){
+        tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      }
       //特殊控制
       var luckyValue = {}      
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -431,6 +432,8 @@ var rateType = {
           }      
         }
       }
+      // console.log("================")
+      // console.log(luckyValue)
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady && luckyValue[i]){

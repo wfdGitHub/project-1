@@ -84,7 +84,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				}
 				local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},3000,function(flag) {
 					if(flag == false){
-						console.log("beginRob error")
+						console.log("beginRob error : "+max)
 					}
 				})
 				break

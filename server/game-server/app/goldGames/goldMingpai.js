@@ -414,6 +414,12 @@ var rateType = {
       //         }
       //     }
       // }
+      //找出剩余牌
+      var tmpCards = {}
+      var tmpCardCount = 0
+      for(var i = index;i < cardCount;i++){
+        tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      }
       //特殊控制
       var luckyValue = {}      
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -427,6 +433,7 @@ var rateType = {
           }      
         }
       }
+      // console.log(luckyValue)
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady && luckyValue[i]){
@@ -495,7 +502,7 @@ var rateType = {
           //抢庄
           gameState = conf.GS_ROB_BANKER
           for(var i = 0; i < GAME_PLAYER;i++){
-            robState[i] = 0
+            robState[i] = -1
           }
           //抢庄
           var notify = {
@@ -647,22 +654,28 @@ var rateType = {
     room.handle.useCmd = function(uid,sid,param,cb) {
       var chair = room.chairMap[uid]
       if(chair === undefined){
+        console.log("chair : "+chair)
+        console.log(room.chairMap)
         cb(false)
         return
       }
       switch(param.cmd){
           case "robBanker" :
             if(gameState !== conf.GS_ROB_BANKER){
+              console.log("11111111 : "+gameState)
               cb(false)
               return
             } 
             if(!param || typeof(param.num) !== "number" || param.num < 0 || param.num > 4){
+              console.log("222222 : "+param.num)
               cb(false)
               return
             }
             log("robBanker")
             //判断是否已抢庄
             if(robState[chair] != -1){
+              // console.log(robState[chair])
+              // console.log(robState)
               cb(false)
               return
             }
@@ -695,11 +708,13 @@ var rateType = {
           case "bet" : 
             //游戏状态为BETTING
             if(gameState !== conf.GS_BETTING){
-              console.log("bet1")
-              console.log(game)
+              console.log("bet111111")
+              console.log(gameState)
               cb(false)
               return
             }
+            console.log("uid : "+uid)
+            console.log("bet : "+param.bet)
             //不在游戏中不能下注
             if(!player[chair].isReady){
               console.log("bet2")
@@ -1046,6 +1061,7 @@ var rateType = {
       player[chair].isRobot = undefined       //是否为机器人        
       player[chair].cardsList = {}            //手牌记录
       player[chair].gameCount = 0             //游戏次数      
+      lastScore[i] = 0
   }
     //玩家离线
     room.leave = function(uid) {

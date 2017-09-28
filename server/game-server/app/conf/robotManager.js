@@ -26,6 +26,7 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.limits = 0
 	data.freeze = 0
 	data.useDiamond = 0
+	data.contorl = 0
 	var goldConf = goldList[type.split("-")[1]]
 	if(goldConf){
 		data.gold = Math.floor(Math.random() * (goldConf.max - goldConf.min)) + goldConf.min

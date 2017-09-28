@@ -421,8 +421,8 @@ local.matching = function(){
 			for(var i = 0;i < tmpRoomList.length; i++){
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
-				console.log("roomId : " + roomId)
-				console.log("playerCount : " + playerCount)
+				// console.log("roomId : " + roomId)
+				// console.log("playerCount : " + playerCount)
 				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.2){
 					var robotId = robotManager.getUnusedRobot()
 					if(robotId){
@@ -525,7 +525,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 				if(maxJoin[type] !== "infinite" && data.diamond > maxJoin[type]){
 					cb(false,{"msg" : tips.MORE_DIAMOND})
 					return
-				}					
+				}
 			}else{
 				cb(false)
 				return
