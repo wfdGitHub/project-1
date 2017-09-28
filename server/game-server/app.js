@@ -76,7 +76,7 @@ var goldNodeRoute = function(session, msg, app, cb) {
   //获取用户游戏服务ID
   var gid = msg.args[0].gid
   if(gid === undefined || !goldNodeServers[gid]){
-    cb(new Error('can not find goldNode servers node.'+gid))
+    cb(new Error('can not find goldNode servers node + '+gid))
     return
   }
   cb(null, goldNodeServers[gid].id);

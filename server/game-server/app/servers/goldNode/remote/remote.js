@@ -116,11 +116,13 @@ GameRemote.prototype.joinRoom = function(params,player,roomId,cb) {
 		cb(false)
 		return
 	}
+	console.log("11111111")
 	GameRemote.roomList[roomId].handle.join(player.uid,player.sid,player.info,function(flag){
+		console.log("111111112222 : "+flag)
 		if(flag){
 			GameRemote.userMap[player.uid] = roomId
-			//console.log("joinRoom : ")
-			//console.log(player)
+			console.log("joinRoom : ")
+			console.log(player)
 		}
 		cb(flag)
 	})
@@ -154,9 +156,13 @@ local.quitRoom = function(uid,roomId,cb) {
 
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
-	GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
-		cb(data)
-	})
+	if(GameRemote.roomList[roomId]){
+		GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
+			cb(data)
+		})
+	}else{
+		cb(false)
+	}
 }
 //玩家离开
 GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {

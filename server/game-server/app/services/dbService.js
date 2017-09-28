@@ -40,7 +40,7 @@ dbService.prototype.start = function(cb){
 		        db.set("nn:notifys",JSON.stringify(notify));
     		}
 		})
-		local.refreshRanklist()
+		refreshTime = setTimeout(local.refreshRanklist,30 * 1000)
 	})
 	cb()
 }

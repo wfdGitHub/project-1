@@ -177,38 +177,34 @@ local.joinRoom = function(type,roomId){
 		GameRemote.matchList[type].splice(0,1)
 		delete GameRemote.matchMap[uid]		
 		//玩家加入房间
-		if(GameRemote.RoomMap[roomId].length < ROOMPLAYERNUM){
-			var params = {}
-			params.gid = GameRemote.roomList[roomId]
-			if(!params.gid && params.gid != 0){
-				console.log("error!!!!!!!!!!!!")
-				//console.log(GameRemote.roomList)
-				return
-			}
-			//冗余保护  若玩家已在房间中则不处理
-			if(GameRemote.userMap[uid]){
-				console.log("error player in room")
-				return
-			}
-			var player = {
-				"uid" : uid,
-				"sid" : GameRemote.userConnectorMap[uid],
-				"info" : info
-			}
-			GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
-				if(!flag){
-					//失败移除玩家
-					for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
-						if(GameRemote.RoomMap[roomId][i] == uid){
-							GameRemote.RoomMap[roomId].splice(i,1)
-							break
-						}
-					}
-					delete GameRemote.userMap[uid]
-				}
-			})
+		var params = {}
+		params.gid = GameRemote.roomList[roomId]
+		if(!params.gid && params.gid != 0){
+			console.log("error!!!!!!!!!!!!")
+			//console.log(GameRemote.roomList)
+			return
 		}
+		var player = {
+			"uid" : uid,
+			"sid" : GameRemote.userConnectorMap[uid],
+			"info" : info
+		}
+		GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
+			if(!flag){
+				console.log("删除队首玩家，匹配失败222222")
+				//失败移除玩家
+				for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
+					if(GameRemote.RoomMap[roomId][i] == uid){
+						GameRemote.RoomMap[roomId].splice(i,1)
+						break
+					}
+				}
+				delete GameRemote.userMap[uid]
+			}
+		})
 	}else{
+		console.log("删除队首玩家，匹配失败")
+		console.log(GameRemote.matchMap[uid])
 		GameRemote.matchList[type].splice(0,1)
 		delete GameRemote.matchMap[uid]
 	}
@@ -305,6 +301,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 			GameRemote.roomInitiativeFlag[roomId] = false
 			console.log("GameRemote.roomList[roomId]  :  "+GameRemote.roomList[roomId])
 			GameRemote.typeRoomMap[type].push(roomId)
+			GameRemote.roomTypeMap[roomId] = type
 			GameRemote.RoomMap[roomId] = users
 			console.log("users : "+users)
 		}else{
@@ -348,6 +345,7 @@ local.quitRoom = function(roomId,uid) {
 	console.log(GameRemote.userMap)
 }
 
+//用户中途离开房间
 local.userQuit = function(uid,cb) {
 	console.log("userQuit")
 	var roomId = GameRemote.userMap[uid]
@@ -423,6 +421,8 @@ local.matching = function(){
 			for(var i = 0;i < tmpRoomList.length; i++){
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
+				console.log("roomId : " + roomId)
+				console.log("playerCount : " + playerCount)
 				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.2){
 					var robotId = robotManager.getUnusedRobot()
 					if(robotId){
@@ -479,9 +479,29 @@ local.joinMatch = function(uid,sid,params,cb) {
 	}
 	//在房间中不能申请
 	if(GameRemote.userMap[uid]){
-		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
-		cb(false,{"msg" : tips.WAIT_GAME_OVER})
-		return
+		//若进入同一类型房间则重连
+		var roomId = GameRemote.userMap[uid]
+		console.log(GameRemote.roomTypeMap[GameRemote.userMap[uid]])
+		console.log(type)
+		if(GameRemote.roomTypeMap[GameRemote.userMap[uid]] == type){
+			var tmpParams = {}
+			tmpParams.gid = GameRemote.roomList[roomId]
+			GameRemote.app.rpc.goldNode.remote.reconnection(null,tmpParams,uid,sid,roomId,function(data) {
+				if(data){
+					console.log("reconnection ok")
+					console.log(data)
+					cb(true,{"code" : "reconnection","data" : data})
+				}else{
+					console.log("重连失败")
+					cb(false,{"msg" : tips.WAIT_GAME_OVER})					
+				}
+			})
+			return
+		}else{
+			console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+			cb(false,{"msg" : tips.WAIT_GAME_OVER})
+			return
+		}
 	}
 
 	//获取用户信息、检测金币
@@ -673,6 +693,7 @@ GameRemote.prototype.gameOver = function(roomId,players,type,cb) {
 	GameRemote.roomList[roomId] = false
 	GameRemote.roomInitiativeFlag[roomId] = false
 	delete GameRemote.RoomMap[roomId]
+	delete GameRemote.roomTypeMap[roomId]
 	console.log(GameRemote.typeRoomMap[type])
 	for(var i = 0; i < GameRemote.typeRoomMap[type].length;i++){
 		if(GameRemote.typeRoomMap[type][i] == roomId){
