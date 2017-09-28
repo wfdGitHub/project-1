@@ -78,7 +78,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 						}
 					}
 					if(!robot.player.isBanker){
-						local.delaySend(uid,"bet",{"bet" : betList[rand]},3000,function(flag) {
+						local.delaySend(uid,"bet",{"bet" : rand + 1},3000,function(flag) {
 							if(flag == false){
 								console.log("beginBetting error : max : ")
 								console.log(robot.player)

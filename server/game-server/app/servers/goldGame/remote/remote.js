@@ -4,7 +4,7 @@ var tips = require("../../../conf/tips.js").tipsConf
 var robotManager = require("../../../conf/robotManager.js")
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
-var MATCHTIME = 1000
+var MATCHTIME = 500
 var MAXMATCHTIMER = 10
 var ROOMPLAYERNUM = 6
 var ROOM_BEGIN_INDEX = 100000
@@ -407,19 +407,17 @@ local.matching = function(){
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					if(Math.random() < 0.3){
-						//加一个机器人到队列中
-						var robotId = robotManager.getUnusedRobot()
-						if(robotId){
-							robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-								var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-								local.robotJoinMatch(robotData.uid,params,robotData)
-							})
-						}
-					}					
+					//加一个机器人到队列中
+					var robotId = robotManager.getUnusedRobot()
+					if(robotId){
+						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+							local.robotJoinMatch(robotData.uid,params,robotData)
+						})
+					}
 				}
 			}
-			//动态添加机器人
+			//给空闲房间动态添加机器人
 			for(var i = 0;i < tmpRoomList.length; i++){
 				var roomId = tmpRoomList[i]
 				var playerCount = GameRemote.RoomMap[roomId].length
