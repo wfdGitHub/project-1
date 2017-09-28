@@ -227,7 +227,7 @@ handler.give = function(msg,session,next) {
 	var giveId = msg.giveId
 	var targetUid = msg.targetUid
 	var self = this
-	var needDiamond = 0
+	var gold = 0
 	if(!giveCfg[giveId] || !targetUid){
 		next(null,{flag : false})
 		return
@@ -253,8 +253,8 @@ handler.give = function(msg,session,next) {
 				//查询赠送者金币
 				self.app.rpc.db.remote.getValue(null,uid,"gold",function(data) {
 					//console.log("diamond ： "+data)
-					needGold = giveCfg[giveId].needGold * count
-					if(data && data >= needGold){
+					gold = giveCfg[giveId].gold * count
+					if(data && data >= gold){
 						cb()
 					}else{
 						next(null,{"flag" : false})
@@ -264,25 +264,25 @@ handler.give = function(msg,session,next) {
 			},
 			function(cb) {
 				//扣除赠送者钻石
-				self.app.rpc.db.remote.setValue(null,uid,"diamond",-needGold,function() {
+				self.app.rpc.db.remote.setValue(null,uid,"diamond",-gold,function() {
 					//增加目标金币及魅力值
 					cb()
 				})
 			},
 			function() {
 				//赠送成功
-				var gold = giveCfg[giveId].gold
-				var charm = giveCfg[giveId].charm
+				var charm = giveCfg[giveId].charm * count
 				self.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
 					self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
 				})
 				//通知被赠送玩家
 				var notify = {
 					"cmd" : "beGive",
+					"count" : count,
 					"source" : uid,
 					"gold" : gold,
 					"charm" : charm,
-					"giveId" : giveId,
+					"giveId" : giveId
 				}
 				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function() {})
 				next(null,{"flag" : true})
