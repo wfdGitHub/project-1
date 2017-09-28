@@ -168,10 +168,10 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 //将队首玩家加入房间
 local.joinRoom = function(type,roomId){
 	console.log("joinRoom")
-	GameRemote.RoomMap[roomId].push(uid)
-	GameRemote.userMap[uid] = roomId
 	//从匹配队列删除
 	var uid = GameRemote.matchList[type][0]
+	GameRemote.RoomMap[roomId].push(uid)
+	GameRemote.userMap[uid] = roomId	
 	if(GameRemote.matchMap[uid]){
 		var info = GameRemote.matchMap[uid].info
 		GameRemote.matchList[type].splice(0,1)
@@ -306,6 +306,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 			console.log("GameRemote.roomList[roomId]  :  "+GameRemote.roomList[roomId])
 			GameRemote.typeRoomMap[type].push(roomId)
 			GameRemote.RoomMap[roomId] = users
+			console.log("users : "+users)
 		}else{
 			//TODO通知匹配失败 删除RoomMap与userMap
 			delete GameRemote.RoomMap[roomId]

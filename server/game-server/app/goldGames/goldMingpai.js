@@ -414,7 +414,35 @@ var rateType = {
       //         }
       //     }
       // }
-      
+      //特殊控制
+      var luckyValue = {}      
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }
+              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
+              luckyValue[i] -= contorlValue
+          }      
+        }
+      }
+      //运气值低的先执行控制 
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady && luckyValue[i]){
+              if(luckyValue[i] < 0){
+                if(Math.random() < -luckyValue[i]){
+                  //换好牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                }
+              }else if(luckyValue[i] > 0){
+                if(Math.random() < luckyValue[i]){
+                  //换差牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                }
+              }
+          }
+      }       
       //记录参与游戏人数
       curPlayerCount = 0
       for(var i = 0;i < GAME_PLAYER;i++){

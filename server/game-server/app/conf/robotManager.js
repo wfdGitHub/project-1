@@ -35,7 +35,7 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.diamond = data.gold
 	data.isRobot = true
 	data.charm = 0
-	
+	data.contorl = 0
 	var refreshList = {}
 	refreshList.lottoTime = 0 					//抽奖
 	refreshList.lottoCount = 0 				

@@ -399,7 +399,6 @@ var rateType = {
       // }
       // //执行控制   
       // //先计算每个人的运气值   -1 到 1之间     
-      // var luckyValue = {}
       // var randomMaxScore = 500 + Math.floor(Math.random() * 300)
       // var randomMinScore = 400 + Math.floor(Math.random() * 200)
       // for(var i = 0;i < GAME_PLAYER;i++){
@@ -419,23 +418,35 @@ var rateType = {
       //       luckyValue[i] = luckyValue[i] * 0.6
       //     }
       // }
-      // //运气值低的先执行控制 
-      // for(var i = 0;i < GAME_PLAYER;i++){
-      //     if(player[i].isActive && player[i].isReady){
-      //         if(luckyValue[i] < 0){
-      //           if(Math.random() < -luckyValue[i]){
-      //             //换好牌
-      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
-      //           }
-      //         }else if(luckyValue[i] > 0){
-      //           if(Math.random() < luckyValue[i]){
-      //             //换差牌
-      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
-      //           }
-      //         }
-      //     }
-      // }
-      
+      //特殊控制
+      var luckyValue = {}      
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }
+              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
+              luckyValue[i] -= contorlValue
+          }      
+        }
+      }
+      //运气值低的先执行控制 
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady && luckyValue[i]){
+              if(luckyValue[i] < 0){
+                if(Math.random() < -luckyValue[i]){
+                  //换好牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                }
+              }else if(luckyValue[i] > 0){
+                if(Math.random() < luckyValue[i]){
+                  //换差牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                }
+              }
+          }
+      }      
       //记录参与游戏人数
       curPlayerCount = 0
       for(var i = 0;i < GAME_PLAYER;i++){
