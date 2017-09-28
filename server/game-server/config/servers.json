@@ -8,9 +8,6 @@
     "login":[
       {"id":"login-server","host":"127.0.0.1","port":3160}
     ],
-    "game":[
-      {"id":"game-server","host":"127.0.0.1","port":3210}
-    ],
     "goldGame":[
       {"id":"gold-server","host":"127.0.0.1","port":3220}
     ],

@@ -20,7 +20,6 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.diamond = 0
 	data.uid = uid
 	data.nickname = robotData[uid].nickname
-	var qqId = Math.floor(Math.random() * 1000) + 752387000
 	data.head = robotData[uid].icon
 	data.history = []
 	data.sex = Math.random() > 0.5 ? 1 : 2
@@ -36,6 +35,7 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.diamond = data.gold
 	data.isRobot = true
 	data.charm = 0
+	
 	var refreshList = {}
 	refreshList.lottoTime = 0 					//抽奖
 	refreshList.lottoCount = 0 				

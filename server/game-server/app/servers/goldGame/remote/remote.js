@@ -369,24 +369,25 @@ local.userQuit = function(uid,cb) {
 
 //定时匹配
 local.matching = function(){
-	//console.log("matching")
+	// console.log("matching")
 	clearTimeout(matchingTimer)
 	matchingTimer = setTimeout(local.matching,MATCHTIME)
 	for(var type in gameType){
 		if(gameType.hasOwnProperty(type)){
 			//匹配队列玩家列表
 			var playerList = GameRemote.matchList[type]
-			//console.log(playerList)
+			// console.log(playerList)
 			//已有房间列表
 			var tmpRoomList = GameRemote.typeRoomMap[type]
+			// console.log(tmpRoomList)
 			//遍历每个玩家    先随机选择一个房间加入
 			for(var i = 0; i < playerList.length;i++){
 				//是否有空闲房间标志
 				var tmpFlag = false
 				var roomId = false
 				var tmpRand = Math.floor(Math.random() * tmpRoomList.length) % tmpRoomList.length
-				for(var i = tmpRand;i < tmpRand + tmpRoomList.length;i++){
-					roomId = tmpRoomList[i % tmpRoomList.length]
+				for(var j = tmpRand;j < tmpRand + tmpRoomList.length;j++){
+					roomId = tmpRoomList[j % tmpRoomList.length]
 					var playerCount = GameRemote.RoomMap[roomId].length
 					if(playerCount < ROOMPLAYERNUM){
 						tmpFlag = true

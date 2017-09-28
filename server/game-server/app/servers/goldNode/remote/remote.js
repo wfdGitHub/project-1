@@ -135,6 +135,7 @@ GameRemote.prototype.quitRoom = function(params,uid,cb) {
 		return
 	}
 	local.quitRoom(uid,roomId,cb)
+	cb(true)
 }
 
 //玩家退出房间回调
