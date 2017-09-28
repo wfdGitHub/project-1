@@ -87,7 +87,7 @@ GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb
 		cb(false)
 		return
 	}
-	var currencyType = "diamond"
+	var currencyType = "gold"
 	GameRemote.roomList[roomId] = ROOM_TYPE[params.gameType].createRoom(currencyType,params.gameType,rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
     GameRemote.roomList[roomId].newRoom(uids,sids,infos,params,function (flag) {
 		if(flag){

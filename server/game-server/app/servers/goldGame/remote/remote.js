@@ -566,7 +566,7 @@ local.joinInitiativeRoom = function(uid,roomId,cb) {
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
-			if(data.diamond < GameRemote.roomInitiativeBasic[roomId] * ENTER_RATE){
+			if(data.gold < GameRemote.roomInitiativeBasic[roomId] * ENTER_RATE){
 				cb(false,{"msg" : tips.NO_DIAMOND})
 				return
 			}
@@ -620,7 +620,7 @@ local.createInitiativeRoom = function(uid,params,cb) {
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
-			if(data.diamond < rateType[rate] * ENTER_RATE){
+			if(data.gold < rateType[rate] * ENTER_RATE){
 				cb(false,{"msg" : tips.NO_DIAMOND})
 				return
 			}
