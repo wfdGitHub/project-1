@@ -1,7 +1,7 @@
 //金币兑换
 module.exports = 
 {
-	"1" : {"diamond" : 10,"gold" : 100},
+	"1" : {"diamond" : 10,"gold" : 1000},
 	"2" : {"diamond" : 50,"gold" : 5000},
 	"3" : {"diamond" : 100,"gold" : 10000},
 	"4" : {"diamond" : 500,"gold" : 50000},
