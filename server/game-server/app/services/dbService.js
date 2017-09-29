@@ -99,22 +99,23 @@ local.changeRanklist = function(players) {
 				data.gold = players[i].gold
 				data.charm = players[i].charm
 				data.dayCharm = players[i].refreshList.charmValue
+				data.signature = players[i].signature
 				if(goldAllRanklist.length > 0){
 					for(var index = goldAllRanklist.length - 1; index >= 0;index--){
 						if(goldAllRanklist[index].gold > players[i].gold){
 							goldAllRanklist.splice(index + 1,0,data)
-							if(goldAllRanklist.length >= 20){
-								goldAllRanklist.splice(20,1)
+							if(goldAllRanklist.length >= 3){
+								goldAllRanklist.splice(3,1)
 							}
 							break
 						}
 						if(index == 0){
 							goldAllRanklist.splice(0,0,data)
-							if(goldAllRanklist.length >= 20){
-								goldAllRanklist.splice(20,1)
+							if(goldAllRanklist.length >= 3){
+								goldAllRanklist.splice(3,1)
 							}
 						}
-					}				
+					}
 				}else{
 					if(players[i].gold > 0){
 						goldAllRanklist.push(data)
@@ -143,7 +144,8 @@ local.changeRanklist = function(players) {
 				data.head = players[i].head
 				data.gold = players[i].refreshList.dayGoldValue
 				data.charm = players[i].charm
-				data.dayCharm = players[i].refreshList.charmValue				
+				data.dayCharm = players[i].refreshList.charmValue
+				data.signature = players[i].signature		
 				if(goldDayRanklist.length > 0){
 					for(var index = goldDayRanklist.length - 1; index >= 0;index--){
 						if(goldDayRanklist[index].gold > players[i].refreshList.dayGoldValue){
