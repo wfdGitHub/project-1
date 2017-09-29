@@ -16,7 +16,7 @@ var DBRemote = function(app) {
     if(DBRemote.dbService && DBRemote.dbService.db){
     	DBRemote.db = DBRemote.dbService.db
     }
-}	
+}
 
 var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
@@ -33,6 +33,8 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"charm",0)
 		DBRemote.dbService.setPlayer(uid,"contorl",0)
 		DBRemote.dbService.setPlayer(uid,"signature","玩家很懒什么都没有留下")
+		DBRemote.dbService.setPlayer(uid,"agencyId",false)
+
 		var history = {}
 		history.allGames = 0
 		history.List = {}
@@ -78,7 +80,7 @@ var createAccount = function(result,cb) {
 			"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
 			"title" : "欢乐赢棋牌",
 			"content" : "欢乐赢棋牌",
-			"affix" : {"type" : "gold","value" : 1000},
+			"affix" : false,
 			"time" : new Date().getTime(),
 			"addresser" : "系统管理员",
 			"uid" : 0,
@@ -93,6 +95,9 @@ var createAccount = function(result,cb) {
 			"receiveRecord" : []
 		}
 		DBRemote.dbService.setPlayerObject(uid,"giveRecord",giveRecord)
+		//代理分红
+		var agencyRedList = {}
+		DBRemote.dbService.setPlayerObject(uid,"agencyRedList",agencyRedList)
 		cb(false)
 	})
 }

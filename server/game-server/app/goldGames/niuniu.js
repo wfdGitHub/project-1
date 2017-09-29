@@ -131,18 +131,18 @@ var betType = {
           cb(false)
           return
         }
-        room.cardMode = params.cardMode
         if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU  && params.bankerMode !== conf.MODE_BANKER_ORDER){
           console.log("params.bankerMode error : "+params.bankerMode)
           cb(false)
           return
         }
-        room.bankerMode = params.bankerMode
         if(!betType[params.basicType]){
           console.log("params.basicType error : "+params.basicType)
           cb(false)
           return
         }
+        room.bankerMode = params.bankerMode
+        room.cardMode = params.cardMode
         room.basicType = params.basicType
         room.initiativeFlag = true
       }     

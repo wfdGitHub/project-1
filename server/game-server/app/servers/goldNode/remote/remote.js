@@ -11,15 +11,13 @@ var ROOM_FACTORY = {
 	"goldMingpai-1-gold" : goldMingpai,
 	"goldMingpai-2-gold" : goldMingpai,
 	"goldMingpai-3-gold" : goldMingpai,
+	"goldMingpai-4-gold" : goldMingpai,
+	"goldMingpai-5-gold" : goldMingpai,
 	"goldNiuNiu-1-gold" : goldNiuNiu,
 	"goldNiuNiu-2-gold" : goldNiuNiu,
 	"goldNiuNiu-3-gold" : goldNiuNiu,
-	"goldMingpai-1-diamond" : goldMingpai,
-	"goldMingpai-2-diamond" : goldMingpai,
-	"goldMingpai-3-diamond" : goldMingpai,
-	"goldNiuNiu-1-diamond" : goldNiuNiu,
-	"goldNiuNiu-2-diamond" : goldNiuNiu,
-	"goldNiuNiu-3-diamond" : goldNiuNiu	
+	"goldNiuNiu-4-gold" : goldNiuNiu,
+	"goldNiuNiu-5-gold" : goldNiuNiu
 }
 var ROOM_TYPE = {
 	"niuniu" : goldNiuNiu,
@@ -164,7 +162,8 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 			cb(false)
 		return
 		case "lotto":
-			local.lotto(uid,roomId,cb)
+			cb(false)
+			//local.lotto(uid,roomId,cb)
 		return
 		default :
 			if(GameRemote.roomList[roomId].handle[code]){
@@ -287,6 +286,8 @@ var finishGameOfTimer = function(index) {
 }
 //游戏开始回调
 local.beginCB = function(roomId,player,rate,currencyType) {
+	console.log("rate : "+rate)
+	console.log("beginCB")
 	if(currencyType !== "diamond"){
 		currencyType = "gold"
 	}
@@ -295,14 +296,14 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 			if(player[index].isActive && !player[index].isRobot){
 				player[index].score -= rate
 				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
-				var notify = {
-					"cmd" : "beginConsume",
-					"rate" : rate
-				}
-				GameRemote.roomList[roomId].sendAll(notify)
 			}
 		}
 	}
+	var notify = {
+		"cmd" : "beginConsume",
+		"rate" : rate
+	}
+	GameRemote.roomList[roomId].sendAll(notify)
 }
 
 
@@ -335,18 +336,18 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		}
 	}
 	//通知可以抽奖
-	for(var index in player){
-		if(player.hasOwnProperty(index)){
-			if(player[index].isActive){
-				if(player[index].gameCount >= 5){
-					var notify = {
-						"cmd" : "canLotto"
-					}
-					GameRemote.roomList[roomId].sendUid(player[index].uid,notify)
-				}
-			}
-		}
-	}
+	// for(var index in player){
+	// 	if(player.hasOwnProperty(index)){
+	// 		if(player[index].isActive){
+	// 			if(player[index].gameCount >= 5){
+	// 				var notify = {
+	// 					"cmd" : "canLotto"
+	// 				}
+	// 				GameRemote.roomList[roomId].sendUid(player[index].uid,notify)
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 //房间结束回调

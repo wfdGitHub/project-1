@@ -131,13 +131,19 @@ var betType = {
           cb(false)
           return
         }
-        room.cardMode = params.cardMode
         if(params.bankerMode !== conf.MODE_BANKER_ROB && params.bankerMode !== conf.MODE_BANKER_NIUNIU && params.bankerMode !== conf.MODE_BANKER_ORDER){
           console.log("params.bankerMode error : "+params.bankerMode)
           cb(false)
           return
         }
+        if(!betType[params.basicType]){
+          console.log("params.basicType error : "+params.basicType)
+          cb(false)
+          return
+        }
+        room.cardMode = params.cardMode
         room.bankerMode = params.bankerMode
+        basicType = params.basicType
         room.initiativeFlag = true
       }
       //设置下注上限
@@ -934,7 +940,7 @@ var betType = {
             if(curScores[i] != 0){
               local.changeScore(i,curScores[i])
             }
-            lastScore[i] = curScores[i]
+            lastScore[i] = Math.floor(curScores[i] / room.rate)
         }
         var realScores = {}
         //返回玩家实际分数
