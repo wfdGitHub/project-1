@@ -409,7 +409,7 @@ local.matching = function(){
 				}else{
 					//加一个机器人到队列中
 					var robotId = robotManager.getUnusedRobot()
-					if(robotId){
+					if(robotId && Math.random() < 0.4){
 						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
 							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
 							local.robotJoinMatch(robotData.uid,params,robotData)
