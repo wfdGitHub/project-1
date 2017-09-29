@@ -11,11 +11,7 @@ var betType = {
   "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
   "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
 }
-var rateType = {
-  "0" : 10,
-  "1" : 50,
-  "2" : 100
-}
+
 //创建房间
   module.exports.createRoom = function(currencyType,gameType,rate,roomId,channelService,settlementCB,quitRoom,gemeOver,beginCB) {
     console.log("createRoom"+roomId)
@@ -37,12 +33,8 @@ var rateType = {
     room.initialTime = room.beginTime    //游戏开始时间戳
     room.MatchStream = {}
     room.maxResultFlag = false
-    room.rate = 10
+    room.rate = rate
     room.initiativeFlag = false
-    if(rateType[rate]){
-      room.rate = rateType[rate]
-    }
-
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性

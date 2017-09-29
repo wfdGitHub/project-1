@@ -46,20 +46,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 		return
 	}
 	var currencyType = params.gameType.split("-")[2]
-	console.log("currencyType : "+currencyType)
-	var rate = 10
-    switch(parseInt(params.gameType.split("-")[1])){
-      case 1:
-        rate = 10
-      break
-      case 2:
-        rate = 50
-      break
-      case 3:
-        rate = 100
-      break
-    }
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(currencyType,params.gameType,rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(currencyType,params.gameType,params.rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
     GameRemote.roomList[roomId].newRoom(uids,sids,infos,false,function (flag) {
 		if(flag){
 			var info = "   newRoom   gold roomId  : "+ roomId
@@ -70,7 +57,7 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 			}
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
-			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),10 * 60 * 1000)
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),5 * 60 * 1000)
 			cb(true,uids,roomId)
 		}else{
 			delete GameRemote.roomList[roomId]
@@ -99,7 +86,7 @@ GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb
 			}
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
-			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),10 * 60 * 1000)
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),5 * 60 * 1000)
 			cb(true,uids,roomId)
 		}else{
 			delete GameRemote.roomList[roomId]
@@ -116,9 +103,7 @@ GameRemote.prototype.joinRoom = function(params,player,roomId,cb) {
 		cb(false)
 		return
 	}
-	console.log("11111111")
 	GameRemote.roomList[roomId].handle.join(player.uid,player.sid,player.info,function(flag){
-		console.log("111111112222 : "+flag)
 		if(flag){
 			GameRemote.userMap[player.uid] = roomId
 			console.log("joinRoom : ")
@@ -322,7 +307,6 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 
 //小结算回调
 local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
-	//TODO
 	//更改金币
 	if(currencyType !== "diamond"){
 		currencyType = "gold"

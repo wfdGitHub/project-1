@@ -22,50 +22,17 @@ module.exports = function(app) {
 };
 var local = {}
 var gameType = {
-	"goldMingpai-1-gold" : true,
-	"goldMingpai-2-gold" : true,
-	"goldMingpai-3-gold" : true,
-	"goldNiuNiu-1-gold" : true,
-	"goldNiuNiu-2-gold" : true,
-	"goldNiuNiu-3-gold" : true,
-	"goldMingpai-1-diamond" : true,
-	"goldMingpai-2-diamond" : true,
-	"goldMingpai-3-diamond" : true,
-	"goldNiuNiu-1-diamond" : true,
-	"goldNiuNiu-2-diamond" : true,
-	"goldNiuNiu-3-diamond" : true
+	"goldMingpai-1-gold" : 10,
+	"goldMingpai-2-gold" : 50,
+	"goldMingpai-3-gold" : 100,
+	"goldMingpai-4-gold" : 1000,
+	"goldMingpai-5-gold" : 5000,
+	"goldNiuNiu-1-gold" : 10,
+	"goldNiuNiu-2-gold" : 50,
+	"goldNiuNiu-3-gold" : 100,
+	"goldNiuNiu-4-gold" : 1000,
+	"goldNiuNiu-5-gold" : 5000
 }
-
-var minJoin = {
-	"goldMingpai-1-gold" : 1000,
-	"goldMingpai-2-gold" : 5000,
-	"goldMingpai-3-gold" : 10000,
-	"goldNiuNiu-1-gold" : 1000,
-	"goldNiuNiu-2-gold" : 5000,
-	"goldNiuNiu-3-gold" : 10000,
-	"goldMingpai-1-diamond" : 1000,
-	"goldMingpai-2-diamond" : 5000,
-	"goldMingpai-3-diamond" : 10000,
-	"goldNiuNiu-1-diamond" : 1000,
-	"goldNiuNiu-2-diamond" : 5000,
-	"goldNiuNiu-3-diamond" : 10000
-}
-
-var maxJoin = {
-	"goldMingpai-1-gold" : 10000,
-	"goldMingpai-2-gold" : 50000,
-	"goldMingpai-3-gold" : "infinite",
-	"goldNiuNiu-1-gold" : 10000,
-	"goldNiuNiu-2-gold" : 50000,
-	"goldNiuNiu-3-gold" : "infinite",
-	"goldMingpai-1-diamond" : 10000,
-	"goldMingpai-2-diamond" : 50000,
-	"goldMingpai-3-diamond" : "infinite",
-	"goldNiuNiu-1-diamond" : 10000,
-	"goldNiuNiu-2-diamond" : 50000,
-	"goldNiuNiu-3-diamond" : "infinite"	
-}
-
 
 var GameRemote = function(app) {
 	if(app.get("serverId") === "gold-server"){
@@ -294,6 +261,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 	}
 	params.gid = GameRemote.NodeNumber
 	params.gameType = type
+	params.rate = gameType[type]
 	//console.log(infos)
 	GameRemote.app.rpc.goldNode.remote.newRoom(null,params,users,sids,infos,roomId,function(flag,players,roomId) {
 		if(flag == true){
@@ -509,20 +477,20 @@ local.joinMatch = function(uid,sid,params,cb) {
 		if(data !== false){
 			//检测金币或钻石
 			if(type.split("-")[2] == "gold"){
-				if(data.gold < minJoin[type]){
+				if(data.gold < gameType[type] * 100){
 					cb(false,{"msg" : tips.NO_GOLD})
 					return
 				}
-				if(maxJoin[type] !== "infinite" && data.gold > maxJoin[type]){
+				if(gameType[type] !== 5000 && data.gold > gameType[type] * 500){
 					cb(false,{"msg" : tips.MORE_GOLD})
 					return
 				}				
 			}else if(type.split("-")[2] == "diamond"){
-				if(data.diamond < minJoin[type]){
+				if(data.diamond < gameType[type] * 100){
 					cb(false,{"msg" : tips.NO_DIAMOND})
 					return
 				}
-				if(maxJoin[type] !== "infinite" && data.diamond > maxJoin[type]){
+				if(gameType[type]!== 5000 && data.diamond > gameType[type] * 500){
 					cb(false,{"msg" : tips.MORE_DIAMOND})
 					return
 				}
