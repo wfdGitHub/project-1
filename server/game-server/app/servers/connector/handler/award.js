@@ -282,13 +282,13 @@ handler.give = function(msg,session,next) {
 					if(data && data >= gold){
 						cb()
 					}else{
-						next(null,{"flag" : false})
+						next(null,{"flag" : false,"code" : 18})
 						return
 					}
 				})
 			},
 			function(cb) {
-				//扣除赠送者钻石
+				//扣除赠送者金币
 				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,function() {
 					//增加目标金币及魅力值
 					cb()
