@@ -221,6 +221,23 @@ handler.buyGold = function(msg,session,next) {
 	}		
 }
 
+
+//获取赠送记录
+handler.getGiveRecord = function(msg,session,next) {
+	var uid = session.get("uid")
+	if(!uid){
+		next(null,{flag : false})
+		return
+	}
+	this.app.rpc.db.remote.getPlayerObject(session,uid,"giveRecord",function(data){
+		if(data){
+			next(null,{flag : true,"data" : data})
+		}else{
+			next(null,{flag : false})
+		}
+	})	
+}
+
 //游戏外赠送道具
 handler.give = function(msg,session,next) {
 	var uid = session.get("uid")
@@ -277,12 +294,12 @@ handler.give = function(msg,session,next) {
 					cb()
 				})
 			},
-			function() {
+			function(cb) {
 				//赠送成功
 				var charm = giveCfg[giveId].charm * count
 				self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
 				//发送邮件
-				var content = "你收到玩家 " + nickname + " 礼物*"+count+",价值"+gold+"金币。"
+				var content = "你收到玩家 " + nickname+"("+uid+")" + " 礼物*"+count+",价值"+gold+"金币。"
 				var affix = {"type" : "gold","value" : gold}
 				var addresser = nickname
 				self.app.rpc.db.remote.sendMail(null,targetUid,"赠送道具",content,affix,addresser,uid,function() {
@@ -293,8 +310,42 @@ handler.give = function(msg,session,next) {
 					"cmd" : "newMail",
 				}
 				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})
+				cb()
+			},
+			function(argument) {
+				//更新赠送记录
+				var targetName = ""
+				self.app.rpc.db.remote.getPlayerNickName(null,targetUid,function(name) {
+					targetName = name
+					self.app.rpc.db.remote.getPlayerObject(session,uid,"giveRecord",function(data){
+						if(data && data.sendRecord){
+							if(data.sendRecord.length > 50){
+								data.sendRecord.splice(0,1)
+							}
+							var tmpInfo = {
+								"time" : new Date().getTime(),
+								"content" : "你赠送给玩家 " + targetName +"("+targetUid+")" + " 礼物*"+count+",价值"+gold+"金币。"
+							}
+							data.sendRecord.push(tmpInfo)
+							self.app.rpc.db.remote.setPlayerObject(null,uid,"giveRecord",data,function() {
+								self.app.rpc.db.remote.getPlayerObject(session,targetUid,"giveRecord",function(data){
+									if(data && data.receiveRecord){
+										if(data.receiveRecord.length > 50){
+											data.receiveRecord.splice(0,1)
+										}
+										var tmpInfo = {
+											"time" : new Date().getTime(),
+											"content" : "你收到玩家 " + nickname +"("+uid+")" + " 礼物*"+count+",价值"+gold+"金币。"
+										}
+										data.receiveRecord.push(tmpInfo)
+										self.app.rpc.db.remote.setPlayerObject(null,uid,"giveRecord",data,function() {})
+									}
+								})
+							})
+						}
+					})					
+				})				
 			}
-
 		],
 	    function(err,result) {
 	      next(null,{"flag" : false,code : 1})

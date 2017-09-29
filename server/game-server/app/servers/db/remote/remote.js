@@ -87,6 +87,12 @@ var createAccount = function(result,cb) {
 		}
 		mailList.push(mailInfo)
 		DBRemote.dbService.setPlayerObject(uid,"mailList",mailList)
+		//赠送记录
+		var giveRecord = {
+			"sendRecord" : [],
+			"receiveRecord" : []
+		}
+		DBRemote.dbService.setPlayerObject(uid,"giveRecord",giveRecord)
 		cb(false)
 	})
 }

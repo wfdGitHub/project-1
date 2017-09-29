@@ -325,6 +325,13 @@
             }
           );
       }
+      //获取赠送记录
+      var giveRecord = function() {
+          pomelo.request("connector.award.getGiveRecord",null, function(data) {
+              console.log(data)
+            }
+          );        
+      }
     </script>
   </head>
   <body>
