@@ -11,11 +11,6 @@ var ROOM_BEGIN_INDEX = 100000
 var ROOM_ALL_AMOUNT = 10000
 var matchingTimer = 0
 var ENTER_RATE = 100
-var rateType = {
-  "0" : 10,
-  "1" : 50,
-  "2" : 100
-}
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -481,7 +476,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 					cb(false,{"msg" : tips.NO_GOLD})
 					return
 				}
-				if(gameType[type] !== 5000 && data.gold > gameType[type] * 500){
+				if(gameType[type] !== 5000 && data.gold > gameType[type] * 1000){
 					cb(false,{"msg" : tips.MORE_GOLD})
 					return
 				}				
@@ -490,7 +485,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 					cb(false,{"msg" : tips.NO_DIAMOND})
 					return
 				}
-				if(gameType[type]!== 5000 && data.diamond > gameType[type] * 500){
+				if(gameType[type]!== 5000 && data.diamond > gameType[type] * 1000){
 					cb(false,{"msg" : tips.MORE_DIAMOND})
 					return
 				}
@@ -547,7 +542,7 @@ local.joinInitiativeRoom = function(uid,roomId,cb) {
 		return
 	}
 	//非玩家主动创房不能加入
-	if(!GameRemote.roomInitiativeFlag[roomId] || !rateType[GameRemote.roomInitiativeBasic[roomId]]){
+	if(!GameRemote.roomInitiativeFlag[roomId]){
 		cb(false,{"msg" : tips.NO_ROOM})
 		return		
 	}
@@ -586,7 +581,7 @@ local.createInitiativeRoom = function(uid,params,cb) {
 	var rate = params.rate
 	var gid
 	//预判断房间倍率
-	if(!rateType[rate]){
+	if(!rate || typeof(rate) !== "number" || rate < 10 || rate > 5000){
 		console.log("params.rate error : "+rate)
 		cb(false)
 		return
@@ -608,8 +603,8 @@ local.createInitiativeRoom = function(uid,params,cb) {
 	//获取用户信息、检测金币
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
-			if(data.gold < rateType[rate] * ENTER_RATE){
-				cb(false,{"msg" : tips.NO_DIAMOND})
+			if(data.gold < rate * ENTER_RATE){
+				cb(false,{"msg" : tips.NO_GOLD})
 				return
 			}
 
@@ -663,12 +658,15 @@ GameRemote.prototype.gameOver = function(roomId,players,type,cb) {
 	delete GameRemote.RoomMap[roomId]
 	delete GameRemote.roomTypeMap[roomId]
 	console.log(GameRemote.typeRoomMap[type])
-	for(var i = 0; i < GameRemote.typeRoomMap[type].length;i++){
-		if(GameRemote.typeRoomMap[type][i] == roomId){
-			GameRemote.typeRoomMap[type].splice(i,1)
-			console.log(GameRemote.typeRoomMap[type])
-			break
-		}
+	//自动匹配房间才需要处理
+	if(GameRemote.typeRoomMap[type]){
+		for(var i = 0; i < GameRemote.typeRoomMap[type].length;i++){
+			if(GameRemote.typeRoomMap[type][i] == roomId){
+				GameRemote.typeRoomMap[type].splice(i,1)
+				console.log(GameRemote.typeRoomMap[type])
+				break
+			}
+		}		
 	}
 	if(cb){
 		cb()

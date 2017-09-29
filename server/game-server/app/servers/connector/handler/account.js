@@ -28,7 +28,7 @@ handler.changeSignature = function(msg,session,next) {
 		next(null,{"flag" : false})
 		return
 	}
-	self.app.rpc.db.remote.setPlayerString(null,uid,"signature",signature,function(flag) {
+	this.app.rpc.db.remote.changeValue(null,uid,"signature",signature,function(flag) {
 		next(null,{"flag" : flag})
 	})
 }
