@@ -207,18 +207,18 @@ handler.buyGold = function(msg,session,next) {
 			var diamond = goldConf[buyType].diamond
 			if(data && data >= diamond){
 				self.app.rpc.db.remote.setValue(session,uid,"diamond",-diamond,function() {
-					var gold = goldConf[buyType].gold + goldConf[buyType].give
+					var gold = goldConf[buyType].gold
 					self.app.rpc.db.remote.setValue(session,uid,"gold",gold,function() {
 						next(null,{flag : true})
-					})					
+					})
 				})
 			}else{
 				next(null,{flag : false})
 			}
-		})		
+		})
 	}else{
 		next(null,{flag : false})
-	}		
+	}
 }
 
 
