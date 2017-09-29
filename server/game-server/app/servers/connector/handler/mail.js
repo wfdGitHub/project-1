@@ -20,12 +20,12 @@ handler.getMailList = function(msg,session,next) {
 		next(null,false)
 		return
 	}
-	self.app.rpc.db.remote.getPlayerObject(session,uid,"mailList",function(data) {
+	this.app.rpc.db.remote.getPlayerObject(session,uid,"mailList",function(data) {
 		console.log(data)
 		if(data){
-			next(null,true,data)
+			next(null,{flag : true,data : data})
 		}
-		next(null,false)
+		next(null,{flag : false})
 	})
 }
 
@@ -34,11 +34,11 @@ handler.gainAffix = function(msg,session,next) {
 	var uid = session.get("uid")
 	var mailId = msg.mailId
 	if(!uid){
-		next(null,false)
+		next(null,{flag : false})
 		return
 	}
 	if(!mailId){
-		next(null,false)
+		next(null,{flag : false})
 		return		
 	}
 	var self = this
@@ -55,9 +55,9 @@ handler.gainAffix = function(msg,session,next) {
 						//设置邮件
 						self.app.rpc.db.remote.setPlayerObject(session,uid,"mailList",data,function(flag) {
 							//获取奖励
-							self.app.rpc.db.setValue(session,uid,affix.type,affix.value,function(flag) {
+							self.app.rpc.db.remote.setValue(session,uid,affix.type,affix.value,function(flag) {
 								if(flag){
-									next(null,true)
+									next(null,{flag : true,affix : affix})
 								}
 							})
 						})
@@ -66,20 +66,20 @@ handler.gainAffix = function(msg,session,next) {
 				}
 			}
 		}
-		next(null,false)
+		next(null,{flag : false})
 	})
 }
 
 //读邮件
-handler.getMailList = function(msg,session,next) {
+handler.readMail = function(msg,session,next) {
 	var uid = session.get("uid")
 	var mailId = msg.mailId
 	if(!uid){
-		next(null,false)
+		next(null,{flag : false})
 		return
 	}
 	if(!mailId){
-		next(null,false)
+		next(null,{flag : false})
 		return		
 	}
 	var self = this
@@ -92,14 +92,14 @@ handler.getMailList = function(msg,session,next) {
 						data[i].readState = false
 						//设置邮件
 						self.app.rpc.db.remote.setPlayerObject(session,uid,"mailList",data,function(flag) {
-							next(null,true)
+							next(null,{flag : true})
 						})
 						return						
 					}
 				}
 			}
 		}
-		next(null,false)
+		next(null,{flag : false})
 	})
 }
 

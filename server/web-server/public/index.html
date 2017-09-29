@@ -19,7 +19,7 @@
     <script type="text/javascript">
       var pomelo = window.pomelo;
       var host = "nnapi.5d8d.com";
-      //host = "192.168.1.65";
+      host = "192.168.1.65";
       //host = "120.77.157.99"
       var port = "3010";
       function show() {
@@ -295,6 +295,35 @@
               console.log(data)
             }
           );  
+      }
+
+      //获取邮件列表
+      var getMailList = function() {
+          pomelo.request("connector.mail.getMailList",null, function(data) {
+              console.log(data)
+            }
+          );  
+      }      
+      //领取邮件
+      var gainAffix = function(mailId) {
+          pomelo.request("connector.mail.gainAffix",{"mailId" : mailId}, function(data) {
+              console.log(data)
+            }
+          );  
+      }  
+      //读邮件
+      var readMail = function(mailId) {
+          pomelo.request("connector.mail.readMail",{"mailId" : mailId}, function(data) {
+              console.log(data)
+            }
+          );  
+      }
+      //赠送道具
+      var give = function(giveId,targetUid,count) {
+          pomelo.request("connector.award.give",{"giveId" : giveId,"targetUid" : targetUid,"count" : count}, function(data) {
+              console.log(data)
+            }
+          );
       }
     </script>
   </head>

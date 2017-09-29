@@ -256,7 +256,7 @@ handler.give = function(msg,session,next) {
 					nickname = data
 					cb()
 				})
-			}
+			},
 			function(cb) {
 				//查询赠送者金币
 				self.app.rpc.db.remote.getValue(null,uid,"gold",function(data) {
