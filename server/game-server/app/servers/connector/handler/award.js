@@ -338,7 +338,7 @@ handler.give = function(msg,session,next) {
 											"content" : "你收到玩家 " + nickname +"("+uid+")" + " 礼物*"+count+",价值"+gold+"金币。"
 										}
 										data.receiveRecord.push(tmpInfo)
-										self.app.rpc.db.remote.setPlayerObject(null,uid,"giveRecord",data,function() {})
+										self.app.rpc.db.remote.setPlayerObject(null,targetUid,"giveRecord",data,function() {})
 									}
 								})
 							})
