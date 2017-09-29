@@ -232,10 +232,11 @@ handler.give = function(msg,session,next) {
 		next(null,{flag : false})
 		return
 	}
-	var count = msg.value
+	var count = msg.count
 	if(!count || typeof(count) !== "number" || count < 0){
 		count = 1
 	}
+	var nickname = ""
 	if(!!uid){
 		async.waterfall([
 			function(cb) {
@@ -245,10 +246,17 @@ handler.give = function(msg,session,next) {
 						cb()
 					}else{
 						next(null,{flag : false})
-						return			
+						return
 					}
-				})				
+				})
 			},
+			function(cb) {
+				//查询赠送者昵称
+				self.app.rpc.db.remote.getPlayerNickName(null,uid,function(data) {
+					nickname = data
+					cb()
+				})
+			}
 			function(cb) {
 				//查询赠送者金币
 				self.app.rpc.db.remote.getValue(null,uid,"gold",function(data) {
@@ -272,20 +280,19 @@ handler.give = function(msg,session,next) {
 			function() {
 				//赠送成功
 				var charm = giveCfg[giveId].charm * count
-				self.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
-					self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+				self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+				//发送邮件
+				var content = "你收到玩家 " + nickname + " 礼物*"+count+",价值"+gold+"金币。"
+				var affix = {"type" : "gold","value" : gold}
+				var addresser = nickname
+				self.app.rpc.db.remote.sendMail(null,targetUid,"赠送道具",content,affix,addresser,uid,function() {
+					next(null,{"flag" : true})
 				})
-				//通知被赠送玩家
+				//通知被赠送玩家有新邮件
 				var notify = {
-					"cmd" : "beGive",
-					"count" : count,
-					"source" : uid,
-					"gold" : gold,
-					"charm" : charm,
-					"giveId" : giveId
+					"cmd" : "newMail",
 				}
-				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function() {})
-				next(null,{"flag" : true})
+				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})
 			}
 
 		],

@@ -72,6 +72,21 @@ var createAccount = function(result,cb) {
 		rechargeRecord.curGiftBag = 1
 		rechargeRecord.curValue = 0
 		DBRemote.dbService.setPlayerObject(uid,"rechargeRecord",rechargeRecord)
+		//邮箱
+		var mailList = []
+		var mailInfo = {
+			"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
+			"title" : "欢乐赢棋牌",
+			"content" : "欢乐赢棋牌",
+			"affix" : {"type" : "gold","value" : 1000},
+			"time" : new Date().getTime(),
+			"addresser" : "系统管理员",
+			"uid" : 0,
+			"readState" : true,
+			"gainState" : true
+		}
+		mailList.push(mailInfo)
+		DBRemote.dbService.setPlayerObject(uid,"mailList",mailList)
 		cb(false)
 	})
 }
@@ -282,6 +297,41 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 		}
 	})
 }
+
+//发送邮件
+DBRemote.prototype.sendMail = function(targetUid,title,content,affix,addresser,uid,cb) {
+	//数据检查
+	if(affix && typeof(affix.type) !== ("string") && typeof(affix.value) !== "number"){
+		cb(false)
+		return
+	}
+	var mailInfo = {
+		"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
+		"title" : title,
+		"content" : content,
+		"affix" : affix,
+		"time" : new Date().getTime(),
+		"addresser" : addresser,
+		"uid" : uid,
+		"readState" : true,
+		"gainState" : true
+	}
+	DBRemote.dbService.getPlayerObject(targetUid,"mailList",function(data) {
+		if(!data){
+			data = []
+		}
+		//最多保留50封邮件
+		if(data.length > 50){
+			data.splice(0,1)
+		}
+		data.push(mailInfo)
+		DBRemote.dbService.setPlayerObject(targetUid,"mailList",data,function(){
+			cb(true)
+		})
+	})
+}
+
+
 DBRemote.prototype.getRanklist = function(cb) {
 	DBRemote.dbService.getRanklist(cb)
 }

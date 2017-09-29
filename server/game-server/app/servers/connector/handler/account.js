@@ -24,7 +24,7 @@ handler.changeSignature = function(msg,session,next) {
 		return
 	}
 	var signature = msg.signature
-	if(typeof(signature) != "string" || signature.length > 256){
+	if(typeof(signature) != "string" || signature.length > 128){
 		next(null,{"flag" : false})
 		return
 	}
