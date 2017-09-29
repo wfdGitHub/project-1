@@ -750,10 +750,12 @@ GameRemote.prototype.reconnection = function(uid, sid,cb) {
 
 //分配房间号
 local.getUnusedRoom = function() {
-	//顺序分配房间号
-	for(var i = ROOM_BEGIN_INDEX;i < ROOM_ALL_AMOUNT + ROOM_BEGIN_INDEX;i++){
-		if(GameRemote.roomState[i] == true){
-			return i
+	//随机分配房间号
+	var rand = Math.floor(Math.random() * ROOM_ALL_AMOUNT)
+	for(var i = rand;i < ROOM_ALL_AMOUNT + rand;i++){
+		var roomId = i % (ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
+		if(GameRemote.roomState[roomId] == true){
+			return roomId
 		}
 	}
 	return false
