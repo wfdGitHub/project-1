@@ -160,7 +160,8 @@ GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 	switch(code){
 		case "give":
 		//console.log(params)
-			local.give(uid,params.targetChair,roomId,params.giveId,cb)
+			// local.give(uid,params.targetChair,roomId,params.giveId,cb)
+			cb(false)
 		return
 		case "lotto":
 			local.lotto(uid,roomId,cb)
