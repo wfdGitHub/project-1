@@ -233,7 +233,7 @@ handler.give = function(msg,session,next) {
 		return
 	}
 	var count = msg.count
-	if(!count || typeof(count) !== "number" || count < 0){
+	if(!count || typeof(count) !== "number" || count < 1){
 		count = 1
 	}
 	var nickname = ""
@@ -272,7 +272,7 @@ handler.give = function(msg,session,next) {
 			},
 			function(cb) {
 				//扣除赠送者钻石
-				self.app.rpc.db.remote.setValue(null,uid,"diamond",-gold,function() {
+				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,function() {
 					//增加目标金币及魅力值
 					cb()
 				})
