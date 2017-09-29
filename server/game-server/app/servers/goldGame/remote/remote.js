@@ -129,6 +129,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 
 //将队首玩家加入房间
 local.joinRoom = function(type,roomId){
+	var params = {}
+	params.gid = GameRemote.roomList[roomId]
+	if(!params.gid && params.gid != 0){
+		console.log("error!!!!!!!!!!!!")
+		//console.log(GameRemote.roomList)
+		return
+	}
 	console.log("joinRoom")
 	//从匹配队列删除
 	var uid = GameRemote.matchList[type][0]
@@ -139,13 +146,6 @@ local.joinRoom = function(type,roomId){
 		GameRemote.matchList[type].splice(0,1)
 		delete GameRemote.matchMap[uid]		
 		//玩家加入房间
-		var params = {}
-		params.gid = GameRemote.roomList[roomId]
-		if(!params.gid && params.gid != 0){
-			console.log("error!!!!!!!!!!!!")
-			//console.log(GameRemote.roomList)
-			return
-		}
 		var player = {
 			"uid" : uid,
 			"sid" : GameRemote.userConnectorMap[uid],
