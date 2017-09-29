@@ -309,14 +309,14 @@
           pomelo.request("connector.mail.gainAffix",{"mailId" : mailId}, function(data) {
               console.log(data)
             }
-          );  
-      }  
+          );
+      }
       //读邮件
       var readMail = function(mailId) {
           pomelo.request("connector.mail.readMail",{"mailId" : mailId}, function(data) {
               console.log(data)
             }
-          );  
+          )
       }
       //赠送道具
       var give = function(giveId,targetUid,count) {
