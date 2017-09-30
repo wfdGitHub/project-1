@@ -80,7 +80,7 @@ local.refreshRanklist = function() {
 }
 
 local.changeRanklist = function(players) {
-	refreshTime = setTimeout(local.refreshRanklist,30 * 60 * 1000)
+	refreshTime = setTimeout(local.refreshRanklist,60 * 60 * 1000)
 	// console.log(players)
 	goldAllRanklist = []
 	goldDayRanklist = []
