@@ -147,7 +147,7 @@ module.exports.sendDiamondHttp = function(uid,coin,diamond,type,genre) {
   }
   string += "key=niuniuyiyousecretkey"
   data.sign = md5(string)
-  var req=http.request('http://pay.5d8d.com/niu_admin.php/api/changeUserCoin?'+require('querystring').stringify(data),function(res){
+  var req=http.request('http://pay.5d8d.com/gold_admin.php/api/changeUserCoin?'+require('querystring').stringify(data),function(res){
 
   })
   req.on("error",function(err){
