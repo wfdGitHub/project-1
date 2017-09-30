@@ -1180,6 +1180,12 @@ var betType = {
   room.sendAll = local.sendAll
   room.sendUid = local.sendUid
   room.changeScore = local.changeScore
+  //解散游戏
+  room.finishGame = function(flag) {
+    clearTimeout(timer)
+    room.gameNumber = 0
+    gameOverCB(room.roomId,player,room.roomType)
+  }    
   return room 
 }
 
