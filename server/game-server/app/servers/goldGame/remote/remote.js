@@ -371,66 +371,66 @@ local.matching = function(){
 					local.createRoom(type)
 				}else{
 					//加一个机器人到队列中
-					var robotId = robotManager.getUnusedRobot()
-					if(robotId && Math.random() < 0.4){
-						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)
-						})
-					}
+					// var robotId = robotManager.getUnusedRobot()
+					// if(robotId && Math.random() < 0.4){
+					// 	robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+					// 		var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+					// 		local.robotJoinMatch(robotData.uid,params,robotData)
+					// 	})
+					// }
 				}
 			}
 			//给空闲房间动态添加机器人
-			for(var i = 0;i < tmpRoomList.length; i++){
-				var roomId = tmpRoomList[i]
-				var playerCount = GameRemote.RoomMap[roomId].length
-				// console.log("roomId : " + roomId)
-				// console.log("playerCount : " + playerCount)
-				var tmpFlag = false
-				var rand = Math.random()
-				if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
-					tmpFlag = true
-				}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
-					tmpFlag = true
-				}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
-					tmpFlag = true
-				}
-				if(tmpFlag){
-					var robotId = robotManager.getUnusedRobot()
-					if(robotId){
-						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)
-						})
-					}					
-				}
-			}
+			// for(var i = 0;i < tmpRoomList.length; i++){
+			// 	var roomId = tmpRoomList[i]
+			// 	var playerCount = GameRemote.RoomMap[roomId].length
+			// 	// console.log("roomId : " + roomId)
+			// 	// console.log("playerCount : " + playerCount)
+			// 	var tmpFlag = false
+			// 	var rand = Math.random()
+			// 	if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
+			// 		tmpFlag = true
+			// 	}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
+			// 		tmpFlag = true
+			// 	}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
+			// 		tmpFlag = true
+			// 	}
+			// 	if(tmpFlag){
+			// 		var robotId = robotManager.getUnusedRobot()
+			// 		if(robotId){
+			// 			robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+			// 				var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+			// 				local.robotJoinMatch(robotData.uid,params,robotData)
+			// 			})
+			// 		}					
+			// 	}
+			// }
 		}
 	}
 }
 //机器人加入匹配队列
 local.robotJoinMatch = function(uid,params,robotData) {
-	var type = params.gameType
-	if(!type || typeof(type) != "string" || !gameType[type]){
-		console.log("params.gameType error : "+type)
-		return
-	}
-	//在匹配队列中不能再次申请
-	if(GameRemote.matchMap[uid]){
-		console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
-		return
-	}
-	//在房间中不能申请
-	if(GameRemote.userMap[uid]){
-		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
-		return
-	}
-	//检测金币
-	if(robotData.gold < 10){
-		return
-	}
-	GameRemote.matchList[type].push(uid)
-	GameRemote.matchMap[uid] = {"type" : type,"info" : robotData}
+	// var type = params.gameType
+	// if(!type || typeof(type) != "string" || !gameType[type]){
+	// 	console.log("params.gameType error : "+type)
+	// 	return
+	// }
+	// //在匹配队列中不能再次申请
+	// if(GameRemote.matchMap[uid]){
+	// 	console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+	// 	return
+	// }
+	// //在房间中不能申请
+	// if(GameRemote.userMap[uid]){
+	// 	console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+	// 	return
+	// }
+	// //检测金币
+	// if(robotData.gold < 10){
+	// 	return
+	// }
+	// GameRemote.matchList[type].push(uid)
+	// GameRemote.matchMap[uid] = {"type" : type,"info" : robotData}
 }
 
 //加入匹配队列

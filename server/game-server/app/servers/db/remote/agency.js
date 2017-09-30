@@ -24,7 +24,7 @@ local.starRedMail = function() {
 	clearInterval(DBRemote.timerFlag2)
 	local.sendRedMail()
 	// setInterval(local.sendRedMail,24 * 60 * 60 * 1000)
-	DBRemote.timerFlag2 = setInterval(local.sendRedMail,10 * 60 * 1000)
+	DBRemote.timerFlag2 = setInterval(local.sendRedMail,24 * 60 * 60 * 1000)
 }
 //代理分红邮件发放
 local.sendRedMail = function() {
@@ -120,7 +120,7 @@ DBRemote.prototype.addAgncyDivide = function(agencyDivides,cb) {
     	// console.log("=================================================111")
     	// console.log(tmpDate)
     	// console.log("=================================================222")
-    	setTimeout(local.starRedMail,30000)		
+    	setTimeout(local.starRedMail,tmpDate)
 	}
 	for(var agencyId in agencyDivides){
 		if(!DBRemote.agencyRedLists[agencyId]){

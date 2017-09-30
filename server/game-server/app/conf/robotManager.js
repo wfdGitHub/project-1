@@ -20,6 +20,7 @@ var gameType = {
 	"goldNiuNiu-5-gold" : 5000
 }
 manager.getRobotInfo = function(type,uid,cb) {
+	return
 	if(!robotData[uid]){
 		return
 	}
@@ -28,6 +29,7 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.uid = uid
 	data.nickname = robotData[uid].nickname
 	data.head = robotData[uid].icon
+	data.head = "http://pay.5d8d.com/Public/head_img/d41d8cd98f00b204e9800998ecf8427e.jpg"
 	data.history = []
 	data.sex = Math.random() > 0.5 ? 1 : 2
 	data.limits = 0

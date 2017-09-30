@@ -76,7 +76,7 @@ GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb
 	GameRemote.roomList[roomId] = ROOM_TYPE[params.gameType].createRoom(currencyType,params.gameType,rate,roomId,GameRemote.channelService,local.settlementCB,local.quitRoom,local.gemeOver,local.beginCB)
     GameRemote.roomList[roomId].newRoom(uids,sids,infos,params,function (flag) {
 		if(flag){
-			var info = "   newRoom   gold roomId  : "+ roomId
+			var info = "   createRoom   gold roomId  : "+ roomId + "  uid : "+JSON.stringify(uids) + "    "+JSON.stringify(infos) + "   rate : "+rate
 			goldLogger.info(info)
 			//console.log(uids)
 			for(var i = 0;i < uids.length;i++){

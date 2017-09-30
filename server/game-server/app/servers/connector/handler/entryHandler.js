@@ -103,9 +103,6 @@ handler.visitorEnter = function(msg, session, next) {
         result.unionid = playerId
         //console.log(result)
         self.app.rpc.db.remote.check(session,result,function(flag){
-            if(flag === false){
-              self.app.rpc.db.remote.setValue(session,result.uid,"diamond",200,function(argument) {})
-            }
             cb(null)
         })
       },
