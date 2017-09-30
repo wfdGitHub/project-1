@@ -337,6 +337,11 @@ DBRemote.prototype.sendMail = function(targetUid,title,content,affix,addresser,u
 		}
 		data.push(mailInfo)
 		DBRemote.dbService.setPlayerObject(targetUid,"mailList",data,function(){
+			//通知被赠送玩家有新邮件
+			var notify = {
+				"cmd" : "newMail",
+			}
+			DBRemote.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})			
 			cb(true)
 		})
 	})

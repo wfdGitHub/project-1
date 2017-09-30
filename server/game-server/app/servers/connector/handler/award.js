@@ -305,11 +305,6 @@ handler.give = function(msg,session,next) {
 				self.app.rpc.db.remote.sendMail(null,targetUid,"赠送道具",content,affix,addresser,uid,function() {
 					next(null,{"flag" : true})
 				})
-				//通知被赠送玩家有新邮件
-				var notify = {
-					"cmd" : "newMail",
-				}
-				self.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})
 				cb()
 			},
 			function(argument) {
