@@ -330,11 +330,16 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			if(player[index].isActive){
 				if(player[index].score < rate * 50){
 					//退出游戏
+					var notify = {
+						"cmd" : "goldNotEnoughOut"
+					}
+					GameRemote.roomList[roomId].sendUid(player[index].uid,notify)
 					local.quitRoom(player[index].uid,roomId,function(){})
 				}
 			}
 		}
 	}
+
 	//通知可以抽奖
 	// for(var index in player){
 	// 	if(player.hasOwnProperty(index)){
