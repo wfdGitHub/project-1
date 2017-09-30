@@ -682,6 +682,10 @@ GameRemote.prototype.gameBeginCB = function(roomId,agencyId,cb) {
 }
 
 GameRemote.prototype.kick = function(uid,cb) {
+	//若玩家在匹配队列中离开匹配
+	if(GameRemote.matchMap[uid]){
+		local.leaveMatch(uid,function(){})
+	}
 	console.log("user leave : "+uid)
 	if(GameRemote.userMap[uid] != undefined){
 		var roomId = GameRemote.userMap[uid]
