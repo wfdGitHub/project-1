@@ -425,6 +425,15 @@ var betType = {
           }      
         }
       }
+      //机器人牌型修正
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady && player[i].isRobot){
+            if(!luckyValue[i]){
+              luckyValue[i] = 0
+            }
+            luckyValue[i] -= 0.1
+        }
+      }
       // console.log("================")
       // console.log(luckyValue)
       //运气值低的先执行控制 
@@ -973,7 +982,7 @@ var betType = {
           var tsid = room.channel.getMember(uid)['sid']
           if(tsid){
             room.channel.leave(uid,tsid)
-          }          
+          }
       }
       room.channel.add(uid,sid)
       var notify = {

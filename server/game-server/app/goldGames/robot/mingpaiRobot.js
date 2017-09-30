@@ -54,33 +54,29 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				result = logic.getType(robot.player.handCard)
 				var max = 0
 				if(result.type >= 10){
-					if(Math.random() > 0.4){
-						max = 4
-					}else{
-						max = 0
-					}
-				}else if(result.type > 5){
+					max = 4
+				}else if(result.type > 8){
 					var rand = Math.random()
-					if(rand < 0.3){
+					if(rand < 0.4){
 						max = 4
 					}else if(rand < 0.8){
 						max = 3
 					}else{
 						max = 0
 					}
-				}else{
+				}else if(result.type > 5){
 					var rand = Math.random()
-					if(rand < 0.05){
-						max = 4
-					}else if(rand < 0.1){
+					if(rand < 0.1){
 						max = 3
-					}else if(rand < 0.15){
+					}else if(rand < 0.3){
 						max = 2
-					}else if(rand < 0.2){
+					}else if(rand < 0.5){
 						max = 1
 					}else{
 						max = 0
 					}
+				}else{
+					max = 0
 				}
 				local.delaySend(uid,"useCmd",{"cmd" : "robBanker" , "num" : max},3000,function(flag) {
 					if(flag == false){

@@ -47,13 +47,15 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				//开始抢庄
 				var flag = false
 				result = logic.getType(robot.player.handCard)
-				if(result.type >= 10){
+				if(result.type >= 8){
 					flag = true
-				}else{
+				}else if(result.type >= 5){
 					var rand = Math.random()
 					if(rand < 0.3){
 						flag = true
 					}
+				}else{
+					flag = false
 				}
 				local.delaySend(uid,"robBanker",{"flag" : flag},2000,function(flag) {
 					if(flag == false){
@@ -66,12 +68,12 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				if(!robot.player.isBanker && robot.player.isReady){
 					//判断牌型
 					var rand = typeWeight[result.type]
-					if(result.type > 10){
+					if(result.type >= 7){
 						rand = 3
 					}else{
-						rand += Math.floor(Math.random() * 2) - 1
-						if(rand > 3){
-							rand = 3
+						rand += Math.floor(Math.random() * 3)
+						if(rand > 2){
+							rand = 2
 						}
 						if(rand < 0){
 							rand = 0
