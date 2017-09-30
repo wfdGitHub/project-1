@@ -58,7 +58,7 @@ local.sendRedOnce = function(agencyId) {
 					var goldCount = 0
 					for(var index in data.list){
 						goldCount += data.list[index]
-						mailInfo.content += "ID " +  index + " 的玩家底分消耗为您增加了 " +  data.list[index] + " 金币\t\n"
+						mailInfo.content += "ID" +  index + "的玩家消耗分红 " +  data.list[index] + " 金币\t\n"
 					}
 					mailInfo.content += "总计获得 " + goldCount + " 金币"
 					mailInfo.affix = {"type" : "gold","value" : goldCount}

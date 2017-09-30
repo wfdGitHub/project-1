@@ -89,7 +89,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				break
 			case "deal":
 				//开始发牌
-				local.delaySend(uid,"showCard",{},3000,function(flag) {
+				local.delaySend(uid,"showCard",{},5000,function(flag) {
 					if(flag == false){
 						console.log("deal error")
 					}
