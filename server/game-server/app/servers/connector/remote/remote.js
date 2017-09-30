@@ -23,5 +23,5 @@ remote.sendByUid = function(params,uid,notify,cb) {
 
 //通知公告更新
 remote.broadcast = function(notify) {
-  ConnectorRemote.channelService.broadcast()
+  ConnectorRemote.channelService.broadcast(notify)
 }

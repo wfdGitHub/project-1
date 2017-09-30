@@ -283,7 +283,9 @@ handler.enter = function(msg, session, next) {
           notify.openId = openId
           notify.unionid = userId
           notify.allGames = data.history ? data.history.allGames : 0
-          notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
+          if(sessionService.getClientAddressBySessionId(session.id)){
+            notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
+          }
           notify.useDiamond = data.useDiamond
           notify.gold = data.gold
           notify.platform  = msg.platform

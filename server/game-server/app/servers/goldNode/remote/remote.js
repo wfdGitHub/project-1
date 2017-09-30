@@ -289,12 +289,13 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 	if(currencyType !== "diamond"){
 		currencyType = "gold"
 	}
+	var tmpRate = Math.floor(rate * 0.5)
 	//代理分成列表
 	var agencyDivides = {}
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
-				player[index].score -= Math.floor(rate * 0.5)
+				player[index].score -= tmpRate
 				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
 				//代理抽水
 				// console.log(player[index].playerInfo)
@@ -303,7 +304,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 					if(!agencyDivides[agencyId]){
 						agencyDivides[agencyId] = {}
 					}
-					agencyDivides[agencyId][player[index].uid] = Math.floor(rate * 0.2)
+					agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
 				}
 			}
 		}
@@ -312,7 +313,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 	//通知游戏消耗
 	var notify = {
 		"cmd" : "beginConsume",
-		"rate" : rate
+		"rate" : tmpRate
 	}
 	GameRemote.roomList[roomId].sendAll(notify)
 	
