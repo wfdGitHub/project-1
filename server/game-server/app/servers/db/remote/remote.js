@@ -259,7 +259,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					}
 					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})		
 					//通知后台
-					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")	
+					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","diamond")	
 				break
 				case "gold":
 					//通知金币更新
@@ -279,6 +279,8 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 				  		}
 				  		data.dayGoldValue += oldValue
 				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
+						//通知后台
+						httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold")	
 					})
 				break
 				case "charm" :
