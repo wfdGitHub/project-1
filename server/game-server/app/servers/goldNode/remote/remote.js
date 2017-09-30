@@ -294,7 +294,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
-				player[index].score -= rate
+				player[index].score -= Math.floor(rate * 0.5)
 				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
 				//代理抽水
 				// console.log(player[index].playerInfo)
@@ -303,7 +303,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 					if(!agencyDivides[agencyId]){
 						agencyDivides[agencyId] = {}
 					}
-					agencyDivides[agencyId][player[index].uid] = Math.floor(rate * 0.4)
+					agencyDivides[agencyId][player[index].uid] = Math.floor(rate * 0.2)
 				}
 			}
 		}
