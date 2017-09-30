@@ -7,10 +7,17 @@ for(var i = 0;i < ROBOT_AMOUNT;i++){
 	robotState[i] = true
 }
 
-var goldList = {
-	"1" : {"min" : 1000,"max" : 10000},
-	"2" : {"min" : 5000,"max" : 50000},
-	"3" : {"min" : 10000,"max" : 100000}
+var gameType = {
+	"goldMingpai-1-gold" : 10,
+	"goldMingpai-2-gold" : 50,
+	"goldMingpai-3-gold" : 100,
+	"goldMingpai-4-gold" : 1000,
+	"goldMingpai-5-gold" : 5000,
+	"goldNiuNiu-1-gold" : 10,
+	"goldNiuNiu-2-gold" : 50,
+	"goldNiuNiu-3-gold" : 100,
+	"goldNiuNiu-4-gold" : 1000,
+	"goldNiuNiu-5-gold" : 5000
 }
 manager.getRobotInfo = function(type,uid,cb) {
 	if(!robotData[uid]){
@@ -27,11 +34,11 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.freeze = 0
 	data.useDiamond = 0
 	data.contorl = 0
-	var goldConf = goldList[type.split("-")[1]]
-	if(goldConf){
-		data.gold = Math.floor(Math.random() * (goldConf.max - goldConf.min)) + goldConf.min
+	var rate = gameType[type]
+	if(rate){
+		data.gold = Math.floor(Math.random() * (500 - 100) * rate) + rate * 100
 	}else{
-		data.gold = Math.floor(Math.random() * 7000) + 2000
+		return
 	}
 	data.diamond = data.gold
 	data.isRobot = true
