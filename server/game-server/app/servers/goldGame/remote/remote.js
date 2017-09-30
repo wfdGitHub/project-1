@@ -386,14 +386,23 @@ local.matching = function(){
 				var playerCount = GameRemote.RoomMap[roomId].length
 				// console.log("roomId : " + roomId)
 				// console.log("playerCount : " + playerCount)
-				if(playerCount < ROOMPLAYERNUM - 1 && Math.random() < 0.2){
+				var tmpFlag = false
+				var rand = Math.random()
+				if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
+					tmpFlag = true
+				}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
+					tmpFlag = true
+				}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
+					tmpFlag = true
+				}
+				if(tmpFlag){
 					var robotId = robotManager.getUnusedRobot()
 					if(robotId){
 						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
 							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
 							local.robotJoinMatch(robotData.uid,params,robotData)
 						})
-					}
+					}					
 				}
 			}
 		}

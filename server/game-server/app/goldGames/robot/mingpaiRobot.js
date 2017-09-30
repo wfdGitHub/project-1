@@ -119,7 +119,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 			case "settlement":
 				gameCount++
 				//概率离开
-				if(gameCount > 5 && Math.random() < 0.15){
+				if(gameCount >= 2 && Math.random() < gameCount / 8){
 					quitRoomFun(robot.player.uid,robot.roomInfo.roomId)
 				}
 				break
