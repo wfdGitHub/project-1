@@ -437,7 +437,7 @@ var betType = {
             if(!luckyValue[i]){
               luckyValue[i] = 0
             }
-            luckyValue[i] -= 0.1
+            luckyValue[i] -= 0.2
         }
       }
       // console.log(luckyValue)
