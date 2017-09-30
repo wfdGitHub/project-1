@@ -140,7 +140,7 @@ local.quitRoom = function(uid,roomId,cb) {
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
 	if(GameRemote.roomList[roomId]){
-		GameRemote.roomList[roomId].reconnection(uid,sid,function(data) {
+		GameRemote.roomList[roomId].reconnection(parseInt(uid),sid,function(data) {
 			cb(data)
 		})
 	}else{
