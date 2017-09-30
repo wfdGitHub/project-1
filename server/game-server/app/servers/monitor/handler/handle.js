@@ -97,6 +97,21 @@ var Handler = function(app) {
 						Handler.channelService.broadcast("connector","onNotify",rolling)
 						local.write(res,{"flag" : true})
 					return
+					case "bindAgency" :
+						var uid = data.uid
+						var agencyId = data.agencyId
+						if(!uid || !agencyId || typeof(uid) != "number" || typeof(agencyId) != "number" || uid < 0 || agencyId < 0 || uid == agencyId){
+							local.write(res,{"flag" : false})
+							return
+						}
+						local.bindAgency(uid,agencyId,function(flag) {
+							if(flag){
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
 					default :
 						local.write(res,{"flag" : false})
 						break
@@ -127,6 +142,52 @@ local.write = function(res,notidy) {
 	res.write(JSON.stringify(notidy))
 	res.end()
 }
+
+//绑定代理
+local.bindAgency = function(uid,agencyId,cb) {
+	//查询用户是否存在
+	async.waterfall([
+		function(next) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				console.log("111111111111")
+				if(uid === data){
+					//玩家存在
+					next()
+				}else{
+					//玩家不存在
+					cb(false)
+				}
+			})	
+		},
+		function(next) {
+			//查询代理是否存在
+			Handler.app.rpc.db.remote.getValue(null,agencyId,"limits",function(value) {
+				console.log("2222222222")
+				if(value && value >= 1){
+					next()
+				}else{
+					cb(false)
+				}
+			})	
+		},
+		function() {
+			//绑定代理
+			Handler.app.rpc.db.remote.changeValue(null,uid,"agencyId",agencyId,function() {
+				console.log("33333333")
+				cb(true)
+			})
+		}
+	],
+	function(err,result) {
+		console.log(err)
+		console.log(result)
+		cb(false)
+		return
+	})	
+}
+
+
 
 //更新公告
 local.updateNotify = function(notify,source,cb){
@@ -175,7 +236,7 @@ local.addGold = function(gold,uid,cb) {
 		console.log(result)
 		cb(null)
 		return
-})	
+})
 }
 //添加钻石
 local.addDiamond = function(diamond,uid,RMB,cb) {

@@ -286,24 +286,36 @@ var finishGameOfTimer = function(index) {
 }
 //游戏开始回调
 local.beginCB = function(roomId,player,rate,currencyType) {
-	console.log("rate : "+rate)
-	console.log("beginCB")
 	if(currencyType !== "diamond"){
 		currencyType = "gold"
 	}
+	//代理分成列表
+	var agencyDivides = {}
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
 			if(player[index].isActive && !player[index].isRobot){
 				player[index].score -= rate
 				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
+				//代理抽水
+				// console.log(player[index].playerInfo)
+				var agencyId = player[index].playerInfo.agencyId
+				if(agencyId){
+					if(!agencyDivides[agencyId]){
+						agencyDivides[agencyId] = {}
+					}
+					agencyDivides[agencyId][player[index].uid] = Math.floor(rate * 0.4)
+				}
 			}
 		}
 	}
+	GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
+	//通知游戏消耗
 	var notify = {
 		"cmd" : "beginConsume",
 		"rate" : rate
 	}
 	GameRemote.roomList[roomId].sendAll(notify)
+	
 }
 
 
@@ -353,6 +365,8 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	// 		}
 	// 	}
 	// }
+	
+	
 }
 
 //房间结束回调

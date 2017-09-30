@@ -97,6 +97,8 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayerObject(uid,"giveRecord",giveRecord)
 		//代理分红
 		var agencyRedList = {}
+		agencyRedList.time = dateString //领取时间
+		agencyRedList.list = {}    		//分红记录
 		DBRemote.dbService.setPlayerObject(uid,"agencyRedList",agencyRedList)
 		cb(false)
 	})
@@ -339,7 +341,7 @@ DBRemote.prototype.sendMail = function(targetUid,title,content,affix,addresser,u
 		DBRemote.dbService.setPlayerObject(targetUid,"mailList",data,function(){
 			//通知被赠送玩家有新邮件
 			var notify = {
-				"cmd" : "newMail",
+				"cmd" : "newMail"
 			}
 			DBRemote.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})			
 			cb(true)
@@ -399,8 +401,6 @@ DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
     DBRemote.dbService.setPlayer(unionid,"uidMap",uid)
     cb(true)
 }
-
-
 
 local.getDateString = function() {
 	var myDate = new Date()
