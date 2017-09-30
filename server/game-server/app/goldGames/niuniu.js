@@ -968,9 +968,14 @@ var betType = {
         chair : chair
       }
       local.sendAll(notify)
-      if(!room.channel.getMember(uid)){
-        room.channel.add(uid,sid)
+      if(room.channel.getMember(uid)){
+          //若存在则移除
+          var tsid = room.channel.getMember(uid)['sid']
+          if(tsid){
+            room.channel.leave(uid,tsid)
+          }          
       }
+      room.channel.add(uid,sid)
       var notify = {
         roomInfo : local.getRoomInfo(chair),
         betList : betList,
