@@ -173,6 +173,16 @@
         }
       ,"backups": 5,
       "category":"error-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/matching.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"matching-log"
     }
   ],
 

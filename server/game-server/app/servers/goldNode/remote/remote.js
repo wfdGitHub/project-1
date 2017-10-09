@@ -66,8 +66,8 @@ GameRemote.prototype.newRoom = function(params,uids,sids,infos,roomId,cb) {
 
 //主动创建房间
 GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb) {
-	console.log("params.gameType : "+params.gameType)
-	console.log(ROOM_TYPE)
+	// console.log("params.gameType : "+params.gameType)
+	// console.log(ROOM_TYPE)
 	if(!ROOM_TYPE[params.gameType]){
 		cb(false)
 		return
@@ -154,9 +154,9 @@ GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
 }
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
-	//赠送礼物处理
 	switch(code){
 		case "give":
+		//赠送礼物处理
 		//console.log(params)
 			// local.give(uid,params.targetChair,roomId,params.giveId,cb)
 			cb(false)
@@ -306,7 +306,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 							agencyDivides[agencyId] = {}
 						}
 						agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
-					}					
+					}
 				}
 			}
 		}

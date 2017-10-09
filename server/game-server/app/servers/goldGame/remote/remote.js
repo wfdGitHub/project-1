@@ -3,7 +3,9 @@ var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var robotManager = require("../../../conf/robotManager.js")
 var async = require("async")
-var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
+var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log")
+var errorLogger = require("pomelo-logger").getLogger("error-log")
+var matchingLogger = require("pomelo-logger").getLogger("matching-log")
 var MATCHTIME = 500
 var MAXMATCHTIMER = 10
 var ROOMPLAYERNUM = 6
@@ -78,6 +80,7 @@ var GameRemote = function(app) {
 };
 //用户连接
 GameRemote.prototype.userConnect = function(uid,sid,cb) {
+	uid = parseInt(uid)
 	GameRemote.userConnectorMap[uid] = sid
 	if(cb){
 		cb()
@@ -87,6 +90,7 @@ GameRemote.prototype.userConnect = function(uid,sid,cb) {
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	console.log(params)
+	uid = parseInt(uid)
 	var self = this
 	switch(code){
 		case "joinMatch" :
@@ -132,11 +136,10 @@ local.joinRoom = function(type,roomId){
 	var params = {}
 	params.gid = GameRemote.roomList[roomId]
 	if(!params.gid && params.gid != 0){
-		console.log("error!!!!!!!!!!!!")
+		errorLogger.info("joinRoom gid error : " + params.gid)
 		//console.log(GameRemote.roomList)
 		return
 	}
-	console.log("joinRoom")
 	//从匹配队列删除
 	var uid = GameRemote.matchList[type][0]
 	GameRemote.RoomMap[roomId].push(uid)
@@ -153,7 +156,7 @@ local.joinRoom = function(type,roomId){
 		}
 		GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
 			if(!flag){
-				console.log("删除队首玩家，匹配失败222222")
+				errorLogger.info("joinRoom goldNode flag is : "+flag)
 				//失败移除玩家
 				for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
 					if(GameRemote.RoomMap[roomId][i] == uid){
@@ -162,11 +165,14 @@ local.joinRoom = function(type,roomId){
 					}
 				}
 				delete GameRemote.userMap[uid]
+			}else{
+				matchingLogger.info("joinRoom uid : "+JSON.stringify(player) + " roomId : "+roomId + "type : "+type)
 			}
 		})
 	}else{
-		console.log("删除队首玩家，匹配失败")
-		console.log(GameRemote.matchMap[uid])
+		// console.log("删除队首玩家，匹配失败")
+		// console.log(GameRemote.matchMap[uid])
+		errorLogger.info("joinRoom uid not in matchList")
 		GameRemote.matchList[type].splice(0,1)
 		delete GameRemote.matchMap[uid]
 	}
@@ -262,11 +268,12 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 		if(flag == true){
 			GameRemote.roomList[roomId] = params.gid
 			GameRemote.roomInitiativeFlag[roomId] = false
-			console.log("GameRemote.roomList[roomId]  :  "+GameRemote.roomList[roomId])
+			// console.log("GameRemote.roomList[roomId]  :  "+GameRemote.roomList[roomId])
 			GameRemote.typeRoomMap[type].push(roomId)
 			GameRemote.roomTypeMap[roomId] = type
 			GameRemote.RoomMap[roomId] = users
-			console.log("users : "+users)
+			// console.log("users : "+users)
+			matchingLogger.info("goldNodeNewRoom uid : "+JSON.stringify(users) + " roomId : "+roomId)
 		}else{
 			//TODO通知匹配失败 删除RoomMap与userMap
 			delete GameRemote.RoomMap[roomId]
@@ -281,6 +288,7 @@ local.goldNodeNewRoom = function(users,sids,infos,roomId,type) {
 }
 //用户被踢出房间
 GameRemote.prototype.userOutRoom = function(roomId,uid,cb) {
+	uid = parseInt(uid)
 	local.quitRoom(roomId,uid)
 	//通知玩家
 	var notify = {
@@ -294,9 +302,10 @@ GameRemote.prototype.userOutRoom = function(roomId,uid,cb) {
 
 //用户退出房间
 local.quitRoom = function(roomId,uid) {
-	console.log("roomId222 : "+roomId)
-	console.log("quitRoom222 : "+uid)
-	console.log(GameRemote.RoomMap[roomId])
+	// console.log("roomId222 : "+roomId)
+	// console.log("quitRoom222 : "+uid)
+	// console.log(GameRemote.RoomMap[roomId])
+	uid = parseInt(uid)
 	for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
 		if(GameRemote.RoomMap[roomId][i] == uid){
 			GameRemote.RoomMap[roomId].splice(i,1)
@@ -305,12 +314,13 @@ local.quitRoom = function(roomId,uid) {
 	}
 	delete GameRemote.userMap[uid]
 	robotManager.freeRobot(uid)
-	console.log(GameRemote.userMap)
+	// console.log(GameRemote.userMap)
 }
 
 //用户中途离开房间
 local.userQuit = function(uid,cb) {
 	console.log("userQuit")
+	uid = parseInt(uid)
 	var roomId = GameRemote.userMap[uid]
 	console.log("roomId : "+roomId)
 	if(!roomId){
@@ -319,9 +329,9 @@ local.userQuit = function(uid,cb) {
 	}
 	var params = {}
 	params.gid = GameRemote.roomList[roomId]
-	console.log("params.gid : "+params.gid)
+	// console.log("params.gid : "+params.gid)
 	GameRemote.app.rpc.goldNode.remote.quitRoom(null,params,uid,function(flag){
-		console.log(flag)
+		// console.log(flag)
 		if(flag == true){
 			local.quitRoom(roomId,uid)
 		}
@@ -371,70 +381,72 @@ local.matching = function(){
 					local.createRoom(type)
 				}else{
 					//加一个机器人到队列中
-					// var robotId = robotManager.getUnusedRobot()
-					// if(robotId && Math.random() < 0.4){
-					// 	robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-					// 		var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-					// 		local.robotJoinMatch(robotData.uid,params,robotData)
-					// 	})
-					// }
+					var robotId = robotManager.getUnusedRobot()
+					if(robotId && Math.random() < 0.4){
+						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+							local.robotJoinMatch(robotData.uid,params,robotData)
+						})
+					}
 				}
 			}
 			//给空闲房间动态添加机器人
-			// for(var i = 0;i < tmpRoomList.length; i++){
-			// 	var roomId = tmpRoomList[i]
-			// 	var playerCount = GameRemote.RoomMap[roomId].length
-			// 	// console.log("roomId : " + roomId)
-			// 	// console.log("playerCount : " + playerCount)
-			// 	var tmpFlag = false
-			// 	var rand = Math.random()
-			// 	if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
-			// 		tmpFlag = true
-			// 	}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
-			// 		tmpFlag = true
-			// 	}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
-			// 		tmpFlag = true
-			// 	}
-			// 	if(tmpFlag){
-			// 		var robotId = robotManager.getUnusedRobot()
-			// 		if(robotId){
-			// 			robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-			// 				var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-			// 				local.robotJoinMatch(robotData.uid,params,robotData)
-			// 			})
-			// 		}					
-			// 	}
-			// }
+			for(var i = 0;i < tmpRoomList.length; i++){
+				var roomId = tmpRoomList[i]
+				var playerCount = GameRemote.RoomMap[roomId].length
+				// console.log("roomId : " + roomId)
+				// console.log("playerCount : " + playerCount)
+				var tmpFlag = false
+				var rand = Math.random()
+				if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
+					tmpFlag = true
+				}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
+					tmpFlag = true
+				}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
+					tmpFlag = true
+				}
+				if(tmpFlag){
+					var robotId = robotManager.getUnusedRobot()
+					if(robotId){
+						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
+							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+							local.robotJoinMatch(robotData.uid,params,robotData)
+						})
+					}					
+				}
+			}
 		}
 	}
 }
 //机器人加入匹配队列
 local.robotJoinMatch = function(uid,params,robotData) {
-	// var type = params.gameType
-	// if(!type || typeof(type) != "string" || !gameType[type]){
-	// 	console.log("params.gameType error : "+type)
-	// 	return
-	// }
-	// //在匹配队列中不能再次申请
-	// if(GameRemote.matchMap[uid]){
-	// 	console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
-	// 	return
-	// }
-	// //在房间中不能申请
-	// if(GameRemote.userMap[uid]){
-	// 	console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
-	// 	return
-	// }
-	// //检测金币
-	// if(robotData.gold < 10){
-	// 	return
-	// }
-	// GameRemote.matchList[type].push(uid)
-	// GameRemote.matchMap[uid] = {"type" : type,"info" : robotData}
+	uid = parseInt(uid)
+	var type = params.gameType
+	if(!type || typeof(type) != "string" || !gameType[type]){
+		console.log("params.gameType error : "+type)
+		return
+	}
+	//在匹配队列中不能再次申请
+	if(GameRemote.matchMap[uid]){
+		console.log("can't join Match user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		return
+	}
+	//在房间中不能申请
+	if(GameRemote.userMap[uid]){
+		console.log("can't join Match user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		return
+	}
+	//检测金币
+	if(robotData.gold < 10){
+		return
+	}
+	GameRemote.matchList[type].push(uid)
+	GameRemote.matchMap[uid] = {"type" : type,"info" : robotData}
 }
 
 //加入匹配队列
 local.joinMatch = function(uid,sid,params,cb) {
+	uid = parseInt(uid)
 	var type = params.gameType
 	if(!type || typeof(type) != "string" || !gameType[type]){
 		console.log("params.gameType error : "+type)
@@ -453,8 +465,8 @@ local.joinMatch = function(uid,sid,params,cb) {
 	if(GameRemote.userMap[uid]){
 		//若进入同一类型房间则重连
 		var roomId = GameRemote.userMap[uid]
-		console.log(GameRemote.roomTypeMap[GameRemote.userMap[uid]])
-		console.log(type)
+		// console.log(GameRemote.roomTypeMap[GameRemote.userMap[uid]])
+		// console.log(type)
 		if(GameRemote.roomTypeMap[GameRemote.userMap[uid]] == type){
 			var tmpParams = {}
 			tmpParams.gid = GameRemote.roomList[roomId]
@@ -507,6 +519,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 			data.ip = params.ip
 			delete data.history
 			GameRemote.matchMap[uid] = {"type" : type,"info" : data}
+			matchingLogger.info("joinMatch : "+uid+"   " + JSON.stringify({"type" : type,"info" : data}))
 			cb(true)
 		}else{
 			cb(false)
@@ -515,6 +528,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 }
 //离开匹配队列
 local.leaveMatch = function(uid,cb) {
+	uid = parseInt(uid)
 	if(!GameRemote.matchMap[uid]){
 		cb(false)
 		return
@@ -526,6 +540,7 @@ local.leaveMatch = function(uid,cb) {
 			//查找成功   从匹配队列删除
 			GameRemote.matchList[type].splice(i,1)
 			delete GameRemote.matchMap[uid]
+			matchingLogger.info("leaveMatch : "+uid)
 			cb(true)
 			return
 		}
@@ -536,6 +551,7 @@ local.leaveMatch = function(uid,cb) {
 
 //直接加入游戏
 local.joinInitiativeRoom = function(uid,roomId,cb) {
+	uid = parseInt(uid)
 	//在匹配队列中不能再次创建
 	if(GameRemote.matchMap[uid]){
 		console.log("can't newRoom user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
@@ -573,6 +589,7 @@ local.joinInitiativeRoom = function(uid,roomId,cb) {
 				if(flag == true){
 					GameRemote.RoomMap[roomId].push(uid)
 					GameRemote.userMap[uid] = roomId
+					matchingLogger.info("joinInitiativeRoom uid : "+uid + " roomId : "+roomId)
 					cb(true)
 				}else{
 					cb(false)
@@ -586,6 +603,7 @@ local.joinInitiativeRoom = function(uid,roomId,cb) {
 
 //创建新房间
 local.createInitiativeRoom = function(uid,params,cb) {
+	uid = parseInt(uid)
 	var type = params.gameType
 	var rate = params.rate
 	var gid
@@ -637,6 +655,7 @@ local.createInitiativeRoom = function(uid,params,cb) {
 					GameRemote.roomInitiativeBasic[roomId] = rate
 					GameRemote.RoomMap[roomId] = users
 					GameRemote.userMap[uid] = roomId
+					matchingLogger.info("createInitiativeRoom uid : "+uid + " roomId : "+roomId)
 					cb(true)
 				}else{
 					//TODO通知匹配失败 删除RoomMap与userMap
@@ -691,6 +710,7 @@ GameRemote.prototype.gameBeginCB = function(roomId,agencyId,cb) {
 }
 
 GameRemote.prototype.kick = function(uid,cb) {
+	uid = parseInt(uid)
 	//若玩家在匹配队列中离开匹配
 	if(GameRemote.matchMap[uid]){
 		local.leaveMatch(uid,function(){})
@@ -707,10 +727,11 @@ GameRemote.prototype.kick = function(uid,cb) {
 	if(cb){
 		cb()
 	}
-};
+}
 
 //检测是否需要重连
 GameRemote.prototype.reconnection = function(uid, sid,cb) {
+	uid = parseInt(uid)
 	if(GameRemote.userMap[uid] !== undefined){
 		var roomId = GameRemote.userMap[uid]
 		if(!roomId){
@@ -728,7 +749,7 @@ GameRemote.prototype.reconnection = function(uid, sid,cb) {
 }
 
 //分配房间号
-local.getUnusedRoom = function() {
+local.getUnusedRoom = function(){
 	//随机分配房间号
 	var rand = Math.floor(Math.random() * ROOM_ALL_AMOUNT)
 	for(var i = rand;i < ROOM_ALL_AMOUNT + rand;i++){
@@ -741,7 +762,8 @@ local.getUnusedRoom = function() {
 }
 
 //通知玩家
-GameRemote.prototype.sendByUid = function(uid,notify,cb) {
+GameRemote.prototype.sendByUid = function(uid,notify,cb){
+	uid = parseInt(uid)
 	var params = {}
 	params.cid = GameRemote.userConnectorMap[uid]
 	if(params.cid){
@@ -750,10 +772,10 @@ GameRemote.prototype.sendByUid = function(uid,notify,cb) {
 	cb()
 }
 
-var deepCopy = function(source) {
+var deepCopy = function(source){
   var result={}
   for (var key in source) {
         result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
-     } 
+  } 
   return result;
 }
