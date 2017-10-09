@@ -5,6 +5,7 @@ var goldMingpai = require("../../../goldGames/goldMingpai.js")
 var goldNiuNiu = require("../../../goldGames/niuniu.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
 var lottoConf = require("../../../conf/lotto.js")
+var httpConf = require("../../../conf/httpModule.js")
 var async = require("async")
 
 var ROOM_FACTORY = {
@@ -368,7 +369,20 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	// 	}
 	// }
 	
-	
+	//通知后台
+	var gold_arr = []
+	for(var index in player){
+		if(curScores[index] && player[index].isActive){
+			gold_arr.push({"uid" : player[index].uid,"score" : curScores[index]})
+		}
+	}
+	var tmpRate = Math.floor(rate * 0.5)
+	var notify = {
+		"room_num" : roomId,
+		"gold_arr" : gold_arr,
+		"pay_gold" : tmpRate
+	}
+	httpConf.sendGameSettlement(notify)
 }
 
 //房间结束回调

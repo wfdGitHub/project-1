@@ -128,8 +128,6 @@ module.exports.sendLoginHttp = function(notify) {
     })
     req.end()    
   })
-
-
 }
 
 module.exports.sendDiamondHttp = function(uid,coin,diamond,type,genre) {
@@ -170,14 +168,33 @@ module.exports.sendGameOver = function(data) {
     data.sign = md5(string)    
     data = JSON.stringify(data)
 
-    var req=http.request('http://pay.5d8d.com/niu_admin.php/api/gameResultDetail?data='+data,function(res){
+    var req=http.request('http://pay.5d8d.com/gold_admin.php/api/gameResultDetail?data='+data,function(res){
 
     })
     req.on("error",function(err){
       console.log(err.message)
     })
-    req.end()    
+    req.end()
+}
+//发送单局结算数据
+module.exports.sendGameSettlement = function(data) {
+    var keys = Object.keys(data).sort()
+    var string = ""
+    for(var i = 0;i < keys.length;i++){
+      if(data[keys[i]]){
+        string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
+      }
+    }
+    string += "key=niuniuyiyousecretkey"
+    data.sign = md5(string)    
+    data = JSON.stringify(data)
+    var req=http.request('http://pay.5d8d.com/gold_admin.php/api/gameResultDetail?data='+data,function(res){
 
+    })
+    req.on("error",function(err){
+      console.log(err.message)
+    })
+    req.end()
 }
 
 
