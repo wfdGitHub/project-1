@@ -14,12 +14,13 @@ var dbService = function(app) {
 dbService.prototype.start = function(cb){
 	var db = redis.createClient(RDS_PORT,RDS_HOST,RDS_OPTS)
 	var self = this
-	db.select("1",function(err) {
-		if(err){
-			console.log(err)
-		}
-		self.app.set("dbService",dbService)
-		db.on("ready",function(res) {
+
+	self.app.set("dbService",dbService)
+	db.on("ready",function(res) {
+		db.select("DB1",function(err) {
+			if(err){
+				console.log(err)
+			}
 			dbService.db = db
 			//数据库初始配置
 			dbService.db.get("nn:acc:lastid",function(err,data) {
@@ -42,8 +43,9 @@ dbService.prototype.start = function(cb){
 	    		}
 			})
 		})
-		cb()
 	})
+	cb()
+
 }
 dbService.updateDiamond = function(value) {
 	var cmd = "nn:acc:addDiamond"
