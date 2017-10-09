@@ -183,6 +183,16 @@
         }
       ,"backups": 5,
       "category":"matching-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/manager.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"manager-log"
     }
   ],
 

@@ -1,8 +1,9 @@
 var async = require("async")
-var http=require("http");
-var diamondLogger = require("pomelo-logger").getLogger("diamond-log");
-var giveDiamondLogger = require("pomelo-logger").getLogger("giveDiamond-log");
-var goldLogger = require("pomelo-logger").getLogger("gold-log");
+var http=require("http")
+var diamondLogger = require("pomelo-logger").getLogger("diamond-log")
+var goldLogger = require("pomelo-logger").getLogger("gold-log")
+var giveDiamondLogger = require("pomelo-logger").getLogger("giveDiamond-log")
+var managerLogger = require("pomelo-logger").getLogger("manager-log")
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -33,6 +34,7 @@ var Handler = function(app) {
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,data.RMB,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -42,6 +44,7 @@ var Handler = function(app) {
 					case "addGold" :
 						local.addGold(data.gold,data.uid,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -53,6 +56,7 @@ var Handler = function(app) {
 							if(data == false){
 								local.write(res,{"flag" : false})
 							}else{
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true,"userInfo" : data})
 							}
 						})
@@ -60,6 +64,7 @@ var Handler = function(app) {
 					case "setAgency" : 
 						local.setAgency(data.uid,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -69,6 +74,7 @@ var Handler = function(app) {
 					case "setFreeze" : 
 						local.freezeAccount(data.uid,data.freeze,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -78,6 +84,7 @@ var Handler = function(app) {
 					case "updateNotify" :
 						local.updateNotify(data.notify,data.source,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -95,6 +102,7 @@ var Handler = function(app) {
 							"content" : data.content
 						}
 						Handler.channelService.broadcast("connector","onNotify",rolling)
+						managerLogger.info(JSON.stringify(data))
 						local.write(res,{"flag" : true})
 					return
 					case "bindAgency" :
@@ -106,6 +114,23 @@ var Handler = function(app) {
 						}
 						local.bindAgency(uid,agencyId,function(flag) {
 							if(flag){
+								managerLogger.info(JSON.stringify(data))
+								local.write(res,{"flag" : true})
+							}else{
+								local.write(res,{"flag" : false})
+							}
+						})
+					return
+					case "sendMail" :
+						var uid = data.uid
+						var mailInfo = data.mailInfo
+						if(!uid || typeof(uid) != "number" || uid < 10001){
+							local.write(res,{"flag" : false})
+							return
+						}
+						local.sendMail(uid,mailInfo,function(flag) {
+							if(flag){
+								managerLogger.info(JSON.stringify(data))
 								local.write(res,{"flag" : true})
 							}else{
 								local.write(res,{"flag" : false})
@@ -116,7 +141,7 @@ var Handler = function(app) {
 						local.write(res,{"flag" : false})
 						break
 				}
-            });
+            })
         }
         else if (req.method.toUpperCase() == 'GET') {
 			console.log("get")
@@ -141,6 +166,30 @@ var local = {}
 local.write = function(res,notidy) {
 	res.write(JSON.stringify(notidy))
 	res.end()
+}
+//发邮件
+local.sendMail = function(uid,mailInfo,cb) {
+	if(!mailInfo.title || typeof(mailInfo.title) != "string"){
+		mailInfo.title = "系统邮件"
+	}
+	if(!mailInfo.content || typeof(mailInfo.content) != "string"){
+		mailInfo.content = "系统邮件"
+	}
+	if(mailInfo.affix){
+		if(mailInfo.affix.type !== "gold" && mailInfo.affix.type !== "diamond"){
+			cb(false)
+			return
+		}
+		if(!mailInfo.affix.value || typeof(mailInfo.affix.value) != "number" || mailInfo.affix.value <= 0){
+			cb(false)
+			return
+		}
+	}else{
+		mailInfo.affix = false
+	}
+	Handler.app.rpc.db.remote.sendMail(null,uid,mailInfo.title,mailInfo.content,mailInfo.affix,"系统管理员",0,function() {
+		cb(true)
+	})
 }
 
 //绑定代理
