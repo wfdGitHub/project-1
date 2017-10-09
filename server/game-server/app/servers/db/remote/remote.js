@@ -133,56 +133,56 @@ DBRemote.prototype.check = function(result,cb) {
 //登陆回调
 DBRemote.prototype.loginCB = function(uid,cb) {
   DBRemote.dbService.getPlayerObject(uid,"loginRecord",function(data) {
-      if(data){
-  		var myDate = new Date()
-  		var month = myDate.getMonth()
-  		var date = myDate.getDate()
-  		if(month < 10){
-  			month = "0"+month
-  		}
-  		if(date < 10){
-  			date = "0"+date
-  		}
-  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
-        if(dateString != data.recordDate){
-          //今日未登陆则判断昨天是否登陆，若是则增加登陆天数
-          myDate.setDate(myDate.getDate() - 1)
-		  month = myDate.getMonth()
-		  date = myDate.getDate()
-		  if(month < 10){
-		  	month = "0"+month
-		  }
-		  if(date < 10){
-		  	date = "0"+date
-		  }
-		  var oldDateString = parseInt(""+myDate.getFullYear() + month + date)   
-          if(oldDateString == data.recordDate){
-              data.recordDate = dateString
-              data.loginDay += 1
-              if(data.loginMax < data.loginDay){
-              	data.loginMax = data.loginDay
-              	//在此领取连续签到奖励
-              	if(signInConf[data.loginMax]){
-              		var type = signInConf[data.loginMax]["award"]["type"]
-              		var value = signInConf[data.loginMax]["award"]["value"]
-              		console.log("type  : "+type)
-              		console.log("value : "+value)
-              		DBRemote.prototype.setValue(uid,type,value,function(argument) {
-						var notify = {
-							"cmd" : "signInAward",
-							"data" : signInConf[data.loginMax]
-						}
-						DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
-              		})
-              	}
-              }
-          }else{
-            data.recordDate = dateString
-            data.loginDay = 1
-          }
-          DBRemote.dbService.setPlayerObject(uid,"loginRecord",data,function(){})
-        }
-      }
+    //   if(data){
+  		// var myDate = new Date()
+  		// var month = myDate.getMonth()
+  		// var date = myDate.getDate()
+  		// if(month < 10){
+  		// 	month = "0"+month
+  		// }
+  		// if(date < 10){
+  		// 	date = "0"+date
+  		// }
+  		// var dateString = parseInt(""+myDate.getFullYear() + month + date)
+    //     if(dateString != data.recordDate){
+    //       //今日未登陆则判断昨天是否登陆，若是则增加登陆天数
+    //       myDate.setDate(myDate.getDate() - 1)
+		  // month = myDate.getMonth()
+		  // date = myDate.getDate()
+		  // if(month < 10){
+		  // 	month = "0"+month
+		  // }
+		  // if(date < 10){
+		  // 	date = "0"+date
+		  // }
+		  // var oldDateString = parseInt(""+myDate.getFullYear() + month + date)   
+    //       if(oldDateString == data.recordDate){
+    //           data.recordDate = dateString
+    //           data.loginDay += 1
+    //           if(data.loginMax < data.loginDay){
+    //           	data.loginMax = data.loginDay
+    //           	//在此领取连续签到奖励
+    //           	if(signInConf[data.loginMax]){
+    //           		var type = signInConf[data.loginMax]["award"]["type"]
+    //           		var value = signInConf[data.loginMax]["award"]["value"]
+    //           		console.log("type  : "+type)
+    //           		console.log("value : "+value)
+    //           		DBRemote.prototype.setValue(uid,type,value,function(argument) {
+				// 		var notify = {
+				// 			"cmd" : "signInAward",
+				// 			"data" : signInConf[data.loginMax]
+				// 		}
+				// 		DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+    //           		})
+    //           	}
+    //           }
+    //       }else{
+    //         data.recordDate = dateString
+    //         data.loginDay = 1
+    //       }
+    //       DBRemote.dbService.setPlayerObject(uid,"loginRecord",data,function(){})
+    //     }
+    //   }
       cb(data)
   })
 }
