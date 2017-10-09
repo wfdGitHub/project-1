@@ -280,7 +280,7 @@ var betType = {
           if(player[i].isActive && player[i].isOnline){
             tmpCount++
           }
-        }        
+        }
         if(tmpCount <= 1){
           clearTimeout(timer)
           timer = setTimeout(local.readyBegin,conf.TID_WAITING_TIME)
@@ -1073,13 +1073,13 @@ var betType = {
     }
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
-      //明牌模式所有人四张牌可见  暗牌自己四张牌可见
+      //明牌模式自己四张牌可见   暗牌模式不可见
       if(gameState !== conf.GS_DEAL && gameState !== conf.GS_SETTLEMENT){
-        if(room.cardMode == conf.MODE_CARD_SHOW){
+        if(room.cardMode == conf.MODE_CARD_HIDE){
           for(var i = 0; i < GAME_PLAYER;i++){
-              delete newPlayer[i].handCard[4]
+              delete newPlayer[i].handCard
           }
-        }else if(room.cardMode == conf.MODE_CARD_HIDE){
+        }else if(room.cardMode == conf.MODE_CARD_SHOW){
           for(var i = 0; i < GAME_PLAYER;i++){
               if(i == chair){
                 delete newPlayer[chair].handCard[4]
