@@ -314,6 +314,7 @@ local.quitRoom = function(roomId,uid) {
 	}
 	delete GameRemote.userMap[uid]
 	robotManager.freeRobot(uid)
+	matchingLogger.info("quitRoom uid : "+uid + " roomId : "+roomId)
 	// console.log(GameRemote.userMap)
 }
 
