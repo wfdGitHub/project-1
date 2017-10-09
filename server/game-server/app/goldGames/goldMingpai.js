@@ -985,6 +985,7 @@ var betType = {
             player[i].isNoGiveUp = true
             player[i].isShowCard = false
         }
+        gameState = conf.GS_FREE
         //金币场小结算
         settlementCB(room.roomId,curScores,player,room.rate,room.currencyType)
         local.readyBegin()

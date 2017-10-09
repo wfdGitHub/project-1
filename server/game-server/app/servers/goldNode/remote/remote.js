@@ -294,17 +294,19 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 	var agencyDivides = {}
 	for(var index in player){
 		if(player.hasOwnProperty(index)){
-			if(player[index].isActive && !player[index].isRobot){
+			if(player[index].isActive){
 				player[index].score -= tmpRate
-				GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-rate,function(){})
-				//代理抽水
-				// console.log(player[index].playerInfo)
-				var agencyId = player[index].playerInfo.agencyId
-				if(agencyId){
-					if(!agencyDivides[agencyId]){
-						agencyDivides[agencyId] = {}
-					}
-					agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
+				if(!player[index].isRobot){
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,function(){})
+					//代理抽水
+					// console.log(player[index].playerInfo)
+					var agencyId = player[index].playerInfo.agencyId
+					if(agencyId){
+						if(!agencyDivides[agencyId]){
+							agencyDivides[agencyId] = {}
+						}
+						agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
+					}					
 				}
 			}
 		}
@@ -316,7 +318,6 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 		"rate" : tmpRate
 	}
 	GameRemote.roomList[roomId].sendAll(notify)
-	
 }
 
 
