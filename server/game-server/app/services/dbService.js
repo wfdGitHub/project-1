@@ -98,7 +98,7 @@ local.changeRanklist = function(players) {
 				data.head = players[i].head
 				data.gold = players[i].gold
 				data.charm = players[i].charm
-				data.dayCharm = players[i].refreshList.charmValue
+				data.dayCharm = players[i].refreshList ? players[i].refreshList.charmValue : 0
 				data.signature = players[i].signature
 				if(goldAllRanklist.length > 0){
 					for(var index = goldAllRanklist.length - 1; index >= 0;index--){
@@ -130,7 +130,7 @@ local.changeRanklist = function(players) {
 			//今日金币榜
 			//若玩家金币大于总金币榜中最低值则加入榜单
 	  		var dateString = getDateString()
-			if(players[i].refreshList.dayGoldTime !== dateString){
+			if(!players[i].refreshList || players[i].refreshList.dayGoldTime !== dateString){
 				// console.log(players[i].refreshList.dayGoldTime)
 				continue
 			}
