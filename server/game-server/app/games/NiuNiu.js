@@ -30,7 +30,7 @@ var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
-module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
+module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
@@ -55,8 +55,8 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   var roomHost = -1                    //房主椅子号
   var timer                            //定时器句柄
   var bankerTime = 0                   //连庄次数
-  room.GAME_PLAYER = 6                 //游戏人数
-  GAME_PLAYER = 6
+  room.GAME_PLAYER = playerNumber      //游戏人数
+  GAME_PLAYER = playerNumber
   //游戏属性
   
   var cards = {}                       //牌组
@@ -141,6 +141,9 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
     room.needDiamond = Math.ceil(room.gameNumber / 10)  //本局每人消耗钻石
+    if(room.GAME_PLAYER == 9){
+      room.needDiamond = room.needDiamond * 2
+    }    
     if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
       room.bankerMode = MODE_BANKER_NONE
     }

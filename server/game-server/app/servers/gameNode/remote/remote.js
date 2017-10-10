@@ -59,7 +59,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
-			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber
+			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
 			for(var index in params){
 				if(params.hasOwnProperty(index)){
 					info += index + " : "+params[index]+"  ,  "
@@ -88,7 +88,7 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
-			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber
+			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
 			for(var index in params){
 				if(params.hasOwnProperty(index)){
 					info += index + " : "+params[index]+"  ,  "
@@ -342,7 +342,8 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"basicType" : GameRemote.roomList[roomId].basicType,
 			"maxBet" : GameRemote.roomList[roomId].maxBet,
 			"maxRound" : GameRemote.roomList[roomId].maxRound,
-			"stuffyRound" : GameRemote.roomList[roomId].stuffyRound
+			"stuffyRound" : GameRemote.roomList[roomId].stuffyRound,
+			"playerNumber" : GameRemote.roomList[roomId].playerNumber
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"

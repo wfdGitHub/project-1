@@ -116,13 +116,17 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			return
 		}
 	}else if(code == "newRoom"){
-
 		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
-	    }  
+	    }
+		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9)){
+	      console.log("agency error   param.playerNumber : "+params.playerNumber)
+	      cb(false)
+	      return
+	    }
 	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
 	    	cb(false)
 	    	return
@@ -141,6 +145,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						//判断是否满足准入数额
 						var diamond = data
 						var needMond = Math.ceil(params.gameNumber / 10)
+						if(params.playerNumber == 9){
+							needMond = needMond * 2
+						}
 
 						if(params.gameType == "zhajinhua"){
 							switch(params.consumeMode){
@@ -234,8 +241,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    		cb(false,{"code" : tips.GAME_CLOSE})
 	    	}
 	    })
-
-
 	}else if(code == "agency"){
 		//代开房
 		//TODO  无效数据判断
@@ -247,7 +252,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
-	    }   
+	    }
+		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9)){
+	      console.log("agency error   param.playerNumber : "+params.playerNumber)
+	      cb(false)
+	      return
+	    }	    
 	    var roomId = 0
 	    var needMond = 0
 
@@ -272,10 +282,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		    	function(data,next) {
 		    		//检查钻石是否足够
 					var diamond = data
-					needMond = Math.ceil(params.gameNumber / 10) * 3
 					if(params.gameType == "zhajinhua"){
 						needMond = Math.ceil(params.gameNumber / 10) * 5
+					}else{
+						needMond = Math.ceil(params.gameNumber / 10) * 3						
 					}
+					if(params.playerNumber == 9){
+						needMond = needMond * 2
+					}					
 					if(diamond < needMond){
 						cb(false,{"code" : tips.NO_DIAMOND})
 						return

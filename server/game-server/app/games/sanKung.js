@@ -7,7 +7,7 @@ var MING_CARD_NUM = 2               //明牌数量
 //游戏状态
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOvercb) {
+  module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
@@ -29,8 +29,8 @@ var MING_CARD_NUM = 2               //明牌数量
     var banker = -1                      //庄家椅子号
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
-    room.GAME_PLAYER = 6                 //游戏人数
-    GAME_PLAYER = 6
+    room.GAME_PLAYER = playerNumber      //游戏人数
+    GAME_PLAYER = playerNumber
     var curPlayer = -1                   //当前操作玩家
     var curRound = 0                     //当前轮数
     var result = {}                      //牌型
@@ -152,6 +152,9 @@ var MING_CARD_NUM = 2               //明牌数量
       room.cardMode = param.cardMode                     //明牌模式
 
       room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
+      if(room.GAME_PLAYER == 9){
+        room.needDiamond = room.needDiamond * 2
+      }      
       cb(true)
     }
     room.handle.agency = function(uid,sid,param,cb) {
