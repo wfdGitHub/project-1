@@ -91,7 +91,6 @@ local.sendRedOnce = function(agencyId) {
 							})
 						})
 					}
-
 				}
 			})
 		}
