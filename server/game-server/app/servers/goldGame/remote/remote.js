@@ -576,7 +576,7 @@ local.joinInitiativeRoom = function(uid,roomId,cb) {
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
 		if(data !== false){
 			if(data.gold < GameRemote.roomInitiativeBasic[roomId] * ENTER_RATE){
-				cb(false,{"msg" : tips.NO_DIAMOND})
+				cb(false,{"msg" : tips.NO_GOLD})
 				return
 			}
 			var params = {}

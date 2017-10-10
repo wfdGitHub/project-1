@@ -492,6 +492,13 @@ var betType = {
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
+      if(banker !== -1){
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }
+      }      
       switch(room.bankerMode){
         case conf.MODE_BANKER_ROB :
           //抢庄
@@ -522,15 +529,7 @@ var betType = {
         default:
           break
       }
-      if(banker !== -1){
-        //重置庄家信息
-        for(var i = 0;i < GAME_PLAYER;i++){
-            betList[i] = 0;
-            player[i].isBanker = false
-        }
-        //console.log("banker : "+banker)
-        player[banker].isBanker = true    
-      }
+      player[banker].isBanker = true    
       local.gameBegin()
     }
     //结束抢庄
