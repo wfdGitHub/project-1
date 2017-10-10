@@ -16,6 +16,7 @@ var GameRemote = function(app) {
 	GameRemote.GameService = this.app.get("GameService")
 	GameRemote.backendSessionService = this.app.get('backendSessionService');
 	GameRemote.NodeNumber = 0
+	GameRemote.roomInfoList = {}
 };
 
 
@@ -31,7 +32,7 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 					data.List[index].players = GameRemote.GameService.RoomMap[data.List[index].roomId]
 				}
 			}
-		}		
+		}
 	}
 	if(cb){
 		cb(data)
@@ -43,10 +44,7 @@ GameRemote.prototype.getRoomInfo = function(roomId,cb) {
 	console.log("GameRemote.GameService.roomList[roomId]")
 	console.log(GameRemote.GameService.roomList[roomId])
 	if(GameRemote.GameService.roomList[roomId]){
-		var roomInfo = {
-			"roomType" : GameRemote.GameService.roomList[roomId].roomType,
-			"roomPlayer" : GameRemote.GameService.RoomMap[roomId]
-		}
+		var roomInfo = GameRemote.roomInfoList[roomId]
 		cb(roomInfo)
 	}else{
 		cb(false)
@@ -241,7 +239,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      console.log("agency error   params.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
-	    }	    
+	    }
 	    var roomId = 0
 	    var needMond = 0
 	    async.waterfall([
@@ -309,10 +307,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
                             "gameMode" : params.gameMode,
                             "cardMode" : params.cardMode,
                             "basic" : params.basic || params.basicType,
+                            "playerCount" : params.playerCount,
+                            "awardType" : params.awardType,
                             "beginTime" : (new Date()).valueOf()
                         }
                         GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
                         GameRemote.GameService.RoomMap[roomId] = []
+                        GameRemote.roomInfoList[roomId] = agencyRoomInfo
 						next(null,roomId)
 					}else{
 						GameRemote.GameService.roomState[roomId] = true
@@ -401,7 +402,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 		}
 		GameRemote.GameService.setAgencyRoomByID(agencyId,roomId,agencyRoomInfo)
 	}
-
+	GameRemote.roomInfoList[roomId].state = 1
 	// GameRemote.GameService.roomState[roomId] = true
 	// GameRemote.GameService.roomList[roomId] = false
 	//delete GameRemote.GameService.RoomMap[roomId]
