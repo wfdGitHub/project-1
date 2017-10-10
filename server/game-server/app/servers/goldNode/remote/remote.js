@@ -337,6 +337,23 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			}
 		}
 	}
+	//通知后台
+	var gold_arr = []
+	for(var index in player){
+		if(curScores[index] && player[index].isActive){
+			gold_arr.push({"uid" : player[index].uid,"score" : curScores[index]})
+		}
+	}	
+	var tmpRate = Math.floor(rate * 0.5)
+	var notify = {
+		"room_num" : roomId,
+		"gold_arr" : gold_arr,
+		"pay_gold" : tmpRate,
+		"game_mode" : GameRemote.roomList[roomId].roomType,
+		"rate" : rate,
+		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag
+	}
+	httpConf.sendGameSettlement(notify)	
 	//console.log(player)
 	//console.log("rate : "+rate)
 	//货币等于0退出游戏
@@ -354,7 +371,6 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			}
 		}
 	}
-
 	//通知可以抽奖
 	// for(var index in player){
 	// 	if(player.hasOwnProperty(index)){
@@ -368,24 +384,6 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	// 		}
 	// 	}
 	// }
-	
-	//通知后台
-	var gold_arr = []
-	for(var index in player){
-		if(curScores[index] && player[index].isActive){
-			gold_arr.push({"uid" : player[index].uid,"score" : curScores[index]})
-		}
-	}
-	var tmpRate = Math.floor(rate * 0.5)
-	var notify = {
-		"room_num" : roomId,
-		"gold_arr" : gold_arr,
-		"pay_gold" : tmpRate,
-		"game_mode" : GameRemote.roomList[roomId].roomType,
-		"rate" : rate,
-		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag
-	}
-	httpConf.sendGameSettlement(notify)
 }
 
 //房间结束回调

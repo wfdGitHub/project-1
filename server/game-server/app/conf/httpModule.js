@@ -196,11 +196,30 @@ module.exports.sendGameSettlement = function(data) {
     })
     req.end()
 }
+//发送代理奖励
+module.exports.sendAgencyAward = function(data) {
+    var keys = Object.keys(data).sort()
+    var string = ""
+    for(var i = 0;i < keys.length;i++){
+      if(data[keys[i]]){
+        string += ("" + keys[i] +"="+ data[keys[i]]+ "&")
+      }
+    }
+    string += "key=niuniuyiyousecretkey"
+    data.sign = md5(string)
+    data = JSON.stringify(data)
+    var req=http.request('http://pay.5d8d.com/gold_admin.php/api/countAgentCoin?data='+data,function(res){
 
+    })
+    req.on("error",function(err){
+      console.log(err.message)
+    })
+    req.end()
+}
 
 function md5 (text) {
   return crypto.createHash('md5').update(text).digest('hex');
-};
+}
 
 var getCity = function(ip,cb) {
     var string = "http://ip.taobao.com/service/getIpInfo.php?ip="+ip

@@ -66,6 +66,12 @@ local.sendRedOnce = function(agencyId) {
 						//更新分红记录
 						console.log("agencyId : "+agencyId)
 						console.log(mailInfo)
+						var tmpNotify = {
+							"agencyId" : agencyId,
+							"goldCount" : goldCount,
+							"list" : data.list
+						}
+						httpConf.sendAgencyAward(tmpNotify)
 						data.list = {}
 				  		var myDate = new Date()
 				  		var month = myDate.getMonth()
