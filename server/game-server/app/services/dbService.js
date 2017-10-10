@@ -19,7 +19,7 @@ dbService.prototype.start = function(cb){
 	var db = redis.createClient(RDS_PORT,RDS_HOST,RDS_OPTS)
 	this.app.set("dbService",dbService)
 	db.on("ready",function(res) {
-		db.select("DB2",function(err) {
+		db.select("2",function(err) {
 			if(err){
 				console.log(err)
 			}
