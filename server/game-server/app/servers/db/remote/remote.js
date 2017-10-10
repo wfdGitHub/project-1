@@ -78,7 +78,7 @@ var createAccount = function(result,cb) {
 		var mailList = []
 		var mailInfo = {
 			"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
-			"title" : "欢欢迎您来到欢乐赢棋牌",
+			"title" : "欢迎您来到欢乐赢棋牌",
 			"content" : "欢迎您来到欢乐赢棋牌，这是一个高逼格的斗牛游戏，祝您玩得开心！",
 			"affix" : false,
 			"time" : new Date().getTime(),
