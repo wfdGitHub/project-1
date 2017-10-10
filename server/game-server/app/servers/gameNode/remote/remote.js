@@ -56,7 +56,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
@@ -85,7 +85,7 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}	
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
