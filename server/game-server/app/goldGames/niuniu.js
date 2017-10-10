@@ -925,6 +925,11 @@ var betType = {
             player[i].isShowCard = false
         }
         gameState = conf.GS_FREE
+        //重置庄家信息
+        for(var i = 0;i < GAME_PLAYER;i++){
+            betList[i] = 0;
+            player[i].isBanker = false
+        }        
         //金币场小结算
         settlementCB(room.roomId,curScores,player,room.rate,room.currencyType)
         local.readyBegin()
