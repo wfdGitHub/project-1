@@ -382,7 +382,8 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		"gold_arr" : gold_arr,
 		"pay_gold" : tmpRate,
 		"game_mode" : GameRemote.roomList[roomId].roomType,
-		"rate" : rate
+		"rate" : rate,
+		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag
 	}
 	httpConf.sendGameSettlement(notify)
 }
