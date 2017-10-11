@@ -22,7 +22,23 @@ var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
 		var uid = playerId
 		DBRemote.dbService.setPlayer(uid,"diamond",0)
-		DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
+		if(!result.nickname){
+			result.nickname = ""+playerId
+		}
+		DBRemote.dbService.db.get("onlyNickName:"+result.nickname,function(err,data) {
+			if(err || !data){
+				//昵称不存在
+				//唯一昵称
+				var nickname = result.nickname
+				DBRemote.dbService.db.set("onlyNickName:"+nickname,uid)	
+				DBRemote.dbService.setPlayer(uid,"nickname",nickname)
+			}else{
+				//存在昵称
+				var nickname = result.nickname + uid
+				DBRemote.dbService.db.set("onlyNickName:"+nickname,uid)	
+				DBRemote.dbService.setPlayer(uid,"nickname",nickname)				
+			}
+		})
 		DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
 		DBRemote.dbService.setPlayer(uid,"uid",uid)
 		DBRemote.dbService.setPlayer(uid,"sex",result.sex)
@@ -106,7 +122,7 @@ var createAccount = function(result,cb) {
 //每次登陆更新微信信息
 var updateAccount = function(result) {
 	var uid = result.playerId
-	DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
+	// DBRemote.dbService.setPlayer(uid,"nickname",result.nickname)
 	DBRemote.dbService.setPlayer(uid,"head",result.headimgurl)
 	DBRemote.dbService.setPlayer(uid,"sex",result.sex)
 }
@@ -402,6 +418,22 @@ DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
     DBRemote.dbService.setPlayer(uid,"uidMap",unionid)
     DBRemote.dbService.setPlayer(unionid,"uidMap",uid)
     cb(true)
+}
+
+//改昵称
+DBRemote.prototype.changeNickName = function(uid,nickname,cb) {
+	DBRemote.dbService.db.get("onlyNickName:"+nickname,function(err,data) {
+		if(err || !data){
+			DBRemote.dbService.getPlayer(uid,"nickname",function(data) {
+				DBRemote.dbService.db.del("onlyNickName:"+data)
+				DBRemote.dbService.setPlayer(uid,"nickname",nickname)
+				DBRemote.dbService.db.set("onlyNickName:"+nickname,uid)
+				cb(true)
+			})
+		}else{
+			cb(false,"昵称已存在")
+		}
+	})
 }
 
 local.getDateString = function() {

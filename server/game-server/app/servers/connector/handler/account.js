@@ -28,12 +28,29 @@ handler.changeSignature = function(msg,session,next) {
 		next(null,{"flag" : false})
 		return
 	}
+	signature = strReplace(signature)
 	this.app.rpc.db.remote.changeValue(null,uid,"signature",signature,function(flag) {
 		next(null,{"flag" : flag})
 	})
 }
 
-
+handler.changeNickName = function(msg,session,next) {
+	//更改昵称
+	var uid = session.get("uid")
+	if(!uid){
+		next(null,{"flag" : false,"msg" : "请重新登陆再试"})
+		return
+	}
+	var nickname = msg.nickname
+	if(!nickname || typeof(nickname) != "string" || nickname.length > 24){
+		next(null,{"flag" : false,"msg" : "输入昵称错误，请重新输入"})
+		return
+	}
+	nickname = strReplace(nickname)
+	this.app.rpc.db.remote.changeNickName(null,uid,nickname,function(flag,msg) {
+		next(null,{"flag" : flag,"msg" : msg})
+	})
+}
 
 handler.bindWeiXinUnionid = function(msg, session, next) {
 	//游客账号绑定微信
@@ -95,4 +112,43 @@ handler.bindWeiXinUnionid = function(msg, session, next) {
 	}else{
 		next(null,{"flag" : false})
 	}
+}
+
+
+var strReplace = function(str) {
+  if(!str){
+    return ""
+  }
+  var strArr = str.split(""),
+      result = "",
+      totalLen = 0;
+
+  for(var idx = 0; idx < strArr.length; idx ++) {
+      // 超出长度,退出程序
+      if(totalLen >= 16) break;
+      var val = strArr[idx];
+      // 英文,增加长度1
+      if(/[a-zA-Z]/.test(val)) {
+          totalLen = 1 + (+totalLen);
+          result += val;
+      }
+      // 中文,增加长度2
+      else if(/[\u4e00-\u9fa5]/.test(val)) {
+          totalLen = 2 + (+totalLen);
+          result += val;
+      }
+      // 遇到代理字符,将其转换为 "口", 不增加长度
+      else if(/[\ud800-\udfff]/.test(val)) {
+          // 代理对长度为2,
+          if(/[\ud800-\udfff]/.test(strArr[idx + 1])) {
+              // 跳过下一个
+              idx ++;
+          }
+          // 将代理对替换为 "口"
+          result += "口";
+      }else{
+        result += val
+      }
+  }
+  return result
 }

@@ -268,7 +268,7 @@ handler.enter = function(msg, session, next) {
         }
         result.nickname = strReplace(result.nickname)
         self.app.rpc.db.remote.check(session,result,function(flag){
-            cb(null)
+          setTimeout(cb,100)
         })
       },
       function(cb) {
