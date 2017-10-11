@@ -424,7 +424,7 @@ DBRemote.prototype.changeBindUidMap = function(uid,unionid,cb) {
 DBRemote.prototype.changeNickName = function(uid,nickname,cb) {
 	DBRemote.dbService.db.get("onlyNickName:"+nickname,function(err,data) {
 		if(err || !data){
-			DBRemote.dbService.getPlayer(uid,"nickname",function(data) {
+			DBRemote.dbService.getPlayerString(uid,"nickname",function(data) {
 				DBRemote.dbService.db.del("onlyNickName:"+data)
 				DBRemote.dbService.setPlayer(uid,"nickname",nickname)
 				DBRemote.dbService.db.set("onlyNickName:"+nickname,uid)
