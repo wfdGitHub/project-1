@@ -262,7 +262,8 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       bankerTime : bankerTime,
       betList : betList,
       bonusPool : bonusPool,
-      basicType : room.basicType
+      basicType : room.basicType,
+      playerNumber : GAME_PLAYER
     }
     //console.log(notify)
     local.sendUid(uid,notify)
@@ -313,7 +314,8 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           roomType : room.roomType,
           bankerTime : bankerTime,
           bonusPool : bonusPool,
-          basicType : room.basicType
+          basicType : room.basicType,
+          playerNumber : GAME_PLAYER
         },
         betList : betList,
         state : gameState,

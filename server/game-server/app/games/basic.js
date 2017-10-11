@@ -687,7 +687,8 @@ var MING_CARD_NUM = 3               //明牌数量
         state : gameState,
         roomType : room.roomType,
         basic : basic,
-        curBet : curBet
+        curBet : curBet,
+        playerNumber : GAME_PLAYER
       }
       return notify
     }

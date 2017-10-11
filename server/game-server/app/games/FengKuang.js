@@ -286,7 +286,8 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           TID_SETTLEMENT : conf.TID_SETTLEMENT,
           roomType : room.roomType,
           bankerTime : bankerTime,
-          gameMode : room.gameMode
+          gameMode : room.gameMode,
+          playerNumber : GAME_PLAYER
         },
         betList : betList,
         state : gameState,

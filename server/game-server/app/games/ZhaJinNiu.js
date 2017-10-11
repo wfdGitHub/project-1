@@ -929,7 +929,8 @@ var MING_CARD_NUM = 3               //明牌数量
           basic : basic,
           curBet : curBet,
           curRound : curRound,
-          curPlayer : curPlayer
+          curPlayer : curPlayer,
+          playerNumber : GAME_PLAYER
         },
         betList : betList,
         state : gameState,

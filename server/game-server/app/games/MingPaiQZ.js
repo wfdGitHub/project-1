@@ -1033,7 +1033,8 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_BETTING : conf.TID_BETTING,
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
-        allowAllin : allowAllin
+        allowAllin : allowAllin,
+        playerNumber : GAME_PLAYER
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER

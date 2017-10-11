@@ -984,7 +984,8 @@ var MING_CARD_NUM = 3               //明牌数量
         betAmount : betAmount,
         basic : room.basic,
         maxRound : room.maxRound,
-        stuffyRound : room.stuffyRound 
+        stuffyRound : room.stuffyRound,
+        playerNumber : room.playerNumber
       }
       return notify
     }
