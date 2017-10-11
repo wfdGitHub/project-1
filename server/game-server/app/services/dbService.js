@@ -17,7 +17,7 @@ dbService.prototype.start = function(cb){
 
 	self.app.set("dbService",dbService)
 	db.on("ready",function(res) {
-		db.select("DB1",function(err) {
+		db.select("1",function(err) {
 			if(err){
 				console.log(err)
 			}
