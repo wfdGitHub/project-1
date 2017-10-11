@@ -61,156 +61,156 @@ handler.getSelfData = function(msg,session,next) {
 
 //游客登录
 handler.visitorEnter = function(msg, session, next) {
-  var self = this
-  var sessionService = self.app.get('sessionService')
-  var userId = msg.uid //微信ID
-  var playerId = userId  //玩家ID
-  var notify = {}
-  var result = {}
-  async.waterfall([
-      function(cb) {
-        if(userId != undefined){
-          //判断userId存在则登陆，否则新建账号
-          self.app.rpc.db.remote.getPlayerString(null,userId,"uidMap",function(data) {
-            //账号不存在或该账号非游客账号
-            if(!data || userId != data){
-              self.app.rpc.db.remote.getPlayerId(session,function(uid) {
-                  //console.log("uid : "+uid)
-                  playerId = parseInt(uid) + 1
-                  userId = parseInt(uid) + 1
-                  cb()
-              })
-            }else{
-              cb()
-            }
-          })
-        }else{
-          self.app.rpc.db.remote.getPlayerId(session,function(uid) {
-              //console.log("uid : "+uid)
-              playerId = parseInt(uid) + 1
-              userId = parseInt(uid) + 1
-              cb()
-          })
-        }
-      },
-      function(cb){
-        result.openId = playerId
-        result.sex = 1
-        result.head = ""
-        result.nickname = "游客"+playerId
-        result.headimgurl = ""
-        result.uid = playerId
-        result.unionid = playerId
-        //console.log(result)
-        self.app.rpc.db.remote.check(session,result,function(flag){
-            cb(null)
-        })
-      },
-      function(cb) {
-        self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
-          notify.cmd = "userInfo"
-          notify.data = data
-          notify.data.nickname = strReplace(notify.data.nickname)
-          notify.openId = ""
-          notify.unionid = userId
-          notify.allGames = data.history ? data.history.allGames : 0
-          notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
-          notify.useDiamond = data.useDiamond
-          notify.gold = data.gold
-          notify.platform  = msg.platform
+  // var self = this
+  // var sessionService = self.app.get('sessionService')
+  // var userId = msg.uid //微信ID
+  // var playerId = userId  //玩家ID
+  // var notify = {}
+  // var result = {}
+  // async.waterfall([
+  //     function(cb) {
+  //       if(userId != undefined){
+  //         //判断userId存在则登陆，否则新建账号
+  //         self.app.rpc.db.remote.getPlayerString(null,userId,"uidMap",function(data) {
+  //           //账号不存在或该账号非游客账号
+  //           if(!data || userId != data){
+  //             self.app.rpc.db.remote.getPlayerId(session,function(uid) {
+  //                 //console.log("uid : "+uid)
+  //                 playerId = parseInt(uid) + 1
+  //                 userId = parseInt(uid) + 1
+  //                 cb()
+  //             })
+  //           }else{
+  //             cb()
+  //           }
+  //         })
+  //       }else{
+  //         self.app.rpc.db.remote.getPlayerId(session,function(uid) {
+  //             //console.log("uid : "+uid)
+  //             playerId = parseInt(uid) + 1
+  //             userId = parseInt(uid) + 1
+  //             cb()
+  //         })
+  //       }
+  //     },
+  //     function(cb){
+  //       result.openId = playerId
+  //       result.sex = 1
+  //       result.head = ""
+  //       result.nickname = "游客"+playerId
+  //       result.headimgurl = ""
+  //       result.uid = playerId
+  //       result.unionid = playerId
+  //       //console.log(result)
+  //       self.app.rpc.db.remote.check(session,result,function(flag){
+  //           cb(null)
+  //       })
+  //     },
+  //     function(cb) {
+  //       self.app.rpc.db.remote.getPlayerInfo(session,userId,function(data) {
+  //         notify.cmd = "userInfo"
+  //         notify.data = data
+  //         notify.data.nickname = strReplace(notify.data.nickname)
+  //         notify.openId = ""
+  //         notify.unionid = userId
+  //         notify.allGames = data.history ? data.history.allGames : 0
+  //         notify.ip = sessionService.getClientAddressBySessionId(session.id).ip
+  //         notify.useDiamond = data.useDiamond
+  //         notify.gold = data.gold
+  //         notify.platform  = msg.platform
 
-          // console.log("===========")
-          // console.log(data)
-          //判断账号是否冻结
-          if(data.freeze == 1){
-            next(null,{"flag" : false,"code" : 500})
-            return
-          }
-          //保存session
-          playerId = data.playerId
-          if( !! sessionService.getByUid(playerId)) {
-            sessionService.kickBySessionId(sessionService.getByUid(playerId)[0].id)
-          }
-          session.bind(playerId)
-          session.set("uid", playerId)
-          session.push("uid", function(err) {
-            if(err) {
-              console.error('set uid for session service failed! error is : %j', err.stack)
-            }
-          })
-          //console.log("uid : "+session.get("uid"))
-          session.set("nickname",data.nickname)
-          session.push("nickname", function(err) {
-            if(err) {
-              console.error('set nickname for session service failed! error is : %j', err.stack)
-            }
-          })
-          //connect服务器ID
-          session.set("cid", self.app.get('serverId'))
-          session.push("cid", function(err) {
-            if(err) {
-              console.error('set cid for session service failed! error is : %j', err.stack)
-            }
-          })
-          //console.log("nickname : "+session.get("nickname"))
-          session.on('closed', onUserLeave.bind(null,self))
+  //         // console.log("===========")
+  //         // console.log(data)
+  //         //判断账号是否冻结
+  //         if(data.freeze == 1){
+  //           next(null,{"flag" : false,"code" : 500})
+  //           return
+  //         }
+  //         //保存session
+  //         playerId = data.playerId
+  //         if( !! sessionService.getByUid(playerId)) {
+  //           sessionService.kickBySessionId(sessionService.getByUid(playerId)[0].id)
+  //         }
+  //         session.bind(playerId)
+  //         session.set("uid", playerId)
+  //         session.push("uid", function(err) {
+  //           if(err) {
+  //             console.error('set uid for session service failed! error is : %j', err.stack)
+  //           }
+  //         })
+  //         //console.log("uid : "+session.get("uid"))
+  //         session.set("nickname",data.nickname)
+  //         session.push("nickname", function(err) {
+  //           if(err) {
+  //             console.error('set nickname for session service failed! error is : %j', err.stack)
+  //           }
+  //         })
+  //         //connect服务器ID
+  //         session.set("cid", self.app.get('serverId'))
+  //         session.push("cid", function(err) {
+  //           if(err) {
+  //             console.error('set cid for session service failed! error is : %j', err.stack)
+  //           }
+  //         })
+  //         //console.log("nickname : "+session.get("nickname"))
+  //         session.on('closed', onUserLeave.bind(null,self))
 
-          cb(null)        
-        })
-      },
-      function(cb){
-        self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-          if(data){
-            data.area = "goldRoom"
-            notify.reconnection = data
-            session.set("area","goldRoom")
-            session.push("area", function(err) {
-              if(err) {
-                console.error('set area for session failed! error is : %j', err.stack)
-              }
-            })
-          }
-          cb(null)
-        })
-      },
-      function() {
-        if(!self.gameChanel.getMember(playerId)){
-          self.gameChanel.add(playerId,self.app.get('serverId'))
-        }
-        httpConf.sendLoginHttp(notify)
-        var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
-        userLoginLogger.info(info)    
-        //通知gameServer
-        self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
-        var myDate = new Date()
-        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())      
-        console.log(dateString) 
-        if(notify.data.loginRecord.recordDate !== dateString){
-          self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
-            notify.data.loginRecord = loginRecord
-            //console.log(notify.data.loginRecord)
-            self.channelService.pushMessageByUids('onMessage', notify, [{
-              uid: playerId,
-              sid: self.app.get('serverId')
-            }])
-          })
-        }else{
-          self.channelService.pushMessageByUids('onMessage', notify, [{
-            uid: playerId,
-            sid: self.app.get('serverId')
-          }])          
-        }
-      }
-      ],
-    function(err,result) {
-      console.log("enter error")
-      console.log(err)
-      console.log(result)
-      next(null,{"flag" : false,code : -200})
-      return
-    }
-  )
-  next(null,{"flag" : true})
+  //         cb(null)        
+  //       })
+  //     },
+  //     function(cb){
+  //       self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
+  //         if(data){
+  //           data.area = "goldRoom"
+  //           notify.reconnection = data
+  //           session.set("area","goldRoom")
+  //           session.push("area", function(err) {
+  //             if(err) {
+  //               console.error('set area for session failed! error is : %j', err.stack)
+  //             }
+  //           })
+  //         }
+  //         cb(null)
+  //       })
+  //     },
+  //     function() {
+  //       if(!self.gameChanel.getMember(playerId)){
+  //         self.gameChanel.add(playerId,self.app.get('serverId'))
+  //       }
+  //       httpConf.sendLoginHttp(notify)
+  //       var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
+  //       userLoginLogger.info(info)    
+  //       //通知gameServer
+  //       self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
+  //       var myDate = new Date()
+  //       var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())      
+  //       console.log(dateString) 
+  //       if(notify.data.loginRecord.recordDate !== dateString){
+  //         self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
+  //           notify.data.loginRecord = loginRecord
+  //           //console.log(notify.data.loginRecord)
+  //           self.channelService.pushMessageByUids('onMessage', notify, [{
+  //             uid: playerId,
+  //             sid: self.app.get('serverId')
+  //           }])
+  //         })
+  //       }else{
+  //         self.channelService.pushMessageByUids('onMessage', notify, [{
+  //           uid: playerId,
+  //           sid: self.app.get('serverId')
+  //         }])          
+  //       }
+  //     }
+  //     ],
+  //   function(err,result) {
+  //     console.log("enter error")
+  //     console.log(err)
+  //     console.log(result)
+  //     next(null,{"flag" : false,code : -200})
+  //     return
+  //   }
+  // )
+  next(null,{"flag" : false})
 }
 //H5登录
 // handler.h5Enter = function(msg,session,next) {
