@@ -182,10 +182,10 @@ local.changeRanklist = function(players) {
 
 dbService.updateDiamond = function(value) {
 	var cmd = "nn:acc:addDiamond"
-	dbService.db.get(cmd,function(err,data) {
-		//console.log(cmd + "  data : "+data)
-		value = parseInt(value) + parseInt(data)
-		dbService.db.set(cmd,value)
+	dbService.db.incrby(cmd,value,function(err,data) {
+		if(err){
+			console.log(err)
+		}
 	})
 }
 
@@ -372,11 +372,10 @@ dbService.setAgencyRoom = function(uid,agencyRoom) {
 
 
 dbService.setUserId = function(uid,cb) {
-	dbService.db.get("nn:acc:lastid",function(err,data) {
+	dbService.db.incrby("nn:acc:lastid",1,function(err,data) {
 		//console.log("nn:acc:lastid : "+data)
 		if(data){
-	        var playerId = parseInt(data) + 1
-	        dbService.db.set("nn:acc:lastid",playerId);
+	        var playerId = parseInt(data)
 	        dbService.setPlayer(uid,"uidMap",playerId)
 	        dbService.setPlayer(playerId,"uidMap",uid)
 	        cb(playerId)
