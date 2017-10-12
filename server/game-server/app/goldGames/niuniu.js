@@ -425,13 +425,35 @@ var betType = {
           }      
         }
       }
-      //机器人牌型修正
-      for(var i = 0;i < GAME_PLAYER;i++){
-        if(player[i].isActive && player[i].isReady && player[i].isRobot){
-            if(!luckyValue[i]){
-              luckyValue[i] = 0
+      //匹配房间玩家胜率控制
+      if(!room.initiativeFlag){
+        var tmpContorlValue = 0
+        switch(room.rate){
+          case 10 :
+            tmpContorlValue = 0.05
+          break
+          case 50 :
+            tmpContorlValue = 0.1
+          break
+          case 100 :
+            tmpContorlValue = 0.15
+          break
+          case 1000 :
+            tmpContorlValue = 0.2
+          break
+          case 5000 : 
+            tmpContorlValue = 0.35
+          break
+        }
+        if(tmpContorlValue){
+          for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isActive && player[i].isReady && !player[i].isRobot){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }              
+              luckyValue[i] += tmpContorlValue
             }
-            luckyValue[i] -= 0.2
+          }
         }
       }
       // console.log("================")

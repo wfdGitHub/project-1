@@ -43,7 +43,24 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.diamond = data.gold
 	data.isRobot = true
 	data.charm = 0
-	data.contorl = 0
+	data.contorl = 0.5
+	switch(gameType[type]){
+		case 10 :
+			data.contorl = 0.05
+		break
+		case 50 :
+			data.contorl = 0.1
+		break
+		case 100 :
+			data.contorl = 0.15
+		break
+		case 1000 :
+			data.contorl = 0.2
+		break
+		case 5000 : 
+			data.contorl = 0.25
+		break
+	}
 	data.signature = "玩家很懒什么都没有留下"
 	var refreshList = {}
 	refreshList.lottoTime = 0 					//抽奖
