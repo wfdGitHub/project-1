@@ -45,6 +45,7 @@ GameRemote.prototype.getRoomInfo = function(roomId,cb) {
 	console.log(GameRemote.GameService.roomList[roomId])
 	if(GameRemote.GameService.roomList[roomId]){
 		var roomInfo = GameRemote.roomInfoList[roomId]
+		roomInfo.playerInfo = GameRemote.GameService.RoomMap[roomId]
 		cb(roomInfo)
 	}else{
 		cb(false)
