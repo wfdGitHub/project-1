@@ -444,6 +444,9 @@ var betType = {
           case 100 :
             tmpContorlValue = 0.15
           break
+          case 1000 :
+            tmpContorlValue = 0.2
+          break
         }
         if(tmpContorlValue){
           for(var i = 0;i < GAME_PLAYER;i++){

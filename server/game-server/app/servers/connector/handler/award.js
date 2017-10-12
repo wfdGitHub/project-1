@@ -301,7 +301,7 @@ handler.give = function(msg,session,next) {
 			function(cb) {
 				//赠送成功
 				var charm = giveCfg[giveId].charm * count
-				self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+				self.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,"",function(){})
 				//发送邮件
 				var content = "你收到玩家 " + nickname+"("+uid+")" + " 礼物*"+count+",价值"+gold+"金币。"
 				var affix = {"type" : "gold","value" : gold}

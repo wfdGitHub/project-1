@@ -382,7 +382,7 @@ local.matching = function(){
 					local.createRoom(type)
 				}else{
 					//高级场不添加机器人
-					if(gameType[type] <= 100){
+					if(gameType[type] <= 1000){
 						//加一个机器人到队列中
 						var robotId = robotManager.getUnusedRobot()
 						if(robotId && Math.random() < 0.4){
@@ -394,7 +394,7 @@ local.matching = function(){
 					}
 				}
 			}
-			if(gameType[type] <= 100){
+			if(gameType[type] <= 1000){
 				//给空闲房间动态添加机器人
 				for(var i = 0;i < tmpRoomList.length; i++){
 					var roomId = tmpRoomList[i]
