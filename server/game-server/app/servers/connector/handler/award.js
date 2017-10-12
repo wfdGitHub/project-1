@@ -3,6 +3,7 @@ var lottoConf = require("../../../conf/lotto.js")
 var giftBagConf = require("../../../conf/giftBag.js")
 var giveCfg = require("../../../conf/give.js")
 var goldConf = require("../../../conf/goldConf.js")
+var giveMailConfLogger = require("pomelo-logger").getLogger("giveMail-log")
 
 module.exports = function(app) {
   return new Handler(app)
@@ -209,9 +210,9 @@ handler.buyGold = function(msg,session,next) {
 		self.app.rpc.db.remote.getValue(session,uid,"diamond",function(data){
 			var diamond = goldConf[buyType].diamond
 			if(data && data >= diamond){
-				self.app.rpc.db.remote.setValue(session,uid,"diamond",-diamond,function() {
+				self.app.rpc.db.remote.setValue(session,uid,"diamond",-diamond,"购买金币",function() {
 					var gold = goldConf[buyType].gold
-					self.app.rpc.db.remote.setValue(session,uid,"gold",gold,function() {
+					self.app.rpc.db.remote.setValue(session,uid,"gold",gold,"购买金币",function() {
 						next(null,{flag : true})
 					})
 				})
@@ -292,7 +293,7 @@ handler.give = function(msg,session,next) {
 			},
 			function(cb) {
 				//扣除赠送者金币
-				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,function() {
+				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,"赠送给"+uid,function() {
 					//增加目标金币及魅力值
 					cb()
 				})
@@ -305,6 +306,7 @@ handler.give = function(msg,session,next) {
 				var content = "你收到玩家 " + nickname+"("+uid+")" + " 礼物*"+count+",价值"+gold+"金币。"
 				var affix = {"type" : "gold","value" : gold}
 				var addresser = nickname
+				giveMailConfLogger.info("    give  uid "+uid+" send "+targetUid+" : "+content)
 				self.app.rpc.db.remote.sendMail(null,targetUid,"赠送道具",content,affix,addresser,uid,function() {
 					next(null,{"flag" : true})
 				})
@@ -353,7 +355,6 @@ handler.give = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}
-
 }
 
 

@@ -193,6 +193,36 @@
         }
       ,"backups": 5,
       "category":"manager-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/giveMail.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"giveMail-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/goldRecord.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"goldRecord-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/diamondRecord.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"diamondRecord-log"
     }
   ],
 

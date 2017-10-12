@@ -268,8 +268,8 @@ local.addGold = function(gold,uid,cb) {
 		})	
 	},
 	function() {
-		//添加钻石
-		Handler.app.rpc.db.remote.setValue(null,uid,"gold",gold,function(flag) {
+		//添加金币
+		Handler.app.rpc.db.remote.setValue(null,uid,"gold",gold,"后台添加",function(flag) {
 			if(flag == true){
 				var info = "     uid : "+uid+"   gold : "+gold
 				//记录充值
@@ -278,7 +278,7 @@ local.addGold = function(gold,uid,cb) {
 			}else{
 				cb(false)
 			}
-		})	
+		})
 	}
 	],
 	function(err,result) {
@@ -308,11 +308,17 @@ local.addDiamond = function(diamond,uid,RMB,cb) {
 		})	
 	},
 	function() {
+		var tmpType = ""
+		if(RMB && RMB > 0){
+			tmpType = "充值"
+		}else{
+			tmpType = "后台添加"
+		}
 		//添加钻石
-		Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
+		Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,tmpType,function(flag) {
 			if(flag == true){
 				//记录充值 
-				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})	  
+				Handler.app.rpc.db.remote.updateDiamond(null,diamond,function(flag) {})
 				var info = "     uid : "+uid+"   diamond : "+diamond
 				//记录充值
 				diamondLogger.info(info);
@@ -331,7 +337,7 @@ local.addDiamond = function(diamond,uid,RMB,cb) {
 			}else{
 				cb(false)
 			}
-		})	
+		})
 	}
 	],
 	function(err,result) {
@@ -490,102 +496,102 @@ handler.queryNickName = function(msg,session,next) {
 
 }
 //赠送钻石接口 
-handler.giveDiamond = function(msg,session,next){
-	var target = msg.target
-	var diamond = msg.diamond
-	var uid = session.get("uid")
-	if(!target || typeof(target) != "number" || target < 0){
-		next(null,"没有这个玩家")
-		return 
-	}
-	if(!diamond || typeof(diamond) != "number" || diamond <= 0){
-		next(null,"钻石数量错误")
-		return
-	}
-	if(!uid || uid == target){
-		next(null)
-		return
-	}
-	var limits = 0
-	async.waterfall([
-		function(cb) {
-			//查询权限
-			Handler.app.rpc.db.remote.getValue(null,uid,"limits",function(data){
-				limits = data
-				if(data >= 1){
-					cb()
-				}else{
-					next(null,"未开启赠送权限")
-				}
-			})	
-		},
-		function(cb) {
-			//查询目标是否存在
-			Handler.app.rpc.db.remote.getValue(null,target,"uid",function(data) {
-				if(target === data){
-					//玩家存在
-					cb()
-				}else{
-					//玩家不存在
-					next(null,"该玩家不存在")
-				}
-			})
-		},
-		function(cb){
-			if(limits > 1){
-				cb()
-			}else{
-				//只能赠送给代理旗下用户
-			  	var req=http.request("http://pay.5d8d.com/niu_admin.php/api/userBelongAgent?game_uid="+target+"&agent_uid="+uid,function(res){
-					var temp = ""
-					res.on("data",function(chunk){
-					temp += chunk
-					})
-					res.on("end",function(){
-						temp = JSON.parse(temp)
-						if(temp.flag === true ){
-							cb()
-						}else{
-							next(null,"该用户非您发展，不能赠送")
-						}
-					})
-		  		})
-	  			req.end()				
-			}
-		},
-		function(cb) {
-			//扣除赠送人钻石
-			Handler.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
-				if(flag == true){
-					cb()
-				}else{
-					next(null,{"flag" : false})
-				}
-			})	 			
-		},
-		function(cb) {
-			//增加目标钻石
-			Handler.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
-				if(flag == true){
-					next(null,{"flag" : true})
-					var info = "  giveDiamond    uid : "+uid+"    target : "+target+"  diamond : "+diamond
-					giveDiamondLogger.info(info)
-				}else{
-					//失败则把赠送人钻石加回来
-					Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
-						next(null,{"flag" : false})
-					})
-				}
-			})	 			
-		}
-		],
-		function(err,result) {
-				console.log(err)
-				console.log(result)
-				next(null)
-				return
-	})
-}
+// handler.giveDiamond = function(msg,session,next){
+// 	var target = msg.target
+// 	var diamond = msg.diamond
+// 	var uid = session.get("uid")
+// 	if(!target || typeof(target) != "number" || target < 0){
+// 		next(null,"没有这个玩家")
+// 		return 
+// 	}
+// 	if(!diamond || typeof(diamond) != "number" || diamond <= 0){
+// 		next(null,"钻石数量错误")
+// 		return
+// 	}
+// 	if(!uid || uid == target){
+// 		next(null)
+// 		return
+// 	}
+// 	var limits = 0
+// 	async.waterfall([
+// 		function(cb) {
+// 			//查询权限
+// 			Handler.app.rpc.db.remote.getValue(null,uid,"limits",function(data){
+// 				limits = data
+// 				if(data >= 1){
+// 					cb()
+// 				}else{
+// 					next(null,"未开启赠送权限")
+// 				}
+// 			})	
+// 		},
+// 		function(cb) {
+// 			//查询目标是否存在
+// 			Handler.app.rpc.db.remote.getValue(null,target,"uid",function(data) {
+// 				if(target === data){
+// 					//玩家存在
+// 					cb()
+// 				}else{
+// 					//玩家不存在
+// 					next(null,"该玩家不存在")
+// 				}
+// 			})
+// 		},
+// 		function(cb){
+// 			if(limits > 1){
+// 				cb()
+// 			}else{
+// 				//只能赠送给代理旗下用户
+// 			  	var req=http.request("http://pay.5d8d.com/niu_admin.php/api/userBelongAgent?game_uid="+target+"&agent_uid="+uid,function(res){
+// 					var temp = ""
+// 					res.on("data",function(chunk){
+// 					temp += chunk
+// 					})
+// 					res.on("end",function(){
+// 						temp = JSON.parse(temp)
+// 						if(temp.flag === true ){
+// 							cb()
+// 						}else{
+// 							next(null,"该用户非您发展，不能赠送")
+// 						}
+// 					})
+// 		  		})
+// 	  			req.end()				
+// 			}
+// 		},
+// 		function(cb) {
+// 			//扣除赠送人钻石
+// 			Handler.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
+// 				if(flag == true){
+// 					cb()
+// 				}else{
+// 					next(null,{"flag" : false})
+// 				}
+// 			})	 			
+// 		},
+// 		function(cb) {
+// 			//增加目标钻石
+// 			Handler.app.rpc.db.remote.setValue(null,target,"diamond",diamond,function(flag) {
+// 				if(flag == true){
+// 					next(null,{"flag" : true})
+// 					var info = "  giveDiamond    uid : "+uid+"    target : "+target+"  diamond : "+diamond
+// 					giveDiamondLogger.info(info)
+// 				}else{
+// 					//失败则把赠送人钻石加回来
+// 					Handler.app.rpc.db.remote.setValue(null,uid,"diamond",diamond,function(flag) {
+// 						next(null,{"flag" : false})
+// 					})
+// 				}
+// 			})	 			
+// 		}
+// 		],
+// 		function(err,result) {
+// 				console.log(err)
+// 				console.log(result)
+// 				next(null)
+// 				return
+// 	})
+// }
 
 
 

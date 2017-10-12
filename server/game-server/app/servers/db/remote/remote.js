@@ -1,6 +1,7 @@
 var httpConf = require("../../../conf/httpModule.js")
 var signInConf = require("../../../conf/signIn.js")
-
+var goldRecordLogger = require("pomelo-logger").getLogger("goldRecord-log")
+var diamondRecordLogger = require("pomelo-logger").getLogger("diamondRecord-log")
 
 module.exports = function(app) {
 	return new DBRemote(app);
@@ -253,16 +254,18 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 }
 
 
-DBRemote.prototype.setValue = function(uid,name,value,cb) {
-
+DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
 	oldValue = parseInt(value)
 	if(!oldValue){
-		oldValue = 0
+		cb(false)
+		return
 	}
 	var cmd = "nn:acc:"+uid+":"+name
 	DBRemote.dbService.db.incrby(cmd,oldValue,function(err,value) {
 		if(err){
 			console.log(err)
+			cb(false)
+			return
 		}
 		console.log(value)
 		if(value < 0){
@@ -278,9 +281,10 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 					"cmd" : "updateDiamond",
 					"data" : value
 				}
-				DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})		
+				DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+				diamondRecordLogger.info("   "+uid + " change : "+oldValue + " now : "+value + "  type : "+type)
 				//通知后台
-				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","diamond")	
+				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","diamond",type)
 			break
 			case "gold":
 				//通知金币更新
@@ -300,8 +304,9 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 			  		}
 			  		data.dayGoldValue += oldValue
 			  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
+			  		goldRecordLogger.info("   "+uid + " change : "+oldValue + " now : "+value + "  type : "+type)
 					//通知后台
-					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold")	
+					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold",type)	
 				})
 			break
 			case "charm" :
@@ -326,79 +331,7 @@ DBRemote.prototype.setValue = function(uid,name,value,cb) {
 				})
 			break
 		}
-	})
-	DBRemote.dbService.getPlayer(uid,name,function(data) {
-		if(data != null){
-			//console.log("data : "+data)
-			//console.log('value :'+value)
-			var oldValue = parseInt(value)
-			value = parseInt(data) + oldValue
-			//console.log('value :'+value)
-			if(value < 0){
-				value = 0
-			}
-			DBRemote.dbService.setPlayer(uid,name,value,cb)
-
-			switch(name){
-				case "diamond":
-					//通知钻石更新
-					var notify = {
-						"cmd" : "updateDiamond",
-						"data" : value
-					}
-					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})		
-					//通知后台
-					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","diamond")	
-				break
-				case "gold":
-					//通知金币更新
-					var notify = {
-						"cmd" : "updateGold",
-						"data" : value
-					}
-					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
-					//每日金币输赢更新
-					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
-						//console.log(data)
-				  		var dateString = local.getDateString()
-				  		//隔日更新refreshList
-				  		if(data.dayGoldTime !== dateString){
-				  			data.dayGoldValue = 0
-				  			data.dayGoldTime = dateString
-				  		}
-				  		data.dayGoldValue += oldValue
-				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
-						//通知后台
-						httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold")	
-					})
-				break
-				case "charm" :
-					//通知魅力值更新
-					var notify = {
-						"cmd" : "updateCharm",
-						"data" : value
-					}
-					DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
-					//每日魅力值更新
-					DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
-						//console.log(data)
-				  		var myDate = new Date()
-				  		var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-				  		//隔日更新refreshList
-				  		if(data.charmTime !== dateString){
-				  			data.charmValue = 0
-				  			data.charmTime = dateString
-				  		}
-				  		data.charmValue += oldValue
-				  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
-					})
-				break
-			}
-		}else{
-			if(cb){
-				cb(false)
-			}
-		}
+		cb(true)
 	})
 }
 

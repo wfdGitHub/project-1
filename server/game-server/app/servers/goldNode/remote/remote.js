@@ -199,7 +199,7 @@ local.lotto = function(uid,roomId,cb) {
   			if(rand < curWeight){
   				//领取奖励
   				if(lottoConf[i].type){
-  					GameRemote.app.rpc.db.remote.setValue(null,uid,lottoConf[i].type,lottoConf[i].value,function(){})
+  					GameRemote.app.rpc.db.remote.setValue(null,uid,lottoConf[i].type,lottoConf[i].value,"抽奖",function(){})
   					if(room.currencyType == lottoConf[i].type){
   						player[chair].score += lottoConf[i].value
   					}
@@ -221,54 +221,54 @@ local.lotto = function(uid,roomId,cb) {
 	}
 }
 //赠送道具
-local.give = function(uid,targetChair,roomId,giveId,cb) {
-	//console.log(targetChair)
-	var room = GameRemote.roomList[roomId]
-	var chair = room.chairMap[uid]
-	var player = room.getPlayer()
-	if(chair === undefined || targetChair > 5 || targetChair < 0 || !player[targetChair].isActive || chair === targetChair){
-		cb(false)
-		return
-	}
-	var targetUid = player[targetChair].uid
-	if(!giveCfg[giveId]){
-		cb(false)
-		return
-	}
-	//扣除赠送者钻石
-	GameRemote.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
-		//console.log("diamond ： "+data)
-		var needDiamond = giveCfg[giveId].needDiamond
-		if(data && data >= needDiamond){
-			GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
-				//增加目标金币及魅力值
-				var gold = giveCfg[giveId].gold
-				var charm = giveCfg[giveId].charm
-				if(!player[targetChair].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
-						GameRemote.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
-					})
-				}
-				player[targetChair].score += gold
-				player[targetChair].charm += charm
-				//今日魅力值更新
-				player[targetChair].playerInfo.refreshList.charmValue += charm
-				var notify = {
-					"cmd" : "give",
-					"chair" : chair,
-					"targetChair" : targetChair,
-					"giveId" : giveId,
-					"gold" : gold,
-					"dayCharm" : player[targetChair].playerInfo.refreshList.charmValue
-				}
-				room.sendAll(notify)
-			})
-			cb(true)
-		}else{
-			cb(false)
-		}
-	})
-}
+// local.give = function(uid,targetChair,roomId,giveId,cb) {
+// 	//console.log(targetChair)
+// 	var room = GameRemote.roomList[roomId]
+// 	var chair = room.chairMap[uid]
+// 	var player = room.getPlayer()
+// 	if(chair === undefined || targetChair > 5 || targetChair < 0 || !player[targetChair].isActive || chair === targetChair){
+// 		cb(false)
+// 		return
+// 	}
+// 	var targetUid = player[targetChair].uid
+// 	if(!giveCfg[giveId]){
+// 		cb(false)
+// 		return
+// 	}
+// 	//扣除赠送者钻石
+// 	GameRemote.app.rpc.db.remote.getValue(null,uid,"diamond",function(data) {
+// 		//console.log("diamond ： "+data)
+// 		var needDiamond = giveCfg[giveId].needDiamond
+// 		if(data && data >= needDiamond){
+// 			GameRemote.app.rpc.db.remote.setValue(null,uid,"diamond",-needDiamond,function() {
+// 				//增加目标金币及魅力值
+// 				var gold = giveCfg[giveId].gold
+// 				var charm = giveCfg[giveId].charm
+// 				if(!player[targetChair].isRobot){
+// 					GameRemote.app.rpc.db.remote.setValue(null,targetUid,"gold",gold,function(){
+// 						GameRemote.app.rpc.db.remote.setValue(null,targetUid,"charm",charm,function(){})
+// 					})
+// 				}
+// 				player[targetChair].score += gold
+// 				player[targetChair].charm += charm
+// 				//今日魅力值更新
+// 				player[targetChair].playerInfo.refreshList.charmValue += charm
+// 				var notify = {
+// 					"cmd" : "give",
+// 					"chair" : chair,
+// 					"targetChair" : targetChair,
+// 					"giveId" : giveId,
+// 					"gold" : gold,
+// 					"dayCharm" : player[targetChair].playerInfo.refreshList.charmValue
+// 				}
+// 				room.sendAll(notify)
+// 			})
+// 			cb(true)
+// 		}else{
+// 			cb(false)
+// 		}
+// 	})
+// }
 //房间超时回调
 var finishGameOfTimer = function(index) {
 	return function() {
@@ -298,7 +298,7 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 			if(player[index].isActive){
 				player[index].score -= tmpRate
 				if(!player[index].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,function(){})
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"手续费",function(){})
 					//代理抽水
 					// console.log(player[index].playerInfo)
 					var agencyId = player[index].playerInfo.agencyId
@@ -332,7 +332,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		if(curScores.hasOwnProperty(index)){
 			if(curScores){
 				if(player[index].isActive && !player[index].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],function(){})				
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],"游戏结算",function(){})				
 				}
 			}
 		}

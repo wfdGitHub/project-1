@@ -130,13 +130,14 @@ module.exports.sendLoginHttp = function(notify) {
   })
 }
 
-module.exports.sendDiamondHttp = function(uid,coin,diamond,type,genre) {
+module.exports.sendDiamondHttp = function(uid,coin,diamond,type,genre,source) {
   var data = {
     "game_uid" : uid,
     "coin" : coin,
     "diamond" : diamond,
     "type" : type,
-    "genre" : genre
+    "genre" : genre,
+    "source" : source
   }
   var keys = Object.keys(data).sort()
   var string = ""

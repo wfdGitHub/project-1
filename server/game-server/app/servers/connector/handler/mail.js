@@ -55,7 +55,7 @@ handler.gainAffix = function(msg,session,next) {
 						//设置邮件
 						self.app.rpc.db.remote.setPlayerObject(session,uid,"mailList",data,function(flag) {
 							//获取奖励
-							self.app.rpc.db.remote.setValue(session,uid,affix.type,affix.value,function(flag) {
+							self.app.rpc.db.remote.setValue(session,uid,affix.type,affix.value,"邮件获取",function(flag) {
 								if(flag){
 									next(null,{flag : true,affix : affix})
 								}
