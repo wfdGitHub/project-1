@@ -293,7 +293,7 @@ handler.give = function(msg,session,next) {
 			},
 			function(cb) {
 				//扣除赠送者金币
-				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,"赠送给"+uid,function() {
+				self.app.rpc.db.remote.setValue(null,uid,"gold",-gold,"赠送给"+targetUid,function() {
 					//增加目标金币及魅力值
 					cb()
 				})
