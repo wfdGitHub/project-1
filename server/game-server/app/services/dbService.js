@@ -114,7 +114,7 @@ local.changeRanklist = function(players) {
 			//若玩家金币大于总金币榜中最低值则加入榜单
 			players[i].gold = parseInt(players[i].gold)
 			var minGold = goldAllRanklist.length > 0 ? goldAllRanklist[goldAllRanklist.length-1].gold : 0
-			if( (goldAllRanklist.length < 20 || players[i].gold > minGold) && players[i].gold > 0){
+			if( (goldAllRanklist.length < 3 || players[i].gold > minGold) && players[i].gold > 0){
 				var data = {}
 				data.uid = players[i].uid
 				data.nickname = players[i].nickname
@@ -160,7 +160,7 @@ local.changeRanklist = function(players) {
 			players[i].refreshList.dayGoldValue = parseInt(players[i].refreshList.dayGoldValue)
 			//console.log("gold : "+players[i].refreshList.dayGoldValue)
 			var minGold = goldDayRanklist.length > 0 ? goldDayRanklist[goldDayRanklist.length-1].gold : 0
-			if( (goldDayRanklist.length < 20 || players[i].refreshList.dayGoldValue > minGold) && players[i].refreshList.dayGoldValue > 0){
+			if( (goldDayRanklist.length < 3 || players[i].refreshList.dayGoldValue > minGold) && players[i].refreshList.dayGoldValue > 0){
 				var data = {}
 				data.uid = players[i].uid
 				data.nickname = players[i].nickname
@@ -173,15 +173,15 @@ local.changeRanklist = function(players) {
 					for(var index = goldDayRanklist.length - 1; index >= 0;index--){
 						if(goldDayRanklist[index].gold > players[i].refreshList.dayGoldValue){
 							goldDayRanklist.splice(index + 1,0,data)
-							if(goldDayRanklist.length >= 20){
-								goldDayRanklist.splice(20,1)
+							if(goldDayRanklist.length >= 3){
+								goldDayRanklist.splice(3,1)
 							}
 							break
 						}
 						if(index == 0){
 							goldDayRanklist.splice(0,0,data)
-							if(goldDayRanklist.length >= 20){
-								goldDayRanklist.splice(20,1)
+							if(goldDayRanklist.length >= 3){
+								goldDayRanklist.splice(3,1)
 							}
 						}
 					}				
