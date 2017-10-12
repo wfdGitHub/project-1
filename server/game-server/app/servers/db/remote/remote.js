@@ -203,7 +203,15 @@ DBRemote.prototype.loginCB = function(uid,cb) {
       cb(data)
   })
 }
-
+DBRemote.prototype.getRobotControl = function(cb) {
+	DBRemote.dbService.db.get("nn:robotContorl",function(err,data) {
+		if(data){
+			cb(JSON.parse(data))
+		}else{
+			cb(false)
+		}
+	})
+}
 DBRemote.prototype.getPlayerString = function(uid,name,cb) {
 	DBRemote.dbService.getPlayerString(uid,name,function(data){
 		cb(data)
@@ -306,7 +314,7 @@ DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
 			  		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){})
 			  		goldRecordLogger.info("   "+uid + " change : "+oldValue + " now : "+value + "  type : "+type)
 					//通知后台
-					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold",type)	
+					httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","gold",type)
 				})
 			break
 			case "charm" :

@@ -19,7 +19,7 @@ var gameType = {
 	"goldNiuNiu-4-gold" : 1000,
 	"goldNiuNiu-5-gold" : 5000
 }
-manager.getRobotInfo = function(type,uid,cb) {
+manager.getRobotInfo = function(type,uid,GameRemote,cb) {
 	if(!robotData[uid]){
 		return
 	}
@@ -44,23 +44,6 @@ manager.getRobotInfo = function(type,uid,cb) {
 	data.isRobot = true
 	data.charm = 0
 	data.contorl = 0.5
-	switch(gameType[type]){
-		case 10 :
-			data.contorl = 0.05
-		break
-		case 50 :
-			data.contorl = 0.1
-		break
-		case 100 :
-			data.contorl = 0.15
-		break
-		case 1000 :
-			data.contorl = 0.2
-		break
-		case 5000 : 
-			data.contorl = 0.25
-		break
-	}
 	data.signature = "玩家很懒什么都没有留下"
 	var refreshList = {}
 	refreshList.lottoTime = 0 					//抽奖
@@ -73,7 +56,13 @@ manager.getRobotInfo = function(type,uid,cb) {
 	refreshList.charmValue = 0
 	data.refreshList = refreshList
     robotState[uid] = false
-    cb(data,type)
+    //获取机器人控制率
+    GameRemote.app.rpc.db.remote.getRobotControl(null,function(control) {
+    	if(control){
+    		data.contorl = control[type]
+    	}
+    	cb(data,type)
+    })
 }
 
 manager.getUnusedRobot = function() {

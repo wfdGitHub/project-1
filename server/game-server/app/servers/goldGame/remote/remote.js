@@ -381,39 +381,44 @@ local.matching = function(){
 					//匹配成功的玩家开始匹配
 					local.createRoom(type)
 				}else{
-					//加一个机器人到队列中
-					var robotId = robotManager.getUnusedRobot()
-					if(robotId && Math.random() < 0.4){
-						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)
-						})
+					//高级场不添加机器人
+					if(gameType[type] <= 100){
+						//加一个机器人到队列中
+						var robotId = robotManager.getUnusedRobot()
+						if(robotId && Math.random() < 0.4){
+							robotManager.getRobotInfo(type,robotId,GameRemote,function(robotData,robotType) {
+								var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+								local.robotJoinMatch(robotData.uid,params,robotData)
+							})
+						}						
 					}
 				}
 			}
-			//给空闲房间动态添加机器人
-			for(var i = 0;i < tmpRoomList.length; i++){
-				var roomId = tmpRoomList[i]
-				var playerCount = GameRemote.RoomMap[roomId].length
-				// console.log("roomId : " + roomId)
-				// console.log("playerCount : " + playerCount)
-				var tmpFlag = false
-				var rand = Math.random()
-				if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
-					tmpFlag = true
-				}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
-					tmpFlag = true
-				}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
-					tmpFlag = true
-				}
-				if(tmpFlag){
-					var robotId = robotManager.getUnusedRobot()
-					if(robotId){
-						robotManager.getRobotInfo(type,robotId,function(robotData,robotType) {
-							var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
-							local.robotJoinMatch(robotData.uid,params,robotData)
-						})
-					}					
+			if(gameType[type] <= 100){
+				//给空闲房间动态添加机器人
+				for(var i = 0;i < tmpRoomList.length; i++){
+					var roomId = tmpRoomList[i]
+					var playerCount = GameRemote.RoomMap[roomId].length
+					// console.log("roomId : " + roomId)
+					// console.log("playerCount : " + playerCount)
+					var tmpFlag = false
+					var rand = Math.random()
+					if(playerCount < ROOMPLAYERNUM - 2 && rand < 0.2){
+						tmpFlag = true
+					}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
+						tmpFlag = true
+					}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
+						tmpFlag = true
+					}
+					if(tmpFlag){
+						var robotId = robotManager.getUnusedRobot()
+						if(robotId){
+							robotManager.getRobotInfo(type,robotId,GameRemote,function(robotData,robotType) {
+								var params = {"gameType" : robotType,"ip" : "0.0.0.0"}
+								local.robotJoinMatch(robotData.uid,params,robotData)
+							})
+						}					
+					}
 				}
 			}
 		}
