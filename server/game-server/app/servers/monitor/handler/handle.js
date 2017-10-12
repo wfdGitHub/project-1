@@ -30,6 +30,7 @@ var Handler = function(app) {
 			req.addListener("end", function () {
 				var data=JSON.parse(postData);
                 console.log(data)
+				managerLogger.info("begin : "+JSON.stringify(data))
 				switch(data.cmd){
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,data.RMB,function(flag) {
