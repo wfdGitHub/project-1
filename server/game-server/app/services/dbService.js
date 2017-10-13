@@ -1,8 +1,4 @@
-var redis = require("redis")
-var RDS_PORT = 6379           
-var RDS_HOST = "127.0.0.1"
-var RDS_PWD = "MyRedis2017"
-var RDS_OPTS = {}
+var dbConfig = require("./dbConfig")
 
 module.exports = function(app) {
   return new dbService(app);
@@ -16,55 +12,8 @@ var goldAllRanklist = []
 var goldDayRanklist = []
 
 dbService.prototype.start = function(cb){
-	var db = redis.createClient(RDS_PORT,RDS_HOST,RDS_OPTS)
-	this.app.set("dbService",dbService)
-	db.on("ready",function(res) {
-		db.select("2",function(err) {
-			if(err){
-				console.log(err)
-			}
-			dbService.db = db
-			//数据库初始配置
-			dbService.db.get("nn:acc:lastid",function(err,data) {
-				if(data === null){
-			        console.log("\033[33m[INFO] DataBase check - nn:acc:lastid\033[0m");
-			        db.set("nn:acc:lastid",10000);
-	    		}
-			})
-			dbService.db.get("nn:acc:addDiamond",function(err,data) {
-				if(data === null){
-			        console.log("\033[33m[INFO] DataBase check - nn:acc:addDiamond\033[0m");
-			        db.set("nn:acc:addDiamond",0);
-	    		}
-			})
-			dbService.db.get("nn:notifys",function(err,data) {
-				if(data === null){
-			        console.log("\033[33m[INFO] DataBase check - nn:notifys\033[0m");
-			        var notify = {"1" : {"name" : "","content" : ""}}
-			        db.set("nn:notifys",JSON.stringify(notify));
-	    		}
-			})
-			dbService.db.get("nn:robotContorl",function(err,data) {
-				if(err || data == null){
-			        console.log("\033[33m[INFO] DataBase check - nn:robotContorl\033[0m");
-					var notify = {
-						"goldMingpai-1-gold" : 0.05,
-						"goldMingpai-2-gold" : 0.1,
-						"goldMingpai-3-gold" : 0.2,
-						"goldMingpai-4-gold" : 0.25,
-						"goldMingpai-5-gold" : 0.35,
-						"goldNiuNiu-1-gold" : 0.05,
-						"goldNiuNiu-2-gold" : 0.1,
-						"goldNiuNiu-3-gold" : 0.2,
-						"goldNiuNiu-4-gold" : 0.25,
-						"goldNiuNiu-5-gold" : 0.35
-					}
-			        db.set("nn:robotContorl",JSON.stringify(notify));					
-				}
-			})
-			refreshTime = setTimeout(local.refreshRanklist,30 * 1000)
-		})
-	})	
+    dbConfig.start(dbService)
+    this.app.set("dbService",dbService)
 	cb()
 }
 
