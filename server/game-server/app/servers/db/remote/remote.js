@@ -205,7 +205,7 @@ DBRemote.prototype.loginCB = function(uid,cb) {
 }
 DBRemote.prototype.getRobotControl = function(type,cb) {
 	dbService.db.hget("nn:robotContorl",type,function(err,data) {
-		console.log("control　:　"data)
+		console.log("control　:　"+data)
 		cb(data)
 	})
 }
