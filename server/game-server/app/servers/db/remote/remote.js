@@ -263,7 +263,7 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 
 
 DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
-	oldValue = parseInt(value)
+	var oldValue = parseInt(value)
 	if(!oldValue){
 		cb(false)
 		return
