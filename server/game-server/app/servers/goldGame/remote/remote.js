@@ -503,7 +503,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 					cb(false,{"msg" : tips.NO_GOLD})
 					return
 				}
-				if(gameType[type] !== 5000 && data.gold > gameType[type] * 1000){
+				if(gameType[type] !== 5000 && data.gold > gameType[type] * 4000){
 					cb(false,{"msg" : tips.MORE_GOLD})
 					return
 				}				
@@ -512,7 +512,7 @@ local.joinMatch = function(uid,sid,params,cb) {
 					cb(false,{"msg" : tips.NO_DIAMOND})
 					return
 				}
-				if(gameType[type]!== 5000 && data.diamond > gameType[type] * 1000){
+				if(gameType[type]!== 5000 && data.diamond > gameType[type] * 4000){
 					cb(false,{"msg" : tips.MORE_DIAMOND})
 					return
 				}
