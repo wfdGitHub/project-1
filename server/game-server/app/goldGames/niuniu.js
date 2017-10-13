@@ -430,16 +430,16 @@ var betType = {
         var tmpContorlValue = 0
         switch(room.rate){
           case 10 :
-            tmpContorlValue = 0.05
+            tmpContorlValue = -0.1
           break
           case 50 :
-            tmpContorlValue = 0.1
+            tmpContorlValue = -0.1
           break
           case 100 :
-            tmpContorlValue = 0.15
+            tmpContorlValue = 0.1
           break
           case 1000 :
-            tmpContorlValue = 0.2
+            tmpContorlValue = 0.15
           break
         }
         if(tmpContorlValue){
