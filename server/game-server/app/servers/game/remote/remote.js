@@ -326,7 +326,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	                            "maxBet" : params.maxBet,
 	                            "maxRound" : params.maxRound,
 	                            "stuffyRound" : params.stuffyRound,
-	                            "beginTime" : (new Date()).valueOf()
+	                            "beginTime" : (new Date()).valueOf(),
+	                            "playerNumber" : params.playerNumber
 	                        }
 	                        GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
 	                        GameRemote.GameService.RoomMap[roomId] = []
