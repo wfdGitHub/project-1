@@ -203,18 +203,15 @@ DBRemote.prototype.loginCB = function(uid,cb) {
       cb(data)
   })
 }
-DBRemote.prototype.getRobotControl = function(cb) {
-	DBRemote.dbService.db.get("nn:robotContorl",function(err,data) {
-		if(data){
-			cb(JSON.parse(data))
-		}else{
-			cb(false)
-		}
+DBRemote.prototype.getRobotControl = function(type,cb) {
+	dbService.db.hget("nn:robotContorl",type,function(err,data) {
+		console.log("control　:　"data)
+		cb(data)
 	})
 }
 DBRemote.prototype.getPlayerString = function(uid,name,cb) {
 	DBRemote.dbService.getPlayerString(uid,name,function(data){
-		cb(data)
+		cb(parseInt(data))
 	})
 }
 

@@ -14,6 +14,7 @@ var goldDayRanklist = []
 dbService.prototype.start = function(cb){
     dbConfig.start(dbService)
     this.app.set("dbService",dbService)
+    refreshTime = setTimeout(local.refreshRanklist,30 * 1000)
 	cb()
 }
 

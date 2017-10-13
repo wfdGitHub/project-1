@@ -43,7 +43,7 @@ manager.getRobotInfo = function(type,uid,GameRemote,cb) {
 	data.diamond = data.gold
 	data.isRobot = true
 	data.charm = 0
-	data.contorl = 0.5
+	data.contorl = 0
 	data.signature = "玩家很懒什么都没有留下"
 	var refreshList = {}
 	refreshList.lottoTime = 0 					//抽奖
@@ -57,9 +57,9 @@ manager.getRobotInfo = function(type,uid,GameRemote,cb) {
 	data.refreshList = refreshList
     robotState[uid] = false
     //获取机器人控制率
-    GameRemote.app.rpc.db.remote.getRobotControl(null,function(control) {
-    	if(control){
-    		data.contorl = control[type]
+    GameRemote.app.rpc.db.remote.getRobotControl(null,type,function(control) {
+    	if(!control){
+    		data.contorl = control
     	}
     	cb(data,type)
     })
