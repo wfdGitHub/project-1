@@ -48,7 +48,10 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				var flag = false
 				result = logic.getType(robot.player.handCard)
 				if(result.type >= 8){
-					flag = true
+					var rand = Math.random()
+					if(rand < 0.7){
+						flag = true
+					}					
 				}else if(result.type >= 5){
 					var rand = Math.random()
 					if(rand < 0.3){
