@@ -47,7 +47,7 @@ local.sendRedOnce = function(agencyId) {
 					//邮件信息
 					var mailInfo = {
 						"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
-						"title" : "代理分红奖励发放",
+						"title" : "推广员分红奖励发放",
 						"content" : "",
 						"time" : new Date().getTime(),
 						"addresser" : "系统管理员",
