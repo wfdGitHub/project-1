@@ -394,6 +394,8 @@ local.gemeOver = function(roomId,players,type) {
 			delete GameRemote.userMap[players[i].uid]
 		}
 	}
+	var info = "gemeOver   gold Room finish   roomId  : "+ roomId
+	goldLogger.info(info)
 	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,type,function(){})
 	GameRemote.roomList[roomId].gameOver()
 	GameRemote.roomList[roomId] = false
