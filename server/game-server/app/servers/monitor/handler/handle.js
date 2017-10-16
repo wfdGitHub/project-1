@@ -224,7 +224,15 @@ local.bindAgency = function(uid,agencyId,cb) {
 		function() {
 			//绑定代理
 			Handler.app.rpc.db.remote.changeValue(null,uid,"agencyId",agencyId,function() {
-				console.log("33333333")
+				//绑定代理奖励
+				var mailInfo = {
+					"title" : "恭喜您获得一个新手体验礼包！",
+					"content" : "2000金币",
+					"affix" : {"type" : "gold","value" : 2000}
+				}
+				Handler.app.rpc.db.remote.sendMail(null,uid,mailInfo.title,mailInfo.content,mailInfo.affix,"系统管理员",0,function() {
+					cb(true)
+				})				
 				cb(true)
 			})
 		}
