@@ -85,7 +85,7 @@ GameRemote.prototype.createRoom = function(params,uids,sids,infos,rate,roomId,cb
 			}
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
-			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),5 * 60 * 1000)
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),15 * 60 * 1000)
 			cb(true,uids,roomId)
 		}else{
 			delete GameRemote.roomList[roomId]
