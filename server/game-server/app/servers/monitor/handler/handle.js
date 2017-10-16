@@ -230,9 +230,7 @@ local.bindAgency = function(uid,agencyId,cb) {
 					"content" : "2000金币",
 					"affix" : {"type" : "gold","value" : 2000}
 				}
-				Handler.app.rpc.db.remote.sendMail(null,uid,mailInfo.title,mailInfo.content,mailInfo.affix,"系统管理员",0,function() {
-					cb(true)
-				})				
+				Handler.app.rpc.db.remote.sendMail(null,uid,mailInfo.title,mailInfo.content,mailInfo.affix,"系统管理员",0,function() {})	
 				cb(true)
 			})
 		}
