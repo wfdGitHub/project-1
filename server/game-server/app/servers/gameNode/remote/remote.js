@@ -279,9 +279,14 @@ var gemeOver = function(roomId,players,flag,cb) {
 	}else{
 		//代开房未开始则返回钻石
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
-			var tmpDiamond = Math.floor(maxGameNumber/10) * 3
+			var tmpDiamond = Math.floor(maxGameNumber / 10)
+			if(GameRemote.roomList[roomId].GAME_PLAYER == 9){
+				tmpDiamond = tmpDiamond * 2
+			}
 			if(GameRemote.roomList[roomId].roomType == "zhajinhua"){
-				tmpDiamond = Math.floor(maxGameNumber/10) * 5
+				tmpDiamond = tmpDiamond * 5
+			}else{
+				tmpDiamond = tmpDiamond * 3
 			}
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
