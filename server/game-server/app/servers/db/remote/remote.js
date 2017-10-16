@@ -109,32 +109,35 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 }
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
-	DBRemote.dbService.getPlayer(uid,name,function(data) {
-		if(data != null){
-			//console.log("data : "+data)
-			//console.log('value :'+value)
-			var oldValue = value
-			value = parseInt(data) + parseInt(value)
-			//console.log('value :'+value)
-			if(value < 0){
-				value = 0
-			}
-			DBRemote.dbService.setPlayer(uid,name,value,cb)
-			if(name === "diamond"){
-				//通知钻石更新
-				var notify = {
-					"cmd" : "updateDiamond",
-					"data" : value
-				}
-				DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})		
-				//通知后台
-				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")				
-			}
-		}else{
-			if(cb){
-				cb(false)
-			}
+	var cmd = "nn:acc:"+uid+":"+name
+	var oldValue = parseInt(value)
+	if(!oldValue){
+		cb(false)
+		return
+	}	
+	DBRemote.dbService.db.incrby(cmd,oldValue,function(err,value) {
+		if(err){
+			console.log(err)
+			cb(false)
+			return
 		}
+		if(value < 0){
+			//小于0归0
+			console.log("error set db value < 0")
+			value = 0
+			DBRemote.dbService.db.set(cmd,0)
+		}
+		cb(true)
+		if(name === "diamond"){
+			//通知钻石更新
+			var notify = {
+				"cmd" : "updateDiamond",
+				"data" : value
+			}
+			DBRemote.app.rpc.game.remote.sendByUid(null,uid,notify,function(){})		
+			//通知后台
+			httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec")				
+		}						
 	})
 }
 
