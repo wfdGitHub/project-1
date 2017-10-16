@@ -21,7 +21,7 @@ remote.createRedPacket = function(uid,value,cb) {
 	}
 	var self = this
 	//验证扣除钻石
-	self.app.rpc.db.remote.getPlayerInfo(null,uid,function(data){
+	self.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data){
 		if(data && data.diamond >= value){
 			self.app.rpc.db.remote.setValue(null,uid,"diamond",-value,function(flag){
 				if(flag){
