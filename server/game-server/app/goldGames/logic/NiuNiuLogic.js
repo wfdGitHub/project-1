@@ -134,6 +134,7 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
   tmpResult = module.exports.getType(handCard)
   if(flag == true){
     //换好牌
+    console.log("换好牌")
     var value = 6
     var tmpRand = Math.random()
     var times = 10
@@ -175,14 +176,15 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
     }
   }else{
     //换差牌
-    var value = 4
+    console.log("换差牌")
+    var value = 2
     var tmpRand = Math.random()
-    var times = 5
+    var times = 10
     if(tmpRand < 0.4){
-      value = 3
+      value = 1
       times = 10
     }else if(tmpRand < 0.1){
-      value = 2
+      value = 0
       times = 15
     }
     if(tmpResult.type > value){

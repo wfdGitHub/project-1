@@ -314,224 +314,235 @@ var betType = {
     //游戏开始
     local.gameBegin = function() {
       log("gameBegin")
-      gameBeginCB(room.roomId,player,room.rate,room.currencyType)
-      gameState = conf.GS_GAMEING     
-      if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
-        if(banker !== -1){
-          //重置庄家信息
-          for(var i = 0;i < GAME_PLAYER;i++){
-              betList[i] = 0;
-              player[i].isBanker = false
+      gameBeginCB(room.roomId,player,room.rate,room.currencyType,
+      function(inventory) {
+        gameState = conf.GS_GAMEING
+        if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
+          if(banker !== -1){
+            //重置庄家信息
+            for(var i = 0;i < GAME_PLAYER;i++){
+                betList[i] = 0;
+                player[i].isBanker = false
+            }
+            //console.log("banker : "+banker)
+            player[banker].isBanker = true
           }
-          //console.log("banker : "+banker)
-          player[banker].isBanker = true
         }
-      }
-      room.gameNumber--
-      room.maxRob = 1
-      //重置下注信息
-      for(var i = 0;i < GAME_PLAYER;i++){
-        if(player[i].isReady){
-            betList[i] = 0
-            player[i].isShowCard = false
-          }
-      }
-      betAmount = 0
-      //增加大牌概率，当牌型权重较低时重新洗牌
-      var randTimes = 0
-      var index = 0;
-      //换一副新牌
-      cards = {}                       //牌组
-      cardCount = 0                    //卡牌剩余数量
-      for(var i = 1;i <= 13;i++){
-        for(var j = 0;j < 4;j++){
-          cards[cardCount++] = {num : i,type : j}
-        }
-      }
-      do{
-        randTimes++
-        //洗牌
-        for(var i = 0;i < cardCount;i++){
-          var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
-          var tmpCard = cards[i]
-          cards[i] = cards[tmpIndex]
-          cards[tmpIndex] = tmpCard
-        }
-        //发牌
-        var tmpResult = {}
-        index = 0
-        var tmpAllCount = 0     //总玩家数
-        var tmpTypeCount = 0    //牌型权重 
-
+        room.gameNumber--
+        room.maxRob = 1
+        //重置下注信息
         for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
-              for(var j = 0;j < 5;j++){
-                player[i].handCard[j] = cards[index++];
-              }
-              tmpAllCount++
-              tmpResult[i] = logic.getType(player[i].handCard)
-              tmpTypeCount += conf.typeWeight[tmpResult[i].type]
+          if(player[i].isReady){
+              betList[i] = 0
+              player[i].isShowCard = false
             }
         }
-        var dealFlag = false
-        //判断是否重新洗牌
-        if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
-            dealFlag = true
+        betAmount = 0
+        //增加大牌概率，当牌型权重较低时重新洗牌
+        var randTimes = 0
+        var index = 0;
+        //换一副新牌
+        cards = {}                       //牌组
+        cardCount = 0                    //卡牌剩余数量
+        for(var i = 1;i <= 13;i++){
+          for(var j = 0;j < 4;j++){
+            cards[cardCount++] = {num : i,type : j}
+          }
         }
-      }while(dealFlag && randTimes < conf.ROUND_TIMES)
-      //找出剩余牌
-      // var tmpCards = {}
-      // var tmpCardCount = 0
-      // for(var i = index;i < cardCount;i++){
-      //   tmpCards[tmpCardCount++] = deepCopy(cards[i])
-      // }
-      // //执行控制   
-      // //先计算每个人的运气值   -1 到 1之间     
-      // var luckyValue = {}
-      // var randomMaxScore = 500 + Math.floor(Math.random() * 300)
-      // var randomMinScore = 400 + Math.floor(Math.random() * 200)
-      // for(var i = 0;i < GAME_PLAYER;i++){
-      //     if(player[i].isActive && player[i].isReady){
-      //       if(player[i].score > 100){
-      //           luckyValue[i] = player[i].score / randomMaxScore
-      //       }else if(player[i].score < -100){
-      //           luckyValue[i] = player[i].score / randomMinScore
-      //       }else{
-      //         continue
-      //       }
-      //       if(luckyValue[i] > 1){
-      //         luckyValue[i] = 1
-      //       }else if(luckyValue[i] < -1){
-      //         luckyValue[i] = -1
-      //       }
-      //       luckyValue[i] = luckyValue[i] * 0.6
-      //     }
-      // }
-      // //运气值低的先执行控制 
-      // for(var i = 0;i < GAME_PLAYER;i++){
-      //     if(player[i].isActive && player[i].isReady){
-      //         if(luckyValue[i] < 0){
-      //           if(Math.random() < -luckyValue[i]){
-      //             //换好牌
-      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
-      //           }
-      //         }else if(luckyValue[i] > 0){
-      //           if(Math.random() < luckyValue[i]){
-      //             //换差牌
-      //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
-      //           }
-      //         }
-      //     }
-      // }
-      //找出剩余牌
-      var tmpCards = {}
-      var tmpCardCount = 0
-      for(var i = index;i < cardCount;i++){
-        tmpCards[tmpCardCount++] = deepCopy(cards[i])
-      }
-      //特殊控制
-      var luckyValue = {}      
-      for(var i = 0;i < GAME_PLAYER;i++){
-        if(player[i].isActive && player[i].isReady){
-          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
-              if(!luckyValue[i]){
-                luckyValue[i] = 0
+        do{
+          randTimes++
+          //洗牌
+          for(var i = 0;i < cardCount;i++){
+            var tmpIndex = Math.floor(Math.random() * (cardCount - 0.000001))
+            var tmpCard = cards[i]
+            cards[i] = cards[tmpIndex]
+            cards[tmpIndex] = tmpCard
+          }
+          //发牌
+          var tmpResult = {}
+          index = 0
+          var tmpAllCount = 0     //总玩家数
+          var tmpTypeCount = 0    //牌型权重 
+
+          for(var i = 0;i < GAME_PLAYER;i++){
+              if(player[i].isActive && player[i].isReady){
+                for(var j = 0;j < 5;j++){
+                  player[i].handCard[j] = cards[index++];
+                }
+                tmpAllCount++
+                tmpResult[i] = logic.getType(player[i].handCard)
+                tmpTypeCount += conf.typeWeight[tmpResult[i].type]
               }
-              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
-              luckyValue[i] -= contorlValue
-          }      
+          }
+          var dealFlag = false
+          //判断是否重新洗牌
+          if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
+              dealFlag = true
+          }
+        }while(dealFlag && randTimes < conf.ROUND_TIMES)
+        //找出剩余牌
+        // var tmpCards = {}
+        // var tmpCardCount = 0
+        // for(var i = index;i < cardCount;i++){
+        //   tmpCards[tmpCardCount++] = deepCopy(cards[i])
+        // }
+        // //执行控制   
+        // //先计算每个人的运气值   -1 到 1之间     
+        // var luckyValue = {}
+        // var randomMaxScore = 500 + Math.floor(Math.random() * 300)
+        // var randomMinScore = 400 + Math.floor(Math.random() * 200)
+        // for(var i = 0;i < GAME_PLAYER;i++){
+        //     if(player[i].isActive && player[i].isReady){
+        //       if(player[i].score > 100){
+        //           luckyValue[i] = player[i].score / randomMaxScore
+        //       }else if(player[i].score < -100){
+        //           luckyValue[i] = player[i].score / randomMinScore
+        //       }else{
+        //         continue
+        //       }
+        //       if(luckyValue[i] > 1){
+        //         luckyValue[i] = 1
+        //       }else if(luckyValue[i] < -1){
+        //         luckyValue[i] = -1
+        //       }
+        //       luckyValue[i] = luckyValue[i] * 0.6
+        //     }
+        // }
+        // //运气值低的先执行控制 
+        // for(var i = 0;i < GAME_PLAYER;i++){
+        //     if(player[i].isActive && player[i].isReady){
+        //         if(luckyValue[i] < 0){
+        //           if(Math.random() < -luckyValue[i]){
+        //             //换好牌
+        //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+        //           }
+        //         }else if(luckyValue[i] > 0){
+        //           if(Math.random() < luckyValue[i]){
+        //             //换差牌
+        //               logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+        //           }
+        //         }
+        //     }
+        // }
+        //找出剩余牌
+        var tmpCards = {}
+        var tmpCardCount = 0
+        for(var i = index;i < cardCount;i++){
+          tmpCards[tmpCardCount++] = deepCopy(cards[i])
         }
-      }
-      //匹配房间玩家胜率控制
-      if(!room.initiativeFlag){
-        var tmpContorlValue = 0
-        switch(room.rate){
-          case 10 :
-            tmpContorlValue = -0.1
-          break
-          case 50 :
-            tmpContorlValue = -0.1
-          break
-          case 100 :
-            tmpContorlValue = 0.1
-          break
-          case 1000 :
-            tmpContorlValue = 0.15
-          break
+        //特殊控制
+        var luckyValue = {}      
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+                if(!luckyValue[i]){
+                  luckyValue[i] = 0
+                }
+                var contorlValue = parseFloat(player[i].playerInfo["contorl"])
+                luckyValue[i] -= contorlValue
+            }      
+          }
         }
-        if(tmpContorlValue){
+        //匹配房间玩家胜率控制
+        if(!room.initiativeFlag){
+          var tmpContorlValue = 0
+          switch(room.rate){
+            case 10 :
+              tmpContorlValue = -0.1
+            break
+            case 50 :
+              tmpContorlValue = -0.1
+            break
+            case 100 :
+              tmpContorlValue = 0.1
+            break
+            case 1000 :
+              tmpContorlValue = 0.15
+            break
+          }
+          if(tmpContorlValue){
+            for(var i = 0;i < GAME_PLAYER;i++){
+              if(player[i].isActive && player[i].isReady && !player[i].isRobot){
+                if(!luckyValue[i]){
+                  luckyValue[i] = 0
+                }
+                luckyValue[i] += tmpContorlValue
+              }
+            }
+          }
+        }
+        console.log("=======================")
+        console.log(luckyValue)
+        //运气值低的先执行控制 
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isActive && player[i].isReady && luckyValue[i]){
+                if(luckyValue[i] < 0){
+                  if(Math.random() < -luckyValue[i]){
+                    //换好牌
+                      logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                  }
+                }else if(luckyValue[i] > 0){
+                  if(Math.random() < luckyValue[i]){
+                    //换差牌
+                      logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                  }
+                }
+            }
+        }
+        //库存控制
+        if(inventory < 0){
+          //库存小于0所有玩家换差牌
           for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady && !player[i].isRobot){
-              if(!luckyValue[i]){
-                luckyValue[i] = 0
-              }
-              luckyValue[i] += tmpContorlValue
+              logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
             }
           }
+        }           
+        //记录参与游戏人数
+        curPlayerCount = 0
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isActive && player[i].isReady){
+              curPlayerCount++
+            }
         }
-      }
-      // console.log("=======================")
-      // console.log(luckyValue)
-      //运气值低的先执行控制 
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady && luckyValue[i]){
-              if(luckyValue[i] < 0){
-                if(Math.random() < -luckyValue[i]){
-                  //换好牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+        //计算牌型
+        result = {}
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isReady){
+              result[i] = logic.getType(player[i].handCard); 
+              //player[i].cardsList[room.runCount] = result[i]          
+              if(result[i].type > 10){
+                player[i].gameCount += 5
+              } 
+            }
+        }
+        for(var index = 0;index < GAME_PLAYER;index++){
+          var newPlayer = deepCopy(player)
+          //明牌模式所有人四张牌可见  暗牌自己四张牌可见
+          if(room.cardMode == conf.MODE_CARD_SHOW){
+            for(var i = 0; i < GAME_PLAYER;i++){
+                delete newPlayer[i].handCard[4]
+            }
+          }else if(room.cardMode == conf.MODE_CARD_HIDE){
+            for(var i = 0; i < GAME_PLAYER;i++){
+                if(i == index){
+                  delete newPlayer[index].handCard[4]
+                }else{
+                  delete newPlayer[i].handCard
                 }
-              }else if(luckyValue[i] > 0){
-                if(Math.random() < luckyValue[i]){
-                  //换差牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
-                }
-              }
+            }
           }
-      }       
-      //记录参与游戏人数
-      curPlayerCount = 0
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-            curPlayerCount++
-          }
-      }
-      //计算牌型
-      result = {}
-      for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isReady){
-            result[i] = logic.getType(player[i].handCard); 
-            //player[i].cardsList[room.runCount] = result[i]          
-            if(result[i].type > 10){
-              player[i].gameCount += 5
-            } 
-          }
-      }
-      for(var index = 0;index < GAME_PLAYER;index++){
-        var newPlayer = deepCopy(player)
-        //明牌模式所有人四张牌可见  暗牌自己四张牌可见
-        if(room.cardMode == conf.MODE_CARD_SHOW){
-          for(var i = 0; i < GAME_PLAYER;i++){
-              delete newPlayer[i].handCard[4]
-          }
-        }else if(room.cardMode == conf.MODE_CARD_HIDE){
-          for(var i = 0; i < GAME_PLAYER;i++){
-              if(i == index){
-                delete newPlayer[index].handCard[4]
-              }else{
-                delete newPlayer[i].handCard
-              }
+          if(player[index].isActive){
+            var notify = {
+              "cmd" : "gameBegin",
+              "player" : newPlayer
+            }
+            local.sendUid(player[index].uid,notify)           
           }
         }
-        if(player[index].isActive){
-          var notify = {
-            "cmd" : "gameBegin",
-            "player" : newPlayer
-          }
-          local.sendUid(player[index].uid,notify)           
-        }
-      }
-      //TODO 下个阶段
-      local.chooseBanker()
+        //TODO 下个阶段
+        local.chooseBanker()
+      })
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {

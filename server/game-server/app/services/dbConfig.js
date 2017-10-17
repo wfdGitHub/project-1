@@ -40,17 +40,35 @@ handler.start = function(dbService) {
                         "goldMingpai-1-gold" : 0.05,
                         "goldMingpai-2-gold" : 0.1,
                         "goldMingpai-3-gold" : 0.2,
-                        "goldMingpai-4-gold" : 0.25,
+                        "goldMingpai-4-gold" : 1,
                         "goldMingpai-5-gold" : 0.35,
                         "goldNiuNiu-1-gold" : 0.05,
                         "goldNiuNiu-2-gold" : 0.1,
                         "goldNiuNiu-3-gold" : 0.2,
-                        "goldNiuNiu-4-gold" : 0.25,
+                        "goldNiuNiu-4-gold" : 1,
                         "goldNiuNiu-5-gold" : 0.35
                     }
             		dbService.db.hmset("nn:robotContorl",tmpObj,function() {})
             	}
             })
+            dbService.db.hexists("nn:inventory","normal",function(err,data) {
+                if(err || !data){
+                    var tmpObj = {
+                        "normal" : true,
+                        "goldMingpai-1-gold" : -100000,
+                        "goldMingpai-2-gold" : -100000,
+                        "goldMingpai-3-gold" : -100000,
+                        "goldMingpai-4-gold" : -100000,
+                        "goldMingpai-5-gold" : -100000,
+                        "goldNiuNiu-1-gold" : -100000,
+                        "goldNiuNiu-2-gold" : -100000,
+                        "goldNiuNiu-3-gold" : -100000,
+                        "goldNiuNiu-4-gold" : -100000,
+                        "goldNiuNiu-5-gold" : -100000
+                    }
+                    dbService.db.hmset("nn:inventory",tmpObj,function() {})
+                }
+            })            
 		})
 	})
 }

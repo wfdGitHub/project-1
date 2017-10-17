@@ -288,7 +288,7 @@ var finishGameOfTimer = function(index) {
 
 
 //游戏开始回调
-local.beginCB = function(roomId,player,rate,currencyType) {
+local.beginCB = function(roomId,player,rate,currencyType,cb) {
 	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_AA){
 		if(currencyType !== "diamond"){
 			currencyType = "gold"
@@ -321,8 +321,15 @@ local.beginCB = function(roomId,player,rate,currencyType) {
 			"cmd" : "beginConsume",
 			"rate" : tmpRate
 		}
-		GameRemote.roomList[roomId].sendAll(notify)		
+		GameRemote.roomList[roomId].sendAll(notify)	
 	}
+	//获取库存
+	var roomType = GameRemote.roomList[roomId].roomType
+	console.log("type : "+roomType)
+	GameRemote.app.rpc.db.inventory.getInventory(null,roomType,function(data) {
+		cb(data)
+	})
+	
 }
 
 
@@ -332,14 +339,21 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	if(currencyType !== "diamond"){
 		currencyType = "gold"
 	}
+	var allCurrencyValue = 0
 	for(var index in curScores){
 		if(curScores.hasOwnProperty(index)){
 			if(curScores){
 				if(player[index].isActive && !player[index].isRobot){
+					allCurrencyValue -= curScores[index]
 					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],"游戏结算",function(){})				
 				}
 			}
 		}
+	}
+	//改变库存
+	var roomType = GameRemote.roomList[roomId].roomType
+	if(ROOM_FACTORY[roomType]){
+		GameRemote.app.rpc.db.inventory.updateInventory(null,roomType,allCurrencyValue,function() {})
 	}
 	//通知后台
 	var gold_arr = []
