@@ -272,8 +272,8 @@ var betType = {
             //主动创建房间不在此关闭
             if(room.initiativeFlag == false){
               gameOverCB(room.roomId,player,room.roomType)
+              return
             }
-            return
           }
         }
         //游戏开始
