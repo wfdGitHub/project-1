@@ -204,8 +204,15 @@ DBRemote.prototype.loginCB = function(uid,cb) {
   })
 }
 DBRemote.prototype.getRobotControl = function(type,cb) {
-	DBRemote.dbService.db.hget("nn:robotContorl",type,function(err,data) {
-		cb(data)
+	//获取机器人开关
+	DBRemote.dbService.db.get("nn:robot:switch",function(err,data) {
+		if(data != "true"){
+			cb(false)
+			return
+		}
+		DBRemote.dbService.db.hget("nn:robotContorl",type,function(err,data) {
+			cb(data)
+		})		
 	})
 }
 DBRemote.prototype.getPlayerString = function(uid,name,cb) {

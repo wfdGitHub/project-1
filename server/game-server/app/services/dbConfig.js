@@ -33,6 +33,11 @@ handler.start = function(dbService) {
                     db.set("nn:notifys",JSON.stringify(notify));
                 }
             })
+            dbService.db.get("nn:robot:switch",function(err,data) {
+                if(data === null){
+                    db.set("nn:robot:switch",true);
+                }
+            })            
             dbService.db.hexists("nn:robotContorl","normal",function(err,data) {
             	if(err || !data){
                     var tmpObj = {

@@ -58,6 +58,9 @@ manager.getRobotInfo = function(type,uid,GameRemote,cb) {
     robotState[uid] = false
     //获取机器人控制率
     GameRemote.app.rpc.db.remote.getRobotControl(null,type,function(control) {
+    	if(control == false){
+    		return
+    	}
     	if(control){
     		data.contorl = control
     	}
