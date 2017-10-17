@@ -65,6 +65,10 @@ conf.MODE_DIAMOND_NONOE = 10     		//已扣钻
 //明牌模式
 conf.MODE_CARD_HIDE  = 1 				//不明牌
 conf.MODE_CARD_SHOW  = 2 				//明牌
+//服务费模式
+conf.MODE_CHARGE_AA = 1 				//AA付费
+conf.MODE_CHARGE_WIN = 2 				//大赢家付费
+
 
 conf.GAME_TYPE = {
 	"niuniu" : true,

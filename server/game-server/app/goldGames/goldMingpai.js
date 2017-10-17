@@ -35,6 +35,7 @@ var betType = {
     room.maxResultFlag = false
     room.rate = rate
     room.initiativeFlag = false
+    room.coverCharge = conf.MODE_CHARGE_AA //默认AA付费
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -141,6 +142,12 @@ var betType = {
           cb(false)
           return
         }
+        if(!params.coverCharge || (params.coverCharge !== conf.MODE_CHARGE_AA && params.coverCharge !== conf.MODE_CHARGE_WIN)){
+          console.log("params.coverCharge error : "+params.coverCharge)
+          cb(false)
+          return         
+        }
+        room.coverCharge = params.coverCharge
         room.cardMode = params.cardMode
         room.bankerMode = params.bankerMode
         basicType = params.basicType
@@ -190,6 +197,7 @@ var betType = {
       player[chair].uid = uid
       player[chair].ip = info.ip
       player[chair].playerInfo = info
+      lastScore[chair] = 0
       if(room.currencyType == "gold"){
         player[chair].score = parseInt(info.gold)        
       }else if(room.currencyType == "diamond"){
@@ -284,10 +292,10 @@ var betType = {
           if(player[i].isActive && player[i].isOnline){
             tmpCount++
           }
-        }        
+        }
         if(tmpCount <= 1){
           clearTimeout(timer)
-          timer = setTimeout(local.readyBegin,conf.TID_WAITING_TIME)
+          local.readyBegin()
           return
         }
         //在场玩家自动准备
@@ -559,7 +567,7 @@ var betType = {
         //console.log("banker : "+banker)
         player[banker].isBanker = true    
       }
-      local.gameBegin()
+      local.betting()
     }
     //结束抢庄
     local.endRob = function() {

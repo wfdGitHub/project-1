@@ -285,40 +285,44 @@ var finishGameOfTimer = function(index) {
 		}
 	}
 }
+
+
 //游戏开始回调
 local.beginCB = function(roomId,player,rate,currencyType) {
-	if(currencyType !== "diamond"){
-		currencyType = "gold"
-	}
-	var tmpRate = Math.floor(rate * 0.5)
-	//代理分成列表
-	var agencyDivides = {}
-	for(var index in player){
-		if(player.hasOwnProperty(index)){
-			if(player[index].isActive){
-				player[index].score -= tmpRate
-				if(!player[index].isRobot){
-					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"手续费",function(){})
-					//代理抽水
-					// console.log(player[index].playerInfo)
-					var agencyId = player[index].playerInfo.agencyId
-					if(agencyId){
-						if(!agencyDivides[agencyId]){
-							agencyDivides[agencyId] = {}
+	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_AA){
+		if(currencyType !== "diamond"){
+			currencyType = "gold"
+		}
+		var tmpRate = Math.floor(rate * 0.5)
+		//代理分成列表
+		var agencyDivides = {}
+		for(var index in player){
+			if(player.hasOwnProperty(index)){
+				if(player[index].isActive){
+					player[index].score -= tmpRate
+					if(!player[index].isRobot){
+						GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"AA手续费",function(){})
+						//代理抽水
+						// console.log(player[index].playerInfo)
+						var agencyId = player[index].playerInfo.agencyId
+						if(agencyId){
+							if(!agencyDivides[agencyId]){
+								agencyDivides[agencyId] = {}
+							}
+							agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
 						}
-						agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
 					}
 				}
 			}
 		}
+		GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
+		//通知游戏消耗
+		var notify = {
+			"cmd" : "beginConsume",
+			"rate" : tmpRate
+		}
+		GameRemote.roomList[roomId].sendAll(notify)		
 	}
-	GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
-	//通知游戏消耗
-	var notify = {
-		"cmd" : "beginConsume",
-		"rate" : tmpRate
-	}
-	GameRemote.roomList[roomId].sendAll(notify)
 }
 
 
@@ -343,7 +347,27 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		if(curScores[index] && player[index].isActive){
 			gold_arr.push({"uid" : player[index].uid,"score" : curScores[index]})
 		}
-	}	
+	}
+	var WinCharge
+	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_WIN){
+   		//大赢家付费模式扣除服务费
+		var tmpWinIndex = 0
+		var tmpScore = curScores[0] || 0
+		for(var i in curScores){
+			if(curScores[i] && curScores[i] > tmpScore){
+			  tmpWinIndex = i
+			  tmpScore = curScores[i]
+			}
+		}
+		WinCharge = Math.ceil(curScores[tmpWinIndex] * 0.05)
+		GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
+		var tmpNotify = {
+			"cmd" : "winCharge",
+			"charge" : WinCharge,
+			"chair" : tmpWinIndex
+		}
+		GameRemote.roomList[roomId].sendAll(tmpNotify)
+	}
 	var tmpRate = Math.floor(rate * 0.5)
 	var notify = {
 		"room_num" : roomId,
@@ -351,7 +375,8 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		"pay_gold" : tmpRate,
 		"game_mode" : GameRemote.roomList[roomId].roomType,
 		"rate" : rate,
-		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag
+		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag,
+		"WinCharge" : WinCharge
 	}
 	httpConf.sendGameSettlement(notify)	
 	//console.log(player)
