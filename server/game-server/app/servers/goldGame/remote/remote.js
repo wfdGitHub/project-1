@@ -407,7 +407,7 @@ local.matching = function(){
 						tmpFlag = true
 					}else if(playerCount < ROOMPLAYERNUM - 1 && rand < 0.05){
 						tmpFlag = true
-					}else if(playerCount < ROOMPLAYERNUM && rand < 0.01){
+					}else if(playerCount < ROOMPLAYERNUM && rand < 0.001){
 						tmpFlag = true
 					}
 					if(tmpFlag){
