@@ -18,7 +18,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
       "4" : [1,3,5],
       "5" : [2,4,6]
     } 
-    var typeWeight = [1,1,1,1,2,2,2,3,3,3,3,3,3,3,3]
+    var typeWeight = [1,1,1,1,1,1,1,1,2,2,2,3,3,3,3]
     var result
 	robot.receive = function(uid,notify) {
 		var cmd = notify.cmd
@@ -55,9 +55,9 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 				var max = 0
 				if(result.type >= 10){
 					var rand = Math.random()
-					if(rand < 0.7){
+					if(rand < 0.8){
 						max = 4
-					}else if(rand < 0.8){
+					}else if(rand < 0.9){
 						max = 3
 					}else{
 						max = 0
@@ -67,7 +67,7 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 					if(rand < 0.4){
 						max = 4
 					}else if(rand < 0.8){
-						max = 3
+						max = 2
 					}else{
 						max = 0
 					}
