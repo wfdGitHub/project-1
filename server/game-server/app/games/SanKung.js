@@ -625,6 +625,8 @@ var MING_CARD_NUM = 2               //明牌数量
         for(var i = 0;i < GAME_PLAYER; i++){
             player[i].isReady = false
             player[i].isShowCard = false
+            betList[i] = 0;
+            player[i].isBanker = false
         }
 
         if(room.gameNumber <= 0){

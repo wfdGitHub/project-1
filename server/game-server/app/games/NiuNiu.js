@@ -1187,7 +1187,9 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       //房间重置
       for(var i = 0;i < GAME_PLAYER; i++){
           player[i].isReady = false;
-      } 
+          betList[i] = 0;
+          player[i].isBanker = false          
+      }    
       readyCount = 0
       if(room.gameNumber <= 0){
           local.gameOver()

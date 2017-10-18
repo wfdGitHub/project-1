@@ -855,6 +855,8 @@ var MING_CARD_NUM = 4               //明牌数量
             player[i].isReady = false
             player[i].isNoGiveUp = true
             player[i].isShowCard = false
+            betList[i] = 0;
+            player[i].isBanker = false         
         }
         if(room.gameNumber <= 0){
             local.gameOver()
