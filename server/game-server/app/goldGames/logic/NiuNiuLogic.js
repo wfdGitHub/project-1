@@ -177,15 +177,15 @@ module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
   }else{
     //换差牌
     console.log("换差牌")
-    var value = 2
+    var value = 4
     var tmpRand = Math.random()
     var times = 10
-    if(tmpRand < 0.4){
-      value = 1
-      times = 10
-    }else if(tmpRand < 0.1){
-      value = 0
+    if(tmpRand < 0.8 && tmpRand >= 0.4){
+      value = 3
       times = 15
+    }else if(tmpRand < 0.5){
+      value = 2
+      times = 20
     }
     if(tmpResult.type > value){
       for(var z = 0;z < 5;z++){
