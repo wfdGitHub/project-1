@@ -17,7 +17,7 @@ var Handler = function(app) {
 
 var handler = Handler.prototype
 
-var version = "1.3.501&LKSADHFKASKDJLSAFDHJ"
+var version = "1.4.01&LSKAHDUYAPSMHAKSSA"
 //获取公告
 handler.getNotify = function(msg,session,next) {
   var self = this
@@ -40,7 +40,7 @@ handler.getAgencyRoom = function(msg,session,next) {
     }else{
       this.app.rpc.game.remote.getAgencyRoom(session,uid,function(data) {
         next(null,data)
-      })      
+      })
     }
 }
 //获取自身数据
