@@ -381,6 +381,15 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			"chair" : tmpWinIndex
 		}
 		GameRemote.roomList[roomId].sendAll(tmpNotify)
+		//设置代理提成
+		var agencyId = player[tmpWinIndex].playerInfo.agencyId
+		if(agencyId){
+			var agencyDivides = {}
+			agencyDivides[agencyId] = {}
+			agencyDivides[agencyId][player[tmpWinIndex].uid] = Math.floor(WinCharge * 0.4)
+			GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
+		}
+
 	}
 	var tmpRate = Math.floor(rate * 0.5)
 	var notify = {
