@@ -29,7 +29,7 @@ var MING_CARD_NUM = 3               //明牌数量
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
     room.GAME_PLAYER = playerNumber      //游戏人数
-    GAME_PLAYER = playerNumber
+    var GAME_PLAYER = playerNumber
     var betList = []
     //炸金花特殊数据
     var curPlayer = -1                   //当前操作玩家

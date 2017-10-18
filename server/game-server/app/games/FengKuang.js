@@ -3,7 +3,6 @@ var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frame = require("./frame/frame.js")
 //常量定义
-var GAME_PLAYER = conf.GAME_PLAYER      //游戏人数
 var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
 var TID_BETTING = conf.TID_BETTING      //下注时间
 var TID_SETTLEMENT = conf.TID_SETTLEMENT//结算时间
@@ -31,6 +30,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
   var room = {}
+  var GAME_PLAYER
   room.roomId = roomId
   room.roomType = "fengkuang"
   room.channel = channelService.getChannel(roomId,true)
