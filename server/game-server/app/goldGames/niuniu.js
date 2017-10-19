@@ -802,7 +802,7 @@ var betType = {
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
-            var tmpBet = 2
+            var tmpBet = 5
             if(room.gameMode === conf.MODE_GAME_BULL){
               tmpBet = Math.floor(bonusPool / room.playerCount / 5)
               if(tmpBet === 0){
