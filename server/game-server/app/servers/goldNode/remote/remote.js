@@ -335,6 +335,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	var agencyDivides = {}
 	//服务费列表
 	var tmpChargeList = {}
+	var tmpChargeUidList = {}
 	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_WIN){
    		//大赢家付费模式扣除服务费
 		var tmpWinIndex = 0
@@ -350,6 +351,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			WinCharge = rate
 		}
 		tmpChargeList[tmpWinIndex] = WinCharge
+		tmpChargeUidList[player[tmpWinIndex].uid] = WinCharge
 		GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
 		var tmpNotify = {
 			"cmd" : "winCharge",
@@ -382,6 +384,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 					}
 					player[index].score -= tmpRate
 					tmpChargeList[index] = tmpRate
+					tmpChargeUidList[player[index].uid] = tmpRate
 					if(!player[index].isRobot){
 						GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"AA手续费",function(){})
 						//代理抽水
@@ -412,7 +415,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 	var notify = {
 		"room_num" : roomId,
 		"gold_arr" : gold_arr,
-		"pay_gold" : tmpChargeList,
+		"pay_gold" : tmpChargeUidList,
 		"game_mode" : GameRemote.roomList[roomId].roomType,
 		"rate" : rate,
 		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag,
