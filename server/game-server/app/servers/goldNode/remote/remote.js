@@ -289,47 +289,12 @@ var finishGameOfTimer = function(index) {
 
 //游戏开始回调
 local.beginCB = function(roomId,player,rate,currencyType,cb) {
-	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_AA){
-		if(currencyType !== "diamond"){
-			currencyType = "gold"
-		}
-		var tmpRate = Math.floor(rate * 0.5)
-		//代理分成列表
-		var agencyDivides = {}
-		for(var index in player){
-			if(player.hasOwnProperty(index)){
-				if(player[index].isActive){
-					player[index].score -= tmpRate
-					if(!player[index].isRobot){
-						GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"AA手续费",function(){})
-						//代理抽水
-						// console.log(player[index].playerInfo)
-						var agencyId = player[index].playerInfo.agencyId
-						if(agencyId){
-							if(!agencyDivides[agencyId]){
-								agencyDivides[agencyId] = {}
-							}
-							agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
-						}
-					}
-				}
-			}
-		}
-		GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
-		//通知游戏消耗
-		var notify = {
-			"cmd" : "beginConsume",
-			"rate" : tmpRate
-		}
-		GameRemote.roomList[roomId].sendAll(notify)	
-	}
 	//获取库存
 	var roomType = GameRemote.roomList[roomId].roomType
 	console.log("type : "+roomType)
 	GameRemote.app.rpc.db.inventory.getInventory(null,roomType,function(data) {
 		cb(data)
 	})
-	
 }
 
 
@@ -362,7 +327,14 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			gold_arr.push({"uid" : player[index].uid,"score" : curScores[index]})
 		}
 	}
-	var WinCharge
+
+
+	//服务费
+	var tmpCharge = 0
+	//代理分成列表
+	var agencyDivides = {}
+	//服务费列表
+	var tmpChargeList = {}
 	if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_WIN){
    		//大赢家付费模式扣除服务费
 		var tmpWinIndex = 0
@@ -373,7 +345,8 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			  tmpScore = curScores[i]
 			}
 		}
-		WinCharge = Math.ceil(curScores[tmpWinIndex] * 0.05)
+		var WinCharge = Math.ceil(curScores[tmpWinIndex] * 0.05)
+		tmpChargeList[tmpWinIndex] = WinCharge
 		GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
 		var tmpNotify = {
 			"cmd" : "winCharge",
@@ -384,13 +357,51 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		//设置代理提成
 		var agencyId = player[tmpWinIndex].playerInfo.agencyId
 		if(agencyId){
-			var agencyDivides = {}
 			agencyDivides[agencyId] = {}
 			agencyDivides[agencyId][player[tmpWinIndex].uid] = Math.floor(WinCharge * 0.4)
 			GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
 		}
-
+	}else if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_AA){
+		//输家扣除房间倍率100%，赢家扣除当局所赢金币的2%
+		if(currencyType !== "diamond"){
+			currencyType = "gold"
+		}
+		for(var index in player){
+			if(player.hasOwnProperty(index)){
+				if(player[index].isActive && curScores[index]){
+					if(curScores[index] > 0){
+						var tmpRate = Math.ceil(curScores[index] * 0.02)
+					}else{
+						var tmpRate = rate
+					}
+					player[index].score -= tmpRate
+					tmpChargeList[index] = tmpRate
+					if(!player[index].isRobot){
+						GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"AA手续费",function(){})
+						//代理抽水
+						// console.log(player[index].playerInfo)
+						var agencyId = player[index].playerInfo.agencyId
+						if(agencyId){
+							if(!agencyDivides[agencyId]){
+								agencyDivides[agencyId] = {}
+							}
+							agencyDivides[agencyId][player[index].uid] = Math.floor(tmpRate * 0.4)
+						}
+					}
+				}
+			}
+		}
+		GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
 	}
+
+
+	//通知游戏消耗
+	var notify = {
+		"cmd" : "consume",
+		"chargeList" : tmpChargeList
+	}
+	GameRemote.roomList[roomId].sendAll(notify)
+
 	var tmpRate = Math.floor(rate * 0.5)
 	var notify = {
 		"room_num" : roomId,
@@ -399,7 +410,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		"game_mode" : GameRemote.roomList[roomId].roomType,
 		"rate" : rate,
 		"initiativeFlag" : GameRemote.roomList[roomId].initiativeFlag,
-		"WinCharge" : WinCharge
+		"chargeType" : GameRemote.roomList[roomId].coverCharge
 	}
 	httpConf.sendGameSettlement(notify)	
 	//console.log(player)
