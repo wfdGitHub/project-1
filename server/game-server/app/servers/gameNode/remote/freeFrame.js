@@ -93,7 +93,7 @@ frame.onFrame = function(params,uid,code,cb) {
 			}
 			var chair = frame.GameService.roomList[roomId].chairMap[uid]
 			//已发送不能再次发送
-			if(frame.GameService.lockState[roomId][chair] !== undefined){
+			if(frame.GameService.lockState[roomId] && frame.GameService.lockState[roomId][chair] !== undefined){
 				cb(false)
 				return
 			}
