@@ -5,8 +5,8 @@ var robotFactory = require("./robot/niuniuRobot.js")
 //var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 4  //明牌数量
 var betType = {
-  "0" : {"1" : 1,"2" : 2,"3" : 3,"4" : 5},
-  "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
+  "0" : {"1" : 2,"2" : 3,"3" : 5},
+  "1" : {"1" : 5,"2" : 10,"3" : 20}
 }
 
 //创建房间
@@ -21,7 +21,6 @@ var betType = {
     room.currencyType = currencyType
     room.roomId = roomId
     room.roomType = gameType
-    console.log("type : "+room.roomType)
     room.isRecord = true
     room.channel = channelService.getChannel(roomId,true)
     room.handle = {}                     //玩家操作
@@ -138,11 +137,6 @@ var betType = {
           cb(false)
           return
         }
-        if(!betType[params.basicType]){
-          console.log("params.basicType error : "+params.basicType)
-          cb(false)
-          return
-        }
         if(!params.coverCharge || (params.coverCharge !== conf.MODE_CHARGE_AA && params.coverCharge !== conf.MODE_CHARGE_WIN)){
           console.log("params.coverCharge error : "+params.coverCharge)
           cb(false)
@@ -151,7 +145,6 @@ var betType = {
         room.coverCharge = params.coverCharge        
         room.bankerMode = params.bankerMode
         room.cardMode = params.cardMode
-        room.basicType = params.basicType
         room.initiativeFlag = true
       }
       //设置下注上限

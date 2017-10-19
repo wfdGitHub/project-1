@@ -346,6 +346,9 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			}
 		}
 		var WinCharge = Math.ceil(curScores[tmpWinIndex] * 0.05)
+		if(WinCharge < rate){
+			WinCharge = rate
+		}
 		tmpChargeList[tmpWinIndex] = WinCharge
 		GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
 		var tmpNotify = {
@@ -371,6 +374,9 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 				if(player[index].isActive && curScores[index]){
 					if(curScores[index] > 0){
 						var tmpRate = Math.ceil(curScores[index] * 0.02)
+						if(tmpRate < rate){
+							tmpRate = rate
+						}
 					}else{
 						var tmpRate = rate
 					}

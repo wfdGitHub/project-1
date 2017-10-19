@@ -1,7 +1,7 @@
 var logic = require("../logic/NiuNiuLogic.js")
 
-var betList = [1,5,10,20]
-var typeWeight = [1,1,1,1,2,2,2,3,3,3,3,3,3,3,3]
+var betList = [5,10,20]
+var typeWeight = [0,0,0,0,1,1,1,1,1,2,2,2,2,2,2]
 
 module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 	var local = {}
@@ -74,16 +74,17 @@ module.exports.createRobot = function(roomInfo,player,handler,quitRoom,conf) {
 					if(result.type >= 7){
 						rand = 3
 					}else{
-						rand += Math.floor(Math.random() * 3)
-						if(rand > 2){
+						var random = Math.random()
+						if(random < 0.1){
+							rand = 3
+						}else if(random < 0.5){
 							rand = 2
-						}
-						if(rand < 0){
-							rand = 0
+						}else{
+							rand = 1
 						}
 					}
 					if(!robot.player.isBanker){
-						local.delaySend(uid,"bet",{"bet" : rand + 1},3000,function(flag) {
+						local.delaySend(uid,"bet",{"bet" : rand},3000,function(flag) {
 							if(flag == false){
 								console.log("beginBetting error : max : ")
 								console.log(robot.player)

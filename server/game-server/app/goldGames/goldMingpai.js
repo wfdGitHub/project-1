@@ -114,7 +114,7 @@ var betType = {
     room.newRoom = function(uids,sids,infos,params,cb) {
       local.init()
       room.halfwayEnter = true
-      basicType = 4
+      basicType = 5
       room.basic = basicType
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
@@ -137,11 +137,6 @@ var betType = {
           cb(false)
           return
         }
-        if(!betType[params.basicType]){
-          console.log("params.basicType error : "+params.basicType)
-          cb(false)
-          return
-        }
         if(!params.coverCharge || (params.coverCharge !== conf.MODE_CHARGE_AA && params.coverCharge !== conf.MODE_CHARGE_WIN)){
           console.log("params.coverCharge error : "+params.coverCharge)
           cb(false)
@@ -150,7 +145,6 @@ var betType = {
         room.coverCharge = params.coverCharge
         room.cardMode = params.cardMode
         room.bankerMode = params.bankerMode
-        basicType = params.basicType
         room.initiativeFlag = true
       }
       //设置下注上限
