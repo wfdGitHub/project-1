@@ -404,6 +404,16 @@ handler.giveDiamond = function(msg,session,next){
 			}
 		},
 		function(cb) {
+			//查询赠送人钻石
+			Handler.app.rpc.db.remote.getValue(null,uid,"diamond",function(value) {
+				if(value >= diamond){
+					cb()
+				}else{
+					next(null,{"flag" : false})
+				}
+			})	 			
+		},		
+		function(cb) {
 			//扣除赠送人钻石
 			Handler.app.rpc.db.remote.setValue(null,uid,"diamond",-diamond,function(flag) {
 				if(flag == true){
