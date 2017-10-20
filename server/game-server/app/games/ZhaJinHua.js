@@ -928,9 +928,6 @@ var MING_CARD_NUM = 3               //明牌数量
           chair : chair
         }
         local.sendAll(notify)
-        if((room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_JIUDIAN) && banker == chair){
-          return
-        }
         frame.disconnect(chair,player,gameState,local,local.gameBegin)
       }
     }
@@ -973,7 +970,6 @@ var MING_CARD_NUM = 3               //明牌数量
         maxGameNumber : room.maxGameNumber,
         gameNumber : room.maxGameNumber - room.gameNumber,
         consumeMode : room.consumeMode,
-        bankerMode : room.bankerMode,
         roomId : room.roomId,
         TID_ZHAJINHUA : conf.TID_ZHAJINHUA,
         betList : betList,
