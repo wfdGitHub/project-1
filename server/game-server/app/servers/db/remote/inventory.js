@@ -22,7 +22,7 @@ DBRemote.prototype.getInventory = function(gameType,cb) {
             console.log(err)
             cb(0)
         }else{
-            cb(data)            
+            cb(data)
         }
     })
 }
@@ -31,6 +31,11 @@ DBRemote.prototype.updateInventory = function(gameType,value,cb) {
     DBRemote.dbService.db.hincrby("nn:inventory",gameType,parseInt(value),function(err,data) {
         if(err){
             console.log(err)
+        }
+        console.log(data)
+        if(parseInt(data) < 0 && parseInt(data) - parseInt(value) > 0){
+            var result = gameType + "库存剩余"+value
+            DBRemote.app.rpc.goldGame.snsServer.sendCaptcha(null,result,function (argument) {})
         }
         cb()
     })

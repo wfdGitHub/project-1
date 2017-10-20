@@ -165,7 +165,7 @@ local.joinRoom = function(type,roomId){
 							GameRemote.RoomMap[roomId].splice(i,1)
 							break
 						}
-					}					
+					}
 				}
 			}else{
 				matchingLogger.info("joinRoom uid : "+JSON.stringify(player) + " roomId : "+roomId + "type : "+type)

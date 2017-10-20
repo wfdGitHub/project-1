@@ -1,9 +1,9 @@
 {
-    "name":"test",
-    "version":"0.0.1",
-    "private":false,
-    "dependencies":{
-        "pomelo":"2.2.5"
+    "name": "test",
+    "version": "0.0.1",
+    "private": false,
+    "dependencies": {
+        "@alicloud/sms-sdk": "^1.0.2",
+        "pomelo": "2.2.5"
     }
 }
-
