@@ -157,14 +157,16 @@ local.joinRoom = function(type,roomId){
 		GameRemote.app.rpc.goldNode.remote.joinRoom(null,params,player,roomId,function(flag) {
 			if(!flag){
 				errorLogger.info("joinRoom goldNode flag is : "+flag)
-				//失败移除玩家
-				for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
-					if(GameRemote.RoomMap[roomId][i] == uid){
-						GameRemote.RoomMap[roomId].splice(i,1)
-						break
-					}
-				}
 				delete GameRemote.userMap[uid]
+				//失败移除玩家
+				if(GameRemote.RoomMap[roomId]){
+					for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
+						if(GameRemote.RoomMap[roomId][i] == uid){
+							GameRemote.RoomMap[roomId].splice(i,1)
+							break
+						}
+					}					
+				}
 			}else{
 				matchingLogger.info("joinRoom uid : "+JSON.stringify(player) + " roomId : "+roomId + "type : "+type)
 			}
