@@ -350,21 +350,24 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		if(WinCharge < rate){
 			WinCharge = rate
 		}
+		player[tmpWinIndex].score -= tmpRate
 		tmpChargeList[tmpWinIndex] = WinCharge
-		tmpChargeUidList[player[tmpWinIndex].uid] = WinCharge
-		GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
 		var tmpNotify = {
 			"cmd" : "winCharge",
 			"charge" : WinCharge,
 			"chair" : tmpWinIndex
 		}
-		GameRemote.roomList[roomId].sendAll(tmpNotify)
-		//设置代理提成
-		var agencyId = player[tmpWinIndex].playerInfo.agencyId
-		if(agencyId){
-			agencyDivides[agencyId] = {}
-			agencyDivides[agencyId][player[tmpWinIndex].uid] = Math.floor(WinCharge * 0.4)
-			GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
+		GameRemote.roomList[roomId].sendAll(tmpNotify)		
+		if(!player[tmpWinIndex].isRobot){
+			tmpChargeUidList[player[tmpWinIndex].uid] = WinCharge
+			GameRemote.app.rpc.db.remote.setValue(null,player[tmpWinIndex].uid,currencyType,-WinCharge,"大赢家手续费",function(){})
+			//设置代理提成
+			var agencyId = player[tmpWinIndex].playerInfo.agencyId
+			if(agencyId){
+				agencyDivides[agencyId] = {}
+				agencyDivides[agencyId][player[tmpWinIndex].uid] = Math.floor(WinCharge * 0.4)
+				GameRemote.app.rpc.db.agency.addAgncyDivide(null,agencyDivides,function() {})
+			}	
 		}
 	}else if(GameRemote.roomList[roomId].coverCharge == conf.MODE_CHARGE_AA){
 		//输家扣除房间倍率100%，赢家扣除当局所赢金币的2%
@@ -384,8 +387,8 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 					}
 					player[index].score -= tmpRate
 					tmpChargeList[index] = tmpRate
-					tmpChargeUidList[player[index].uid] = tmpRate
 					if(!player[index].isRobot){
+						tmpChargeUidList[player[index].uid] = tmpRate
 						GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,-tmpRate,"AA手续费",function(){})
 						//代理抽水
 						// console.log(player[index].playerInfo)
