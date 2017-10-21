@@ -3,12 +3,12 @@ var logic = require("./logic/ZhaJinHuaLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var errorLogger = require("pomelo-logger").getLogger("error-log");
 var tips = require("../conf/tips.js").tipsConf
-var frame = require("./frame/frame.js")
 var MING_CARD_NUM = 3               //明牌数量
 
 //创建房间
   module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
+    var frame = require("./frame/frame.js")
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var room = {}

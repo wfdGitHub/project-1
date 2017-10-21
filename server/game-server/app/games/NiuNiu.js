@@ -1,7 +1,6 @@
 var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
-var frame = require("./frame/frame.js")
 //常量定义
 var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
 var TID_BETTING = conf.TID_BETTING      //下注时间
@@ -31,6 +30,7 @@ var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
 module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
+  var frame = require("./frame/frame.js")
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
   var room = {}
@@ -402,7 +402,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     //连庄三局才能换庄
     if(bankerTime < 3){
       cb(false)
-      return    
+      return
     }
     player[banker].score += bonusPool
     var tmpOldBanker = banker
