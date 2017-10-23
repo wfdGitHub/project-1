@@ -229,7 +229,7 @@ var betType = {
     }
 
     local.readyBegin = function() {
-      console.log("readyBegin")
+      // console.log("readyBegin")
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
