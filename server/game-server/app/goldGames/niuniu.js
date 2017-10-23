@@ -34,7 +34,7 @@ var betType = {
     room.initiativeFlag = false
     room.rate = rate
     room.coverCharge = conf.MODE_CHARGE_AA //默认AA付费
-
+    var quitFlagList = {}                 //用户退出标识
     //房间初始化
     var local = {}                       //私有方法
     var player = {}                      //玩家属性
@@ -45,7 +45,7 @@ var betType = {
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
     room.GAME_PLAYER = 6                 //游戏人数
-    GAME_PLAYER = 6
+    var GAME_PLAYER = 6
     var curPlayer = -1                   //当前操作玩家
     var curRound = 0                     //当前轮数
     var curPlayerCount = 0               //当前参与游戏人数
@@ -229,11 +229,20 @@ var betType = {
     }
 
     local.readyBegin = function() {
-      // console.log("readyBegin")
+      console.log("readyBegin")
       //准备开始游戏    在场玩家自动准备  离线玩家踢出
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
       timer = setTimeout(function() {
+        //主动退出玩家退出
+        for(var i = 0; i < GAME_PLAYER;i++){
+          if(quitFlagList[i] === true && player[i].isActive){
+            delete quitFlagList[i]
+            if(!player[i].isOnline){
+              quitRoomFun(player[i].uid,room.roomId)
+            }
+          }
+        }
 
         //没有真实玩家则退出一个机器人，机器人只剩一个时结束游戏
         var flag = true
@@ -1037,6 +1046,7 @@ var betType = {
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
       }
+      delete quitFlagList[chair]
       cb(notify)
     }
   //初始化椅子信息
@@ -1166,17 +1176,18 @@ var betType = {
   //用户退出
   room.userQuit = function(uid,cb){
     //空闲时间才可退出
+    var chair = room.chairMap[uid]
+    if(chair === undefined){
+      cb(false)
+      return
+    }    
     if(gameState !== conf.GS_FREE){
       var notify = {
         "cmd" : "userReturn"
       }
       local.sendUid(uid,notify)
       room.leave(uid)
-      cb(false)
-      return
-    }
-    var chair = room.chairMap[uid]
-    if(chair === undefined){
+      quitFlagList[chair] = true
       cb(false)
       return
     }
