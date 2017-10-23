@@ -234,15 +234,7 @@ var betType = {
       gameState = conf.GS_FREE
       room.initialTime = (new Date()).valueOf()
       timer = setTimeout(function() {
-        for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive){
-            if(player[i].isOnline){
-              player[i].gameCount++
-            }else{
-              quitRoomFun(player[i].uid,room.roomId)
-            }
-          }
-        }
+
         //没有真实玩家则退出一个机器人，机器人只剩一个时结束游戏
         var flag = true
         var robotCount = 0
@@ -291,6 +283,17 @@ var betType = {
           timer = local.readyBegin()
           return
         }
+        //离线玩家退出
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive){
+            if(player[i].isOnline){
+              player[i].gameCount++
+            }else{
+              quitRoomFun(player[i].uid,room.roomId)
+            }
+          }
+        }
+        
         //在场玩家自动准备
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isOnline){
@@ -1208,7 +1211,7 @@ var betType = {
   room.isHaveHumen = function() {
     var flag = false
     for(var i = 0;i < GAME_PLAYER;i++){
-      if(player[i].isActive && !player[i].isRobot){
+      if(player[i].isActive && !player[i].isRobot && player[i].isOnline){
         flag = true
       }
     }
@@ -1225,7 +1228,7 @@ var betType = {
     clearTimeout(timer)
     room.gameNumber = 0
     gameOverCB(room.roomId,player,room.roomType)
-  }    
+  }
   return room 
 }
 

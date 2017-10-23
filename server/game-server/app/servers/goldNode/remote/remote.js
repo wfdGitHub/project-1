@@ -272,7 +272,7 @@ local.lotto = function(uid,roomId,cb) {
 //房间超时回调
 var finishGameOfTimer = function(index) {
 	return function() {
-		//房间内无玩家则解散
+		//房间内无在线玩家则解散
 		if(!GameRemote.roomList[index].isHaveHumen()){
 			//房间空闲则解散
 			//记录日志
