@@ -1,6 +1,8 @@
 var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
+var frameFactory = require("./frame/frame.js")
+
 //常量定义
 var TID_ROB_TIME = conf.TID_ROB_TIME    //抢庄时间
 var TID_BETTING = conf.TID_BETTING      //下注时间
@@ -30,9 +32,9 @@ var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
 module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
-  var frame = require("./frame/frame.js")
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
+  var frame = frameFactory.createFrame()
   var room = {}
   room.roomId = roomId
   room.roomType = "niuniu"
@@ -377,7 +379,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
         if(room.bankerMode == conf.MODE_BANKER_HOST || room.bankerMode == conf.MODE_BANKER_NIUNIU){
           tmpBanker = banker
         }
-      }      
+      }
       frame.ready(uid,chair,player,gameState,local, local.chooseBanker,tmpBanker,cb)
   }
   //玩家下庄

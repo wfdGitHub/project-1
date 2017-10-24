@@ -1,15 +1,17 @@
 var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
+var frameFactory = require("./frame/frame.js")
+
 var MING_CARD_NUM = 4               //明牌数量
 //游戏状态
 
 //创建房间
   module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
-    var frame = require("./frame/frame.js")
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
+    var frame = frameFactory.createFrame()
     var room = {}
     room.roomId = roomId
     room.roomType = "mingpaiqz"
