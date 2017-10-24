@@ -401,8 +401,6 @@ var MING_CARD_NUM = 3               //明牌数量
         curRound++
         //轮数超过最后一轮时进入结算
         if(curRound > room.maxRound){
-          console.log("ERROR!!!")
-          errorLogger.info("炸金花结算错误1111111")
           local.settlement()
           return
         }
@@ -735,14 +733,23 @@ var MING_CARD_NUM = 3               //明牌数量
       console.log(betList)
       clearTimeout(timer)
       room.runCount++
-      //还在场的玩家为赢家
+      //找出最大赢家
       var winIndex = -1
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isActive && player[i].isReady && player[i].state == 0){
-          winIndex = i
-          break
+          if(winIndex == -1){
+            winIndex = i
+          }else{
+            if(logic.compare(result[winIndex],result[i])){
+              player[i].state = 2
+            }else{
+              player[winIndex].state = 2
+              winIndex = i
+            }
+          }
         }
       }
+
       var curScores = new Array(GAME_PLAYER)
       for(var i = 0;i < GAME_PLAYER;i++){
         curScores[i] = 0
