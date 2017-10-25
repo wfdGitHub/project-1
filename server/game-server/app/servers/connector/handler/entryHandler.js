@@ -43,6 +43,18 @@ handler.getAgencyRoom = function(msg,session,next) {
       })
     }
 }
+//修改待开房剩余数量
+handler.changeAgencyReopenCount = function(msg,session,next) {
+    var uid = session.get("uid")
+    if(!uid){
+      next(null,{"flag" : false})
+    }else{
+      this.app.rpc.game.remote.changeAgencyReopenCount(session,uid,msg.roomId,msg.count,function(data) {
+        next(null,data)
+      })
+    }
+}
+
 //获取自身数据
 handler.getSelfData = function(msg,session,next) {
     var self = this

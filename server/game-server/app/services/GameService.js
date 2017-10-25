@@ -105,7 +105,7 @@ GameService.getAgencyRoom = function(agencyId) {
 //从房间ID获取代开房信息
 GameService.getAgencyRoomByID = function(agencyId,roomId) {
 	var agencyInfo = GameService.getAgencyRoom(agencyId)
-	for(var i = 9;i >= 0;i--){
+	for(var i = 0;i < 10;i++){
 		if(agencyInfo.List[i]){
 			if(agencyInfo.List[i].roomId === roomId){
 				return agencyInfo.List[i]
@@ -122,7 +122,7 @@ GameService.setAgencyRoomByID = function(agencyId,roomId,agencyRoom) {
 	var agencyInfo = GameService.agencyList[agencyId]
 	for(var i = 9;i >= 0;i--){
 		if(agencyInfo.List[i]){
-			if(agencyInfo.List[i].roomId === roomId){
+			if(agencyInfo.List[i].roomId === roomId && agencyInfo.List[i].beginTime == agencyRoom.beginTime){
 				agencyInfo.List[i] = agencyRoom
 				GameService.agencyList[agencyId] = agencyInfo
 				// console.log("setAgencyRoomByID====")
