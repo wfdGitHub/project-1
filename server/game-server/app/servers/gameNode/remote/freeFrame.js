@@ -33,15 +33,7 @@ frame.onFrame = function(params,uid,code,cb) {
 					"chair" : chair
 				}
 				frame.GameService.roomList[roomId].channel.pushMessage('onMessage',notify)
-				//发起解散的玩家默认同意
-				local.responseFinish(roomId,chair,true)
-				//离线玩家自动同意
-				var tmpList = frame.GameService.roomList[roomId].getOffLineUser()
-				for(var i = 0;i < tmpList.length;i++){
-					if(tmpList[i] != chair){
-						local.responseFinish(roomId,tmpList[i],true)
-					}
-				}
+
 				//三分钟后默认同意
 				var timerCb = function(roomId) {
 					return function() {
@@ -54,6 +46,15 @@ frame.onFrame = function(params,uid,code,cb) {
 						local.endFinish(roomId)
 					}
 				}(roomId)
+				//发起解散的玩家默认同意
+				local.responseFinish(roomId,chair,true)
+				//离线玩家自动同意
+				var tmpList = frame.GameService.roomList[roomId].getOffLineUser()
+				for(var i = 0;i < tmpList.length;i++){
+					if(tmpList[i] != chair){
+						local.responseFinish(roomId,tmpList[i],true)
+					}
+				}
 				frame.GameService.lockTimer[roomId] = setTimeout(timerCb,90 * 1000)
 				cb(true)
 			}else{
