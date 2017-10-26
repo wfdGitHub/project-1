@@ -144,7 +144,6 @@ handler.bankruptGold = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}
-	next(null,{flag : true})
 }
 
 //领取充值礼包
