@@ -63,7 +63,6 @@ handler.dayLotte = function(msg,session,next) {
 	}else{
 		next(null,{flag : false})
 	}
-	next(null,{flag : true})
 }
 //分享领取奖励
 handler.shareAward = function(msg,session,next) {
