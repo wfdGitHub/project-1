@@ -1066,7 +1066,18 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       cb()     
     }
   }
-
+  //获取离线玩家椅子号列表
+  room.getOffLineUser = function() {
+    var list = []
+    for(var index in player){
+      if(player.hasOwnProperty(index)){
+        if(player[index].isActive && !player[index].isOnline){
+          list.push(index)
+        }
+      }
+    }
+    return list
+  }
   return room 
 }
 
