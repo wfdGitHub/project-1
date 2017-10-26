@@ -53,7 +53,7 @@ handler.dayLotte = function(msg,session,next) {
 	  			if(rand < curWeight){
 	  				//领取奖励
 	  				if(lottoConf[i].type){
-	  					self.app.rpc.db.remote.setValue(session,uid,lottoConf[i].type,lottoConf[i].value,function() {})
+	  					self.app.rpc.db.remote.setValue(session,uid,lottoConf[i].type,lottoConf[i].value,"每日转盘",function() {})
 	  				}
 	  				next(null,{flag : true,"data" : lottoConf[i],"index" : i})
 	  				return
@@ -130,7 +130,7 @@ handler.bankruptGold = function(msg,session,next) {
 		  		//领取奖品
 		  		data.bankruptTimeCount++
 		  		self.app.rpc.db.remote.setPlayerObject(session,uid,"refreshList",data,function() {})
-	  			self.app.rpc.db.remote.setValue(session,uid,"gold",2000,function(){
+	  			self.app.rpc.db.remote.setValue(session,uid,"gold",2000,"领低保",function(){
 					next(null,{flag : true,award : "gold",value : 2000})
 	  			})
 		  	})
