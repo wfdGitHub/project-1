@@ -26,6 +26,8 @@ GameService.userMap = {}
 GameService.RoomMap = {}	
 //代开房数据
 GameService.agencyList = {}
+//剩余可用次数
+GameService.AgencyReopenList = {}
 
 GameService.prototype.start = function(cb) {
 	//初始化房间

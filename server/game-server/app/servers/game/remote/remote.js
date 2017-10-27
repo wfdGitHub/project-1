@@ -16,7 +16,6 @@ var GameRemote = function(app) {
 	GameRemote.GameService = this.app.get("GameService")
 	GameRemote.backendSessionService = this.app.get('backendSessionService');
 	GameRemote.NodeNumber = 0
-	GameRemote.AgencyReopenList = {}
 };
 
 
@@ -30,7 +29,7 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 				//未开始或正在游戏中
 				if(data.List[index].state == 0 || data.List[index].state == 1){
 					data.List[index].players = GameRemote.GameService.RoomMap[data.List[index].roomId]
-					data.List[index].agencyReopenInfo = GameRemote.AgencyReopenList[data.List[index].roomId]
+					data.List[index].agencyReopenInfo = GameRemote.GameService.AgencyReopenList[data.List[index].roomId]
 				}
 			}
 		}
@@ -53,7 +52,7 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 		params.gid = GameRemote.GameService.roomList[roomId]
 		if(params.gid !== undefined && params.gid !== false){
 			// console.log(params.gid)
-			delete GameRemote.AgencyReopenList[roomId]
+			delete GameRemote.GameService.AgencyReopenList[roomId]
 			this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
 				cb(flag)
 			})
@@ -270,7 +269,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		    async.waterfall([
 		    	function(next) {
 		    		//检查有没有空闲房间
-		    		if(params.reopenId && GameRemote.AgencyReopenList[params.reopenId] && !GameRemote.GameService.roomList[params.reopenId]){
+		    		if(params.reopenId && GameRemote.GameService.AgencyReopenList[params.reopenId] && !GameRemote.GameService.roomList[params.reopenId]){
 		    			roomId = params.reopenId
 		    		}else{
 		    			roomId = GameRemote.GameService.getUnusedRoom(params.gameType)
@@ -339,10 +338,10 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	                        }
 	                        GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
 	                        GameRemote.GameService.RoomMap[roomId] = []
-	                        if(GameRemote.AgencyReopenList[roomId]){
-	                        	GameRemote.AgencyReopenList[roomId].count--
+	                        if(GameRemote.GameService.AgencyReopenList[roomId]){
+	                        	GameRemote.GameService.AgencyReopenList[roomId].count--
 	                        }else{
-		                        GameRemote.AgencyReopenList[roomId] = {
+		                        GameRemote.GameService.AgencyReopenList[roomId] = {
 		                        	"uid" : uid,
 		                        	"params" : params,
 		                        	"count" : 1
@@ -444,22 +443,22 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 		GameRemote.GameService.setAgencyRoomByID(agencyId,roomId,agencyRoomInfo)
 		//若为正常结束   则判断是否需要重开
 		if(agencyRoomInfo.state == 2){
-			if(GameRemote.AgencyReopenList[roomId] && GameRemote.AgencyReopenList[roomId].count > 1){
+			if(GameRemote.GameService.AgencyReopenList[roomId] && GameRemote.GameService.AgencyReopenList[roomId].count > 1){
 				//重开当局
-				var tmpUid = GameRemote.AgencyReopenList[roomId].uid
+				var tmpUid = GameRemote.GameService.AgencyReopenList[roomId].uid
 				var tmpSid = GameRemote.userConnectorMap[tmpUid]
-				var tmpParams = GameRemote.AgencyReopenList[roomId].params
+				var tmpParams = GameRemote.GameService.AgencyReopenList[roomId].params
 				tmpParams.reopenId = roomId
 				this.receive(tmpUid, tmpSid,"agency",tmpParams,function(flag) {
 					if(!flag){
-						delete GameRemote.AgencyReopenList[roomId]
+						delete GameRemote.GameService.AgencyReopenList[roomId]
 					}
 				})
 			}else{
-				delete GameRemote.AgencyReopenList[roomId]
+				delete GameRemote.GameService.AgencyReopenList[roomId]
 			}
 		}else{
-			delete GameRemote.AgencyReopenList[roomId]
+			delete GameRemote.GameService.AgencyReopenList[roomId]
 		}
 	}
 
@@ -478,7 +477,7 @@ GameRemote.prototype.changeAgencyReopenCount = function(uid,roomId,count,cb) {
 		cb(false)
 		return
 	}
-	if(!GameRemote.AgencyReopenList[roomId]){
+	if(!GameRemote.GameService.AgencyReopenList[roomId]){
 		cb(false)
 		return
 	}
@@ -496,7 +495,7 @@ GameRemote.prototype.changeAgencyReopenCount = function(uid,roomId,count,cb) {
 		}
 	}
 	if(flag){
-		GameRemote.AgencyReopenList[roomId].count = count
+		GameRemote.GameService.AgencyReopenList[roomId].count = count
 		cb(true)
 	}else{
 		cb(false)

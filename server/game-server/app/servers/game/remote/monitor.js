@@ -16,7 +16,8 @@ remote.roomInfos = function(cb) {
 				var roomInfo = {
 					"roomId" : index,
 					"roomPlayer" : Remote.GameService.RoomMap[index],
-					"time" : Remote.GameService.roomTime[index]
+					"time" : Remote.GameService.roomTime[index],
+					"reopenCount" : Remote.GameService.AgencyReopenList[index] ? Remote.GameService.AgencyReopenList[index].count : false
 				}
 				roomList.push(roomInfo)
 			}
