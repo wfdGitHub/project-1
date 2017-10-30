@@ -139,17 +139,9 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		var consumeMode = GameRemote.roomList[roomId].consumeMode
 		var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 		var needMond = diamondConf.getNeedDiamond(roomType,playerNumber,consumeMode,maxGameNumber)
-		switch(GameRemote.roomList[roomId].consumeMode){
-			case conf.MODE_DIAMOND_HOST : 
-				needMond = 0
-			break;
-			case conf.MODE_DIAMOND_EVERY :
-				needMond = GameRemote.roomList[roomId].needDiamond
-			break;
-			case conf.MODE_DIAMOND_WIN : 
-				needMond = GameRemote.roomList[roomId].needDiamond * 3;
-			break;
-		} 
+		if(GameRemote.roomList[roomId].consumeMode == conf.MODE_DIAMOND_HOST || GameRemote.roomList[roomId].consumeMode == "agency"){
+			needMond = 0
+		}
 		if(diamond >= needMond){
 			next()
 		}else{
@@ -176,10 +168,10 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 		})
 	}
 	],function(err,result) {
-	//console.log(err)
-	//console.log(result)
-	cb(false)
-	return
+		//console.log(err)
+		//console.log(result)
+		cb(false)
+		return
 	})
 }
 //房间指令
