@@ -128,10 +128,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
     room.limitAward = !param.limitAward                //倍率限制
-    room.needDiamond = Math.ceil(room.gameNumber / 10) //本局每人消耗钻石
-    if(room.GAME_PLAYER == 9){
-      room.needDiamond = room.needDiamond * 2
-    }    
     //设置下注上限
     maxBet = 3
     cb(true)
@@ -140,7 +136,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
   room.handle.agency = function(uid,sid,param,cb) {
     local.newRoom(uid,sid,param,function(flag) {
         if(flag){
-          room.needDiamond = 0
           room.agencyId = uid
           roomHost = -1
         }
@@ -956,7 +951,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     room.maxGameNumber = 0               //游戏最大局数
     room.consumeMode = 0                 //消耗模式
     room.bankerMode  = 0                 //定庄模式
-    room.needDiamond = 0                 //钻石基数
     //房间属性
     room.state = true                    //房间状态，true为可创建
     room.playerCount  = 0                //房间内玩家人数
@@ -1032,7 +1026,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
   room.finishGame = function(flag) {
     //游戏一局都没开始则不扣钻石
     if(room.runCount == 0){
-      room.needDiamond = 0
       room.isRecord = false
     }
     room.gameNumber = 0

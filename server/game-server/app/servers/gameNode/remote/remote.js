@@ -9,6 +9,7 @@ var ZhaJinHua = require("../../../games/ZhaJinHua.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log")
 var streamLogger = require("pomelo-logger").getLogger("matchStream-log")
 var httpConf = require("../../../conf/httpModule.js")
+var diamondConf = require("../../../conf/needDiamondConf.js")
 var freeFrame = require("./freeFrame.js")
 var async = require("async")
 
@@ -220,74 +221,56 @@ var gameBegin = function(roomId,agencyId) {
 var gemeOver = function(roomId,players,flag,cb) {
 	clearTimeout(GameRemote.liveTimer[roomId])
 	console.log("gameover")
-	//扣除钻石
-	var roomPlayerCount = 0
-	for(var index in players){
-		if(players.hasOwnProperty(index)){
-			if(players[index].isActive){		
-                roomPlayerCount++
-                delete GameRemote.userMap[players[index].uid]
-			}
-		}
-	}
-	var diamond = GameRemote.roomList[roomId].needDiamond
-	var GAME_PLAYER = roomPlayerCount
-	//console.log("diamond : "+diamond)
-	//console.log("GAME_PLAYER : "+GAME_PLAYER)
-	var agencyId = GameRemote.roomList[roomId].agencyId
+	var roomType = GameRemote.roomList[roomId].roomType
 	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
-	if(diamond !== 0){
-		var allNeedDiamond = diamond * 3
-		if(GameRemote.roomList[roomId].roomType == "zhajinhua"){
-			allNeedDiamond = diamond * 5
-		}
-		switch(GameRemote.roomList[roomId].consumeMode){
-			case MODE_DIAMOND_HOST: 
-				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-allNeedDiamond,null)
-				httpConf.coinChangeRecord(players[0].uid,1,-allNeedDiamond)
-				GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"useDiamond",allNeedDiamond,null)
-				break;
-			case MODE_DIAMOND_EVERY:
-				for(var index in players){
-					if(players.hasOwnProperty(index)){
-                        if(players[index].isActive){
-                            GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
-                            httpConf.coinChangeRecord(players[index].uid,1,-diamond)
-                            GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"useDiamond",diamond,null)
-                        }
-					}
-				}
-				break;
-			case MODE_DIAMOND_WIN: 
-				var win = 0
-				var winScore = 0
-				for(var index in players){
-					if(players.hasOwnProperty(index)){
-                        if(players[index].isActive){
-                            if(players[index].score > winScore){
-                                win = index
-                                winScore = players[index].score
-                            }
+	var playerNumber = GameRemote.roomList[roomId].GAME_PLAYER
+	var consumeMode = GameRemote.roomList[roomId].consumeMode
+	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
+	var diamond = diamondConf.getNeedDiamond(roomType,playerNumber,consumeMode,maxGameNumber)	
+	//扣除钻石
+	var agencyId = GameRemote.roomList[roomId].agencyId
+	if(!agencyId){
+		if(GameRemote.roomList[roomId].isBegin()){
+			switch(GameRemote.roomList[roomId].consumeMode){
+				case MODE_DIAMOND_HOST: 
+					GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"diamond",-diamond,null)
+					httpConf.coinChangeRecord(players[0].uid,1,-diamond)
+					GameRemote.app.rpc.db.remote.setValue(null,players[0].uid,"useDiamond",diamond,null)
+					break;
+				case MODE_DIAMOND_EVERY:
+					for(var index in players){
+						if(players.hasOwnProperty(index)){
+	                        if(players[index].isActive){
+	                            GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"diamond",-diamond,null)
+	                            httpConf.coinChangeRecord(players[index].uid,1,-diamond)
+	                            GameRemote.app.rpc.db.remote.setValue(null,players[index].uid,"useDiamond",diamond,null)
+	                        }
 						}
 					}
-				}
-				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-allNeedDiamond,null)
-				httpConf.coinChangeRecord(players[win].uid,1,-allNeedDiamond)
-				GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"useDiamond",allNeedDiamond,null)
-				break;		
-		}		
+					break;
+				case MODE_DIAMOND_WIN: 
+					var win = 0
+					var winScore = 0
+					for(var index in players){
+						if(players.hasOwnProperty(index)){
+	                        if(players[index].isActive){
+	                            if(players[index].score > winScore){
+	                                win = index
+	                                winScore = players[index].score
+	                            }
+							}
+						}
+					}
+					GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"diamond",-diamond,null)
+					httpConf.coinChangeRecord(players[win].uid,1,-diamond)
+					GameRemote.app.rpc.db.remote.setValue(null,players[win].uid,"useDiamond",diamond,null)
+					break;		
+			}		
+		}
 	}else{
 		//代开房未开始则返回钻石
 		if(agencyId && !GameRemote.roomList[roomId].isBegin()){
-			var tmpDiamond = Math.floor(maxGameNumber / 10)
-			if(GameRemote.roomList[roomId].GAME_PLAYER == 9){
-				tmpDiamond = tmpDiamond * 2
-			}
-			if(GameRemote.roomList[roomId].roomType == "zhajinhua"){
-				tmpDiamond = tmpDiamond * 5
-			}else{
-				tmpDiamond = tmpDiamond * 3
-			}
+			var tmpDiamond = diamondConf.getNeedDiamond(roomType,playerNumber,"agency",maxGameNumber)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"diamond",tmpDiamond,null)
 			GameRemote.app.rpc.db.remote.setValue(null,agencyId,"useDiamond",-tmpDiamond,null)
 			httpConf.coinChangeRecord(agencyId,6,tmpDiamond)

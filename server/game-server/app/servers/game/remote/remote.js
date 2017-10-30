@@ -4,7 +4,7 @@ var tips = require("../../../conf/tips.js").tipsConf
 var async = require("async")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log");
 var httpConf = require("../../../conf/httpModule.js")
-
+var diamondConf = require("../../../conf/needDiamondConf.js")
 //console.log(conf)
 module.exports = function(app) {
 	return new GameRemote(app);
@@ -125,14 +125,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }
-		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9)){
+		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9 && params.playerNumber != 12)){
 	      console.log("agency error   param.playerNumber : "+params.playerNumber)
 	      cb(false)
 	      return
 	    }
-	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
+	    if(!params.gameType || !conf.GAME_TYPE[params.gameType][params.playerNumber]){
 	    	cb(false)
 	    	return
+	    }
+	    if(!params.consumeMode || params.consumeMode < 1 || params.consumeMode > 3){
+	    	cb(false)
+	    	return	    	
 	    }
 	    self.app.rpc.db.remote.checkGameSwitch(null,params.gameType,function(flag) {
 	    	if(flag == true){
@@ -147,36 +151,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						//console.log("a111111 : "+GameRemote.GameService.userMap[uid])
 						//判断是否满足准入数额
 						var diamond = data
-						var needMond = Math.ceil(params.gameNumber / 10)
-						if(params.playerNumber == 9){
-							needMond = needMond * 2
-						}
-
-						if(params.gameType == "zhajinhua"){
-							switch(params.consumeMode){
-								case conf.MODE_DIAMOND_HOST :
-									needMond = needMond * 5
-								break;
-								case conf.MODE_DIAMOND_EVERY :
-									needMond = needMond
-								break;
-								case conf.MODE_DIAMOND_WIN : 
-									needMond = needMond * 5
-								break;
-							}					
-						}else{
-							switch(params.consumeMode){
-								case conf.MODE_DIAMOND_HOST : 
-									needMond = needMond * 3
-								break;
-								case conf.MODE_DIAMOND_EVERY :
-									needMond = needMond
-								break;
-								case conf.MODE_DIAMOND_WIN : 
-									needMond = needMond * 3
-								break;
-							}					
-						}			
+						var needMond = diamondConf.getNeedDiamond(params.gameType,params.playerNumber,params.consumeMode,params.gameNumber)		
 						if(diamond >= needMond && GameRemote.GameService.userMap[uid] === undefined){
 							next(null)
 						}else{
@@ -260,7 +235,11 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      console.log("agency error   param.playerNumber : "+params.playerNumber)
 	      cb(false)
 	      return
-	    }	    
+	    }
+	    if(!params.consumeMode || params.consumeMode < 1 || params.consumeMode > 3){
+	    	cb(false)
+	    	return	    	
+	    }	     
 	    var roomId = 0
 	    var needMond = 0
 
@@ -289,20 +268,13 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		    	function(data,next) {
 		    		//检查钻石是否足够
 					var diamond = data
-					if(params.gameType == "zhajinhua"){
-						needMond = Math.ceil(params.gameNumber / 10) * 5
-					}else{
-						needMond = Math.ceil(params.gameNumber / 10) * 3						
-					}
-					if(params.playerNumber == 9){
-						needMond = needMond * 2
-					}					
+					needMond = diamondConf.getNeedDiamond(params.gameType,params.playerNumber,"agency",params.gameNumber)				
 					if(diamond < needMond){
 						cb(false,{"code" : tips.NO_DIAMOND})
 						return
-					} 
-					next()
-					return
+					}else{
+						next()
+					}
 		    	},
 		    	function(next) {
 		    		//代开房
