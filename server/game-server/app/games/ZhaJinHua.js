@@ -172,6 +172,7 @@ var MING_CARD_NUM = 3               //明牌数量
           if(flag){
             roomHost = -1
             room.agencyId = uid
+            room.consumeMode = "agency"
           }
           cb(flag)
       })  

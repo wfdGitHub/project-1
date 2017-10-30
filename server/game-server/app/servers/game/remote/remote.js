@@ -125,16 +125,18 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }
-		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9 && params.playerNumber != 12)){
+		if(!params.playerNumber || typeof(params.playerNumber) !== "number" || (params.playerNumber != 6 && params.playerNumber != 9)){
 	      console.log("agency error   param.playerNumber : "+params.playerNumber)
 	      cb(false)
 	      return
 	    }
-	    if(!params.gameType || !conf.GAME_TYPE[params.gameType][params.playerNumber]){
+	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
+	    	console.log("agency error   param.gameType : "+params.gameType)
 	    	cb(false)
 	    	return
 	    }
 	    if(!params.consumeMode || params.consumeMode < 1 || params.consumeMode > 3){
+	    	console.log("agency error   param.consumeMode : "+params.consumeMode)
 	    	cb(false)
 	    	return	    	
 	    }

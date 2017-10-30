@@ -160,6 +160,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
         if(flag){
           room.agencyId = uid
           roomHost = -1
+          room.consumeMode = "agency"
         }
         cb(flag)
     })
