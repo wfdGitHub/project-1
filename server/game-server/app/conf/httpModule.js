@@ -162,11 +162,12 @@ module.exports.sendDiamondHttp = function(uid,coin,diamond,type) {
   req.end()
 }
 
-module.exports.coinChangeRecord = function(uid,type,diamond) {
+module.exports.coinChangeRecord = function(uid,type,diamond,roomId) {
   var data = {
     "game_uid" : uid,
     "type" : type,
-    "coin" : diamond
+    "coin" : diamond,
+    "roomId" : roomId
   }
   var keys = Object.keys(data).sort()
   var string = ""
