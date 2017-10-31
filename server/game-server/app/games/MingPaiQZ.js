@@ -244,10 +244,10 @@ var MING_CARD_NUM = 4               //明牌数量
         return
       }
       //是否允许中途加入
-      if(room.halfwayEnter == false && room.isBegin()){
-        cb(false,tips.CANT_HALF_JOIN)
-        return
-      }
+      // if(room.halfwayEnter == false && room.isBegin()){
+      //   cb(false,tips.CANT_HALF_JOIN)
+      //   return
+      // }
       //不可重复加入
       for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].uid === uid){

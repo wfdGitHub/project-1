@@ -173,16 +173,21 @@ module.exports.createRoom = function(roomId,channelService,gameBegincb,gameOverc
   //玩家加入
   room.handle.join = function(uid,sid,param,cb) {
     log("serverId"+sid)
+    //玩家已在房间中改为重连
+    if(room.chairMap[uid]){
+      room.reconnection(uid,sid,param,cb)
+      return
+    }    
     //房间未创建不可加入
     if(room.state == true){
       cb(false)
       return
     }
-    //是否允许中途加入
-    if(room.halfwayEnter == false && room.isBegin()){
-      cb(false,tips.CANT_HALF_JOIN)
-      return
-    }
+    // //是否允许中途加入
+    // if(room.halfwayEnter == false && room.isBegin()){
+    //   cb(false,tips.CANT_HALF_JOIN)
+    //   return
+    // }
     //不可重复加入
     for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i] && player[i].uid === uid){
