@@ -97,8 +97,8 @@ var Handler = function(app) {
         else if (req.method.toUpperCase() == 'GET') {
 			console.log("get")
         }
-	}).listen(20379, function () {
-	    console.log("listen on port 20379");
+	}).listen(20279, function () {
+	    console.log("listen on port 20279");
 	});			
 	}
 

@@ -233,7 +233,7 @@ var MING_CARD_NUM = 4               //明牌数量
     //玩家加入
     room.handle.join = function(uid,sid,param,cb) {
       //玩家已在房间中改为重连
-      if(room.chairMap[uid]){
+      if(room.chairMap[uid] !== undefined){
         room.reconnection(uid,sid,param,cb)
         return
       }
