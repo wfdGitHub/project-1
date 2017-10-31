@@ -124,7 +124,15 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							"nickname" : playerInfo.nickname,
 							"head" : playerInfo.head
 						}
-						GameRemote.GameService.RoomMap[roomId].push(info)						
+						var tmpFlag = true
+						for(var index in GameRemote.GameService.RoomMap[roomId]){
+							if(GameRemote.GameService.RoomMap[roomId][index].uid == playerInfo.uid){
+								tmpFlag = false
+							}
+						}
+						if(tmpFlag){
+							GameRemote.GameService.RoomMap[roomId].push(info)							
+						}
 					}					
 				}
 			}
