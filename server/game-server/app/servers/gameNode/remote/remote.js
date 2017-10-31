@@ -164,7 +164,7 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 			if(flag){
 				GameRemote.userMap[uid] = roomId
 			}
-			cb(flag,{"code" : code,},playerInfo)
+			cb(flag,{"code" : code},playerInfo)
 		})
 	}
 	],function(err,result) {
