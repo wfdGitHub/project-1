@@ -122,7 +122,7 @@ handler.bankruptGold = function(msg,session,next) {
 		  			data.bankruptTimeCount = 0
 		  			data.bankruptTime = dateString
 		  		}
-		  		if(data.bankruptTimeCount >= 100){
+		  		if(data.bankruptTimeCount >= 2){
 		  			next(null,{flag : false})
 		  			return
 		  		}
