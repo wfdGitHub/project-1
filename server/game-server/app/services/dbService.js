@@ -53,7 +53,7 @@ dbService.checkData = function(uid) {
 }
 
 dbService.getPlayerInfoByUid = function(uid,cb) {
-	dbService.checkData(uid)
+	// dbService.checkData(uid)
 	var cmd1 = "nn:acc:"+uid+":"+"diamond"
 	var cmd2 = "nn:acc:"+uid+":"+"uid"
 	var cmd3 = "nn:acc:"+uid+":"+"nickname"
@@ -65,7 +65,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd9 = "nn:acc:"+uid+":"+"useDiamond"
 	var cmd10 = "nn:acc:"+uid+":"+"gold"
 	var cmd11 = "nn:acc:"+uid+":"+"contorl"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,function(err,data) {
+	var cmd12 = "nn:acc:"+uid+":"+"clubLimit"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -79,6 +80,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["useDiamond"] = data[8] || 0
 			notify["gold"] = data[9] || 0
 			notify["contorl"] = data[10] || 0
+			notify["clubLimit"] = data[11] || 0
 			notify["playerId"] = uid
 			cb(notify)
 		}else{

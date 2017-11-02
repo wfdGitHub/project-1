@@ -2,6 +2,7 @@ var async = require("async")
 var http=require("http");
 var diamondLogger = require("pomelo-logger").getLogger("diamond-log");
 var giveDiamondLogger = require("pomelo-logger").getLogger("giveDiamond-log");
+var managerLogger = require("pomelo-logger").getLogger("manager-log");
 var httpConf = require("../../../conf/httpModule.js")
 
 module.exports = function(app) {
@@ -29,6 +30,7 @@ var Handler = function(app) {
 			req.addListener("end", function () {
 				var data=JSON.parse(postData);
                 //console.log(data)
+				managerLogger.info(JSON.stringify(data))
 				switch(data.cmd){
 					case "addDiamond" : 
 						local.addDiamond(data.diamond,data.uid,function(flag) {
@@ -93,9 +95,14 @@ var Handler = function(app) {
 							local.write(res,data)
 						})
 					return
+					case "setClubLimit" :
+						local.setClub(data.uid,function(data) {
+							local.write(res,data)
+						})						
+					return
 					default :
 						local.write(res,{"flag" : false})
-						break
+					break
 				}
             });
         }
@@ -227,6 +234,40 @@ local.setAgency = function(uid,cb){
 			return
 	})
 }
+//开启俱乐部权限
+local.setClub = function(uid,cb){
+	if(!uid || typeof(uid) != "number" || uid < 0){
+		cb(false)
+		return 
+	}
+	async.waterfall([
+		function(next) {
+			//查询用户是否存在
+			Handler.app.rpc.db.remote.getValue(null,uid,"uid",function(data) {
+				if(uid === data){
+					//玩家存在
+					next()
+				}else{
+					//玩家不存在
+					cb(false)
+				}
+			})	
+		},
+		function() {
+			//设置代理权限
+			Handler.app.rpc.db.remote.changeValue(null,uid,"clubLimit",1,function(flag){
+				cb(flag)
+			})	
+		}
+		],
+		function(err,result) {
+			console.log(err)
+			console.log(result)
+			next(null)
+			return
+	})
+}
+
 //查询玩家信息
 local.getUserInfo = function(uid,cb) {
 	if(!uid || typeof(uid) != "number" || uid < 0){

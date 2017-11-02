@@ -12,7 +12,7 @@ var DBRemote = function(app) {
     if(DBRemote.dbService && DBRemote.dbService.db){
     	DBRemote.db = DBRemote.dbService.db
     }
-}	
+}
 
 var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
@@ -27,6 +27,7 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"useDiamond",0)
 		DBRemote.dbService.setPlayer(uid,"gold",0)
 		DBRemote.dbService.setPlayer(uid,"contorl",0)
+		DBRemote.dbService.setPlayer(uid,"clubLimit",0)
 		//历史战绩
 		var history = {}
 		history.allGames = 0
@@ -36,7 +37,13 @@ var createAccount = function(result,cb) {
 		var refreshList = {}
 		refreshList.shareTime = 0 					//分享领取奖励
 		refreshList.shareCount = 0 					
-		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)		
+		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
+        var tmpObj = {
+        	"switch" : "false"
+        }
+        var cmd = "nn:acc:"+uid+":"+"clubList"
+        //俱乐部成员列表
+		DBRemote.dbService.db.hmset(cmd,tmpObj,function(){})
 		cb(false)
 	})
 }
@@ -107,6 +114,88 @@ DBRemote.prototype.updateNotify = function(notify,source,cb) {
 		}
 	})
 }
+//改变俱乐部开启开关
+DBRemote.prototype.clubSwitch = function(uid,flag,cb) {
+	var cmd = "nn:acc:"+uid+":"+"clubList"
+	DBRemote.dbService.db.hset(cmd,"switch",flag,function(err,value) {
+		if(!err){
+			cb(true)
+		}
+	})
+}
+//获取俱乐部成员列表
+DBRemote.prototype.getClubList = function(uid,cb) {
+    var cmd = "nn:acc:"+uid+":"+"clubList"
+    //俱乐部成员列表
+	DBRemote.dbService.db.hgetall(cmd,function(err,data){
+		if(err){
+			cb(false)
+		}else{
+			cb(data)
+		}
+	})
+}
+//添加俱乐部成员
+DBRemote.prototype.addClubPlayer = function(uid,playerId,cb) {
+	 DBRemote.dbService.getPlayerInfoByUid(playerId,function(data) {
+	 	if(data && playerId == data.playerId){
+		 	var tmpInfo = {
+		 		"uid" : data.uid,
+		 		"head" : data.head,
+		 		"nickname" : data.nickname
+		 	}
+	 		var cmd = "nn:acc:"+uid+":"+"clubList"
+ 			DBRemote.dbService.db.hset(cmd,playerId,JSON.stringify(tmpInfo),function(err,value) {
+ 				if(value == 1){
+ 					cb(tmpInfo)
+ 				}else{
+ 					cb(false)
+ 				}
+ 			})
+	 	}else{
+	 		cb(false)
+	 	}
+	 })
+}
+//删除俱乐部成员
+DBRemote.prototype.removePlayer = function(uid,playerId,cb) {
+	var cmd = "nn:acc:"+uid+":"+"clubList"
+	DBRemote.dbService.db.hdel(cmd,playerId,function(err,value) {
+		if(value == 1){
+			cb(true)
+		}else{
+			cb(false)
+		}
+	})
+}
+//判断playerid玩家是否可加入uid玩家开的房间  返回true代表可加入，false代表不可加入
+DBRemote.prototype.checkClubLimit = function(uid,playerId,cb) {
+	DBRemote.dbService.getPlayer(uid,"clubLimit",function(data) {
+		if(data < 1){
+			//未开启俱乐部权限所有人可加入
+			cb(true)
+			return
+		}
+		var cmd = "nn:acc:"+uid+":"+"clubList"
+		//查询是否开启仅俱乐部成员可加入
+		DBRemote.dbService.db.hget(cmd,"switch",function(err,value) {
+			if(err || value == "false"){
+				cb(true)
+				return
+			}
+			//查询成员是否在列表中
+			DBRemote.dbService.db.hexists(cmd,playerId,function(err,value) {
+				if(value == true){
+					cb(true)
+				}else{
+					cb(false)
+				}
+			})
+		})		
+	})
+}
+
+
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
 	var cmd = "nn:acc:"+uid+":"+name
