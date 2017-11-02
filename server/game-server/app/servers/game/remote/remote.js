@@ -107,7 +107,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						if(flag){
 							next()
 						}else{
-			                cb(false,{"code" : conf.CLUB_LIMIT})
+			                cb(false,{"code" : tips.CLUB_LIMIT})
 			                return
 						}
 					})
@@ -128,6 +128,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							}
 						}
 						cb(flag,msg)
+						return
 					})
 				}
 			],function (err, result) {

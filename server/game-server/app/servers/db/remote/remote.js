@@ -170,6 +170,10 @@ DBRemote.prototype.removePlayer = function(uid,playerId,cb) {
 }
 //判断playerid玩家是否可加入uid玩家开的房间  返回true代表可加入，false代表不可加入
 DBRemote.prototype.checkClubLimit = function(uid,playerId,cb) {
+	if(uid == playerId){
+		cb(true)
+		return
+	}
 	DBRemote.dbService.getPlayer(uid,"clubLimit",function(data) {
 		if(data < 1){
 			//未开启俱乐部权限所有人可加入
