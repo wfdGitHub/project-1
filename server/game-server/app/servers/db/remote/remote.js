@@ -138,7 +138,7 @@ DBRemote.prototype.getClubList = function(uid,cb) {
 //添加俱乐部成员
 DBRemote.prototype.addClubPlayer = function(uid,playerId,cb) {
 	 DBRemote.dbService.getPlayerInfoByUid(playerId,function(data) {
-	 	if(data && playerId == data.playerId){
+	 	if(data && playerId == data.uid){
 		 	var tmpInfo = {
 		 		"uid" : data.uid,
 		 		"head" : data.head,
