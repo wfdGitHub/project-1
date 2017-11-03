@@ -145,13 +145,20 @@ DBRemote.prototype.addClubPlayer = function(uid,playerId,cb) {
 		 		"nickname" : data.nickname
 		 	}
 	 		var cmd = "nn:acc:"+uid+":"+"clubList"
- 			DBRemote.dbService.db.hset(cmd,playerId,JSON.stringify(tmpInfo),function(err,value) {
- 				if(value == 1){
- 					cb(tmpInfo)
- 				}else{
- 					cb(false)
- 				}
- 			})
+	 		DBRemote.dbService.db.hlen(cmd,function(err,value) {
+	 			if(err || value > 200){
+	 				cb(false)
+	 				return
+	 			}else{
+		 			DBRemote.dbService.db.hset(cmd,playerId,JSON.stringify(tmpInfo),function(err,value) {
+		 				if(value == 1){
+		 					cb(tmpInfo)
+		 				}else{
+		 					cb(false)
+		 				}
+		 			})
+	 			}
+	 		})
 	 	}else{
 	 		cb(false)
 	 	}
