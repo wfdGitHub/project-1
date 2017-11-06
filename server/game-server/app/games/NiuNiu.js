@@ -421,6 +421,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       "oldBankerScore" : player[tmpOldBanker].score
     }
     local.sendAll(notify)
+    cb(true)
   }
   //玩家抢庄
   room.handle.robBanker = function(uid,sid,param,cb) {
