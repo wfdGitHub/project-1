@@ -151,10 +151,12 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return        
       }
-      if(typeof(param.isWait) !== "boolean"){
-          param.isWait = true
+      if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
+        log("newRoom error   param.waitMode : "+param.waitMode)
+        cb(false)
+        return
       }
-      frame.start(param.isWait)
+      frame.start(param.waitMode)
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }
@@ -277,6 +279,7 @@ var MING_CARD_NUM = 4               //明牌数量
     //游戏开始
     local.gameBegin = function(argument) {
       log("gameBegin") 
+      frame.begin()
       gameState = conf.GS_GAMEING   
       //第一次开始游戏调用游戏开始回调
       if(room.gameNumber === room.maxGameNumber){

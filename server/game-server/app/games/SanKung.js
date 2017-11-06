@@ -128,10 +128,12 @@ var MING_CARD_NUM = 2               //明牌数量
       if(typeof(param.basicType) !== "number" || !betType[param.basicType]){
             param.basicType = 1
       }
-      if(typeof(param.isWait) !== "boolean"){
-        param.isWait = true
+      if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
+        log("newRoom error   param.waitMode : "+param.waitMode)
+        cb(false)
+        return
       }
-      frame.start(param.isWait)
+      frame.start(param.waitMode)
       //是否允许中途加入
       if(param.halfwayEnter === false){
         room.halfwayEnter = false
@@ -315,6 +317,7 @@ var MING_CARD_NUM = 2               //明牌数量
     //游戏开始
     local.gameBegin = function(argument) {
       log("gameBegin") 
+      frame.begin()
       gameState = conf.GS_GAMEING
       if(banker !== -1){
         //重置庄家信息

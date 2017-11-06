@@ -3,10 +3,18 @@ var conf = require("../../conf/niuniuConf.js").niuConf
 
 frameFactory.createFrame = function() {
   var frame = {}
-  frame.waitFlag = true   //离线等待
+  frame.waitFlag = 1   // 0 离线不等待 1 离线等待  2 准备倒计时
+  frame.timer = false
 
-  frame.start = function(isWait) {
-    frame.waitFlag = isWait
+  frame.start = function(flag) {
+    frame.waitFlag = flag
+  }
+
+
+  frame.begin = function() {
+    //游戏开始回调
+    clearTimeout(frame.timer)
+    frame.timer = false
   }
 
   frame.ready = function (uid,chair,player,gameState,local,nextcb,banker,cb) {
@@ -23,6 +31,8 @@ frameFactory.createFrame = function() {
         chair : chair
       }
       local.sendAll(notify)
+
+
       //房间内玩家全部准备且人数大于2时开始游戏
       var readyFlag = true
       var readyCount = 0
@@ -33,34 +43,65 @@ frameFactory.createFrame = function() {
             if(player[index].isReady){
               readyCount++
             }
-            if(frame.waitFlag){
+            if(frame.waitFlag == 1){
               //全部玩家中有人未准备则不开始
               if(player[index].isReady == false){
                 readyFlag = false
-              }            
-            }else{
+              }
+            }else if(frame.waitFlag == 0 || frame.waitFlag == 2){
               //在线玩家中有人未准备则不开始
               if(player[index].isReady == false && player[index].isOnline){
                 readyFlag = false
-              }            
+              }
             }
           }
         }
       }
-      console.log("banker : "+banker)
+      //当庄家未准备时不能开始
       if(banker >= 0 && player[banker] && !player[banker].isReady){
-        readyFlag = false
+        return
       }
-      if(readyFlag && readyCount >= 2){
-          //console.log("beginGame")
-          //发送游戏开始消息
-          notify = {
-            "cmd" : "gameStart"
+      if(readyCount >= 2){
+        if(frame.waitFlag == 2){
+          //准备倒计时    当已准备玩家大于最低玩家数量后开始游戏
+          if(readyFlag){
+              //console.log("beginGame")
+              //发送游戏开始消息
+              notify = {
+                "cmd" : "gameStart"
+              }
+              local.sendAll(notify)
+              //TODO游戏开始
+              clearTimeout(frame.timer)
+              nextcb()
+          }else if(frame.timer === false){
+            clearTimeout(frame.timer)
+            notify = {
+              "cmd" : "readyBegin"
+            }
+            local.sendAll(notify) 
+            frame.timer = setTimeout(function(){
+              notify = {
+                "cmd" : "gameStart"
+              }
+              local.sendAll(notify)
+              //TODO游戏开始
+              nextcb()
+            },10000)
           }
-          local.sendAll(notify)
-          //TODO游戏开始
-          nextcb()
-      }      
+        }else{
+          if(readyFlag){
+              //console.log("beginGame")
+              //发送游戏开始消息
+              notify = {
+                "cmd" : "gameStart"
+              }
+              local.sendAll(notify)
+              //TODO游戏开始
+              nextcb()
+          }
+        }
+      }
     }
     cb(true)
   }
@@ -90,7 +131,7 @@ frameFactory.createFrame = function() {
             //在线玩家中有人未准备则不开始
             if(player[index].isReady == false && player[index].isOnline){
               readyFlag = false
-            }            
+            }
           }
         }
       }

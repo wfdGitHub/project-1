@@ -115,12 +115,14 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     } 
     if(typeof(param.basicType) !== "number" || !betType[param.basicType]){
           param.basicType = 1
-    }    
-    if(typeof(param.isWait) !== "boolean"){
-        param.isWait = true
     }
     room.basicType = param.basicType
-    frame.start(param.isWait)    
+    if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
+      log("newRoom error   param.waitMode : "+param.waitMode)
+      cb(false)
+      return
+    }
+    frame.start(param.waitMode)
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
     }
@@ -682,6 +684,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
   //游戏开始
   local.gameBegin = function() {
     if(room.gameNumber > 0){
+      frame.begin()
       log("gameBegin")   
       gameState = conf.GS_GAMEING    
       //第一次开始游戏调用游戏开始回调
