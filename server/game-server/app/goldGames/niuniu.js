@@ -1219,7 +1219,7 @@ var betType = {
   room.isFree = function(){
     return gameState === conf.GS_FREE
   }
-  room.isHaveHumen = function() {
+  room.isOnline = function() {
     var flag = false
     for(var i = 0;i < GAME_PLAYER;i++){
       if(player[i].isActive && !player[i].isRobot && player[i].isOnline){

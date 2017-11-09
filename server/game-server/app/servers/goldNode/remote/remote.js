@@ -4,6 +4,7 @@ var giveCfg = require("../../../conf/give.js")
 var goldMingpai = require("../../../goldGames/goldMingpai.js")
 var goldNiuNiu = require("../../../goldGames/niuniu.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
+var solitaireLogger = require("pomelo-logger").getLogger("solitaire-log")
 var lottoConf = require("../../../conf/lotto.js")
 var httpConf = require("../../../conf/httpModule.js")
 var async = require("async")
@@ -138,21 +139,7 @@ local.quitRoom = function(uid,roomId,cb) {
 	})
 }
 
-//玩家重连
-GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
-	if(GameRemote.roomList[roomId]){
-		GameRemote.roomList[roomId].reconnection(parseInt(uid),sid,function(data) {
-			cb(data)
-		})
-	}else{
-		cb(false)
-	}
-}
-//玩家离开
-GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
-	GameRemote.roomList[roomId].leave(uid)
-	cb(true)
-}
+
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
 	switch(code){
@@ -470,4 +457,79 @@ local.gemeOver = function(roomId,players,type) {
 	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,players,type,function(){})
 	GameRemote.roomList[roomId].gameOver()
 	GameRemote.roomList[roomId] = false
+}
+
+
+
+//===============单人游戏房间内容================================//
+
+var S_ROOM_TYPE = {
+	"flop" : true
+}
+
+
+//创建单人房间
+GameRemote.prototype.S_createRoom = function(params,uid,sid,info,roomId,cb) {
+	if(!S_ROOM_TYPE[params.gameType]){
+		cb(false)
+		return
+	}
+	GameRemote.roomList[roomId] = S_ROOM_TYPE[params.gameType].createRoom(roomId,GameRemote.channelService,local.S_beginCB,local.S_settlementCB,local.S_gemeOverCB)
+	GameRemote.userMap[uid] = roomId
+	clearTimeout(GameRemote.liveTimer[roomId])
+	GameRemote.liveTimer[roomId] = setTimeout(S_finishGameOfTimer(roomId),1 * 60 * 1000)	
+	//记录日志
+	solitaireLogger.info("uid : "+uid+" createRoom : "+params.gameType)
+}
+
+//游戏开始回调
+local.S_beginCB = function(roomId) {
+	console.log(roomId+ " : roomId game begin")
+}
+
+//小结算回调
+local.S_settlementCB = function(roomId) {
+	console.log(roomId+" : roomId game settlement")
+}
+
+//房间结束回调
+local.S_gemeOverCB = function(roomId) {
+	console.log(roomId+" : roomId game gemeOver")
+}
+
+
+//房间超时回调
+var S_finishGameOfTimer = function(index) {
+	return function() {
+		//房间内玩家不在线则解散
+		if(!GameRemote.roomList[index].isOnline()){
+			//记录日志
+			var info = "S_finishGameOfTimer   gold Room finish   roomId  : "+ index
+			solitaireLogger.info(info)
+			GameRemote.roomList[index].finishGame()
+		}else{
+			//玩家在线则过一段时间后再次发起再次解散
+			GameRemote.liveTimer[index] = setTimeout(S_finishGameOfTimer(index),1 * 60 * 1000)
+		}
+	}
+}
+
+
+
+
+
+//玩家重连
+GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
+	if(GameRemote.roomList[roomId]){
+		GameRemote.roomList[roomId].reconnection(parseInt(uid),sid,function(data) {
+			cb(data)
+		})
+	}else{
+		cb(false)
+	}
+}
+//玩家离开
+GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
+	GameRemote.roomList[roomId].leave(uid)
+	cb(true)
 }
