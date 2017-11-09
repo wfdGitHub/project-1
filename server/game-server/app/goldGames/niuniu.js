@@ -895,14 +895,13 @@ var betType = {
             //找到牌型最小且赢的玩家
             var tmpMin = -1
             for(var i = 0;i < GAME_PLAYER;i++){
-              if(player[i].isReady && i != banker && curScores[i] > 0 && (tmpMin == -1 || logic.compare(result[tmpMin],result[i]))){
+              if(player[i].isActive && player[i].isReady && i != banker && curScores[i] > 0 && (tmpMin == -1 || logic.compare(result[tmpMin],result[i]))){
                   tmpMin = i
               }
             }
             // console.log("tmpMin : "+tmpMin + "    tmpScore : "+tmpScore)
             if(tmpMin == -1){
-              // console.log(player)
-              // console.log(result)
+              break
             }
             if(curScores[tmpMin] > 0){
               if(curScores[tmpMin] >= tmpScore){
@@ -1093,7 +1092,9 @@ var betType = {
     }
     //积分改变
     local.changeScore = function(chair,score) {
+      if(score && parseInt(score)){
           player[chair].score = parseInt(player[chair].score) + parseInt(score)  
+      }
     }
 
     //广播消息
