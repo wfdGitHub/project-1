@@ -1,5 +1,6 @@
 var frameFactory =   module.exports
 var conf = require("../../conf/niuniuConf.js").niuConf
+var waitTime = 10000
 
 frameFactory.createFrame = function() {
   var frame = {}
@@ -77,7 +78,8 @@ frameFactory.createFrame = function() {
           }else if(frame.timer === false){
             clearTimeout(frame.timer)
             notify = {
-              "cmd" : "readyBegin"
+              "cmd" : "readyBegin",
+              "waitTime" : waitTime
             }
             local.sendAll(notify) 
             frame.timer = setTimeout(function(){
@@ -87,7 +89,7 @@ frameFactory.createFrame = function() {
               local.sendAll(notify)
               //TODO游戏开始
               nextcb()
-            },10000)
+            },waitTime)
           }
         }else{
           if(readyFlag){
