@@ -460,7 +460,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     var flag = true
     for(var index in robState){
       if(robState.hasOwnProperty(index)){
-        if(player[index].isActive){
+        if(player[index].isActive && player[index].isReady){
           if(robState[index] == 0){
             flag = false
           }
