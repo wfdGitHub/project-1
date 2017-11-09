@@ -223,6 +223,16 @@
         }
       ,"backups": 5,
       "category":"diamondRecord-log"
+    },
+    {
+      "type": "file",
+      "filename": "${opts:base}/logs/monitor/solitaire.log",
+      "maxLogSize": 4194304,
+      "layout": {
+          "type": "basic"
+        }
+      ,"backups": 5,
+      "category":"solitaire-log"
     }
   ],
 
