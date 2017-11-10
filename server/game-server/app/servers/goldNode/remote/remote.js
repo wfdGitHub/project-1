@@ -350,7 +350,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 		if(WinCharge < rate){
 			WinCharge = rate
 		}
-		player[tmpWinIndex].score -= tmpRate
+		player[tmpWinIndex].score -= WinCharge
 		tmpChargeList[tmpWinIndex] = WinCharge
 		var tmpNotify = {
 			"cmd" : "winCharge",
