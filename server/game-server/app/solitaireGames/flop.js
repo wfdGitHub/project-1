@@ -1,6 +1,6 @@
 //翻牌机
 //游戏逻辑算法
-var logic = 
+var logic = require("./logic/flopLogic.js")
 //配置文件
 var conf = require("../conf/niuniuConf.js").niuConf
 //创建单人房间
@@ -13,24 +13,66 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 	channelService.destroyChannel(roomId)
 	room.channel = channelService.getChannel(roomId,true)
 	room.channel.add(userInfo.uid,userInfo.sid)
+
+	room.handle = {}
 	//================================//
 	//初始化玩家信息
 	var player = {}
 	player.playerInfo = userInfo
 	player.isOnline = true
-	//================================//
-	
+	player.score = parseInt(userInfo.gold)
+	player.handCard = new Array(5)
 
+	//================================//
+	//初始化牌组
+	var cards = logic.shuffle()
+	var result ={}
+	var bet = 0
 	//房间私有方法
 	var local = {}
 
 	local.gameBegin = function() {
+		//改变状态
+		room.state = conf.GS_GAMEING
+		//发牌
+        for(var i = 0;i < 5;i++){
+          player.handCard[i] = cards[i];
+        }
+        result = logic.getType(player.handCard)
+        var notify = {
+        	"cmd" : "oneHandCard",
+        	"handCard" : player.handCard
+        }
+        local.sendAll(notify)
 		//开始回调
-		beginCB(roomId)
+		beginCB(roomId,bet)
+	}
+	local.againBegin = function(list) {
+		//再次翻牌
+		room.state = conf.GS_DEAL
+		for(var i = 0;i < list.length;i++){
+			//随机一个牌组里的牌进行交换
+			var rand = Math.floor(Math.random() * 48.9999999) + 5
+	    	var tmpCard = cards[rand]
+	    	cards[rand] = player.handCard[list[i]]
+	    	player.handCard[list[i]] = tmpCard
+		}
+		result = logic.getType(player.handCard)
+        var notify = {
+        	"cmd" : "towHandCard",
+        	"handCard" : player.handCard
+        }
+        local.sendAll(notify)
+        local.settlement()
 	}
 	local.settlement = function() {
+		console.log(result)
+		var award = bet * result.award
+		console.log("award : " + award)
+		bet = 0
 		//结算回调
-		settlementCB(roomId)
+		settlementCB(roomId,award)
+		room.state = conf.GS_FREE
 	}
 	local.gameOver = function() {
 		channelService.destroyChannel(roomId)
@@ -42,6 +84,35 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		gemeOverCB(roomId)
 	}
 
+	//================================//
+	//玩家操作
+	
+	//押注
+	room.handler.bet = function(value,cb) {
+		if(typeof(value) != "number" || value < 0 || value > player.score){
+			cb(false)
+			return
+		}
+		bet = value
+		cb(true)
+		return
+	}
+	//开始发牌
+	room.handler.begin = function(cb) {
+		if(room.state != conf.GS_FREE){
+			cb(false)
+			return
+		}
+		local.gameBegin()
+	}
+	//翻牌
+	room.handler.again = function(cb) {
+		if(room.state != conf.GS_GAMEING){
+			cb(false)
+			return
+		}
+		local.againBegin()
+	}
 
 	//================================//
 	

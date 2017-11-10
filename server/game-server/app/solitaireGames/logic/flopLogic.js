@@ -1,16 +1,17 @@
-var COMB_TYPE_NONE  =   0            // 无         0
+var COMB_TYPE_NONE  =    0           // 无         0
 var COMB_TYPE_OX1   =    1           // 一对8以上  1
 var COMB_TYPE_OX2   =    2           // 两对       2
 var COMB_TYPE_OX3   =    3           // 三条       3
 var COMB_TYPE_OX4   =    4           // 顺子       5
 var COMB_TYPE_OX5   =    5           // 同花       7
 var COMB_TYPE_OX6   =    6           // 葫芦       10
-var COMB_TYPE_OX7   =    7           // 四条       60
-var COMB_TYPE_OX8   =    8           // 同花顺     150
-var COMB_TYPE_OX9   =    9           // 同花大顺   250
-var COMB_TYPE_OX10  =    10          // 五条       750
-var awardList = [0,1,2,3,5,7,10,60,150,250,750]
-
+var COMB_TYPE_OX7   =    7           // 小四条     50
+var COMB_TYPE_OX8   =    8           // 大四条     80
+var COMB_TYPE_OX9   =    9           // 同花顺     120
+var COMB_TYPE_OX10  =    10          // 五条       250
+var COMB_TYPE_OX11  =    11          // 同花大顺   500
+var COMB_TYPE_OX12  =    12          // FIVE BARS  1000
+var awardList = [0,1,2,3,5,7,10,50,80,120,250,500,1000]
 var CARD_VALUE = {
   "1" : 14,
   "2" : 2,
@@ -89,6 +90,14 @@ module.exports.getType = function(hand){
   	cardList[handCard[i].num]++
   }
   var wangCount = cardList[20]
+  //同花大顺
+  if(shunFlag && tongHuaFlag){
+    if(CARD_VALUE[handCard[0].num] == 10 && CARD_VALUE[handCard[4].num] == 14){
+      cardType.type = COMB_TYPE_OX11
+      cardType.award = awardList[cardType.type]
+      return cardType      
+    }
+  }  
   //五条
   for(var i = 1;i <= 13;i++){
     if(cardList[i] + wangCount == 5){
@@ -97,24 +106,21 @@ module.exports.getType = function(hand){
       return cardType
     }
   }
-  //同花大顺
+  //同花顺
   if(shunFlag && tongHuaFlag){
-    if(CARD_VALUE[handCard[0].num] == 10 && CARD_VALUE[handCard[4].num] == 14){
       cardType.type = COMB_TYPE_OX9
       cardType.award = awardList[cardType.type]
       return cardType      
-    }else{
-      //同花顺
-      cardType.type = COMB_TYPE_OX8
-      cardType.award = awardList[cardType.type]
-      return cardType        
-    }
-  }
+  }    
   //四条
   for(var i = 1;i <= 13;i++){
     if(cardList[i] + wangCount == 4){
-      cardType.type = COMB_TYPE_OX7
-      cardType.award = awardList[cardType.type]
+      if(CARD_VALUE[i] > 10){
+        cardType.type = COMB_TYPE_OX8
+      }else{
+        cardType.type = COMB_TYPE_OX7
+      }
+      cardType.award = awardList[cardType.type]  
       return cardType
     }
   }
@@ -158,7 +164,7 @@ module.exports.getType = function(hand){
     cardType.award = awardList[cardType.type]
     return cardType    
   }
-  //一对8以上
+  //一对7以上
   if(twoFlag > 0){
     var tmpFlag = false
     for(var i = 8;i <= 13;i++){
