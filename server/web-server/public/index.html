@@ -334,32 +334,36 @@
             }
           );        
       }
-
+      //创建房间
       var singleRoom = function() {
           pomelo.request("connector.entryHandler.sendData",{"code" : "createSingleRoom","params" : {"gameType" : "flop"}}, function(data) {
               console.log(data)
             }
           );
       }
-
-      var sbegin = function() {
-          pomelo.request("connector.entryHandler.sendData",{"code" : "begin"}, function(data) {
-              console.log(data)
-            }
-          );
-      }
-      var sagain = function(list) {
-          pomelo.request("connector.entryHandler.sendData",{"code" : "again","params" : {list : list}}, function(data) {
-              console.log(data)
-            }
-          );
-      }
+      //押注    直接更新到此数据  客户端自行加减 传最终数据
       var sbet = function(value) {
           pomelo.request("connector.entryHandler.sendData",{"code" : "bet","params" : {"value" : value}}, function(data) {
               console.log(data)
             }
           );
       }
+      //开始游戏   第一次发牌
+      var sbegin = function() {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "begin"}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+      //选择换牌，第二次发牌
+      var sagain = function(list) {
+          //list为数组   如[0,1,2]  代表换0 1 2这三张牌   全保留则传[]
+          pomelo.request("connector.entryHandler.sendData",{"code" : "again","params" : {list : list}}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+
     </script>
   </head>
   <body>
