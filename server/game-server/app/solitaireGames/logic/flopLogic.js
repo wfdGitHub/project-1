@@ -53,7 +53,7 @@ module.exports.shuffle = function() {
 //获取牌型
 module.exports.getType = function(hand){
   var cardType = {
-    "type" : 0,
+    "type" : COMB_TYPE_NONE,
     "award" : 0
   }
 
@@ -181,7 +181,7 @@ module.exports.getType = function(hand){
       return cardType
     }
   }
-  cardType.type = COMB_TYPE_OX0
+  cardType.type = COMB_TYPE_NONE
   cardType.award = awardList[cardType.type]
   return cardType
 }

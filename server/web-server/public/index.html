@@ -18,10 +18,11 @@
     </script> 
     <script type="text/javascript">
       var pomelo = window.pomelo;
-      var host = "nnapi.5d8d.com";
-      host = "192.168.1.65";
+      var host = "127.0.0.1";
+      // host = "192.168.1.65";
       //host = "120.77.157.99"
-      host = "39.108.225.227"
+      // host = "39.108.225.227"
+      // host = "nnapi.5d8d.com"
       var port = "3010";
       function show() {
           pomelo.request("connector.entryHandler.getNotify",null, function(data) {
@@ -332,6 +333,32 @@
               console.log(data)
             }
           );        
+      }
+
+      var singleRoom = function() {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "createSingleRoom","params" : {"gameType" : "flop"}}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+
+      var sbegin = function() {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "begin"}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+      var sagain = function(list) {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "again","params" : {list : list}}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+      var sbet = function(value) {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "bet","params" : {"value" : value}}, function(data) {
+              console.log(data)
+            }
+          );
       }
     </script>
   </head>

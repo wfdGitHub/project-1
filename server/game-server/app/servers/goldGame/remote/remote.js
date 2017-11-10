@@ -108,6 +108,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		case "createInitiativeRoom":
 			local.createInitiativeRoom(uid,params,cb)
 		return
+		case "createSingleRoom":
+			local.createSingleRoom(uid,params,cb)
+		return
 		default : 
 			if(GameRemote.userMap[uid] !== undefined){
 				var roomId = GameRemote.userMap[uid];
@@ -304,14 +307,13 @@ GameRemote.prototype.userOutRoom = function(roomId,uid,cb) {
 
 //用户退出房间
 local.quitRoom = function(roomId,uid) {
-	// console.log("roomId222 : "+roomId)
-	// console.log("quitRoom222 : "+uid)
-	// console.log(GameRemote.RoomMap[roomId])
 	uid = parseInt(uid)
-	for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
-		if(GameRemote.RoomMap[roomId][i] == uid){
-			GameRemote.RoomMap[roomId].splice(i,1)
-			break
+	if(GameRemote.RoomMap[roomId]){
+		for(var i = 0; i < GameRemote.RoomMap[roomId].length;i++){
+			if(GameRemote.RoomMap[roomId][i] == uid){
+				GameRemote.RoomMap[roomId].splice(i,1)
+				break
+			}
 		}
 	}
 	delete GameRemote.userMap[uid]
@@ -664,6 +666,58 @@ local.createInitiativeRoom = function(uid,params,cb) {
 					GameRemote.RoomMap[roomId] = users
 					GameRemote.userMap[uid] = roomId
 					matchingLogger.info("createInitiativeRoom uid : "+uid + " roomId : "+roomId)
+					cb(true)
+				}else{
+					//TODO通知匹配失败 删除RoomMap与userMap
+					delete GameRemote.RoomMap[roomId]
+					GameRemote.roomState[roomId] = true
+					cb(false)
+				}
+			})
+		}else{
+			cb(false)
+		}
+	})
+}
+
+
+//单人游戏房间
+local.createSingleRoom = function(uid,params,cb) {
+	//在匹配队列中不能再次创建
+	if(GameRemote.matchMap[uid]){
+		console.log("can't newRoom user in match: "+GameRemote.matchMap[uid].type + "   uid : "+uid)
+		console.log(GameRemote.matchList)
+		console.log(GameRemote.matchMap)
+		cb(false,{"msg" : tips.IN_MATCHING})
+		return
+	}
+	//在房间中不能创建
+	if(GameRemote.userMap[uid]){
+		console.log("can't newRoom user in room: "+GameRemote.userMap[uid] + "   uid : "+uid)
+		cb(false,{"msg" : tips.WAIT_GAME_OVER})
+		return
+	}
+	//获取用户信息
+	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
+		if(data !== false){
+			var roomId = local.getUnusedRoom()
+			console.log("roomId : "+roomId)
+			GameRemote.roomState[roomId] = false
+
+			GameRemote.NodeNumber++
+			var nodeLength = GameRemote.app.getServersByType('goldNode').length
+			if(GameRemote.NodeNumber >= nodeLength){
+				GameRemote.NodeNumber = 0
+			}
+			params.gid = GameRemote.NodeNumber
+			gid = params.gid
+			var sid = GameRemote.userConnectorMap[uid]
+			GameRemote.app.rpc.goldNode.remote.S_createRoom(null,params,uid,sid,data,roomId,function(flag) {
+				if(flag == true){
+					GameRemote.roomList[roomId] = gid
+					GameRemote.RoomMap[roomId] = [uid]
+					GameRemote.userMap[uid] = roomId
+					openRoomLogger.info("createSingleRoom uid : "+uid + " roomId : "+roomId)
 					cb(true)
 				}else{
 					//TODO通知匹配失败 删除RoomMap与userMap

@@ -5,6 +5,8 @@ var logic = require("./logic/flopLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 //创建单人房间
 module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,settlementCB,gemeOverCB) {
+	console.log("roomId : "+roomId)
+	console.log(userInfo)
 	//初始化房间信息
 	var room = {}
 	room.roomId = roomId
@@ -22,7 +24,8 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 	player.isOnline = true
 	player.score = parseInt(userInfo.gold)
 	player.handCard = new Array(5)
-
+	player.uid = userInfo.uid
+	player.isActive = true
 	//================================//
 	//初始化牌组
 	var cards = logic.shuffle()
@@ -41,77 +44,98 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
         result = logic.getType(player.handCard)
         var notify = {
         	"cmd" : "oneHandCard",
-        	"handCard" : player.handCard
+        	"handCard" : player.handCard,
+        	"result" : result
         }
         local.sendAll(notify)
 		//开始回调
-		beginCB(roomId,bet)
+		beginCB(roomId,player.uid)
 	}
 	local.againBegin = function(list) {
 		//再次翻牌
 		room.state = conf.GS_DEAL
 		for(var i = 0;i < list.length;i++){
-			//随机一个牌组里的牌进行交换
-			var rand = Math.floor(Math.random() * 48.9999999) + 5
-	    	var tmpCard = cards[rand]
-	    	cards[rand] = player.handCard[list[i]]
-	    	player.handCard[list[i]] = tmpCard
+			if(list[i] >= 0 && list[i] < 5){
+				//随机一个牌组里的牌进行交换
+				var rand = Math.floor(Math.random() * 48.9999999) + 5
+		    	var tmpCard = cards[rand]
+		    	cards[rand] = player.handCard[list[i]]
+		    	player.handCard[list[i]] = tmpCard				
+			}
 		}
 		result = logic.getType(player.handCard)
-        var notify = {
-        	"cmd" : "towHandCard",
-        	"handCard" : player.handCard
-        }
-        local.sendAll(notify)
         local.settlement()
 	}
 	local.settlement = function() {
 		console.log(result)
 		var award = bet * result.award
+		award -= bet
 		console.log("award : " + award)
 		bet = 0
+		player.score += award
+        var notify = {
+        	"cmd" : "settlement",
+        	"handCard" : player.handCard,
+        	"result" : result,
+        	"award" : award
+        }
+        local.sendAll(notify)
 		//结算回调
-		settlementCB(roomId,award)
+		settlementCB(roomId,player.uid,award)
 		room.state = conf.GS_FREE
 	}
-	local.gameOver = function() {
+	room.gameOver = function() {
 		channelService.destroyChannel(roomId)
 		var notify = {
 			cmd : "gameOver"
 		}
 		local.sendAll(notify)
-		// 结束回调
-		gemeOverCB(roomId)
 	}
 
 	//================================//
 	//玩家操作
 	
 	//押注
-	room.handler.bet = function(value,cb) {
-		if(typeof(value) != "number" || value < 0 || value > player.score){
-			cb(false)
-			return
-		}
-		bet = value
-		cb(true)
-		return
-	}
-	//开始发牌
-	room.handler.begin = function(cb) {
+	room.handle.bet = function(uid,sid,params,cb) {
 		if(room.state != conf.GS_FREE){
 			cb(false)
 			return
 		}
+		if(typeof(params.value) != "number" || params.value < 0 || params.value > player.score){
+			cb(false)
+			return
+		}
+		bet = params.value
+		cb(true)
+		return
+	}
+	//开始发牌
+	room.handle.begin = function(uid,sid,params,cb) {
+		if(room.state != conf.GS_FREE){
+			cb(false)
+			return
+		}
+		//下注限制
+		if(bet <= 0){
+			cb(false)
+			return
+		}
+		cb(true)
 		local.gameBegin()
 	}
 	//翻牌
-	room.handler.again = function(cb) {
+	room.handle.again = function(uid,sid,params,cb) {
 		if(room.state != conf.GS_GAMEING){
 			cb(false)
 			return
 		}
-		local.againBegin()
+		if(typeof(params.list) != "object" || params.list.length > 5){
+			console.log(params.list)
+			cb(false)
+			return
+		}
+		cb(true)
+		local.againBegin(params.list)
 	}
 
 	//================================//
@@ -123,7 +147,9 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
     }
     //解散房间
 	room.finishGame = function() {
-		local.gameOver()
+		room.gameOver()
+		// 结束回调
+		gemeOverCB(roomId,player)
 	}
 	//玩家是否在线
 	room.isOnline = function() {
@@ -139,7 +165,7 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 				room.channel.leave(uid,tsid)
 			}
 		}
-		room.channel.add(uid,sid)	
+		room.channel.add(uid,sid)
 		var notify = {
 			cmd : "roomPlayer",
 			player : player,
@@ -158,14 +184,14 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		}
 	}
 	//玩家退出
-	room.userQuit = function(cb) {
+	room.userQuit = function(uid,cb) {
 		//空闲状态才能退出
 		if(room.state != conf.GS_FREE){
 			cb(false)
 			return
 		}
 		room.finishGame()
-		cb(true)
+		cb(true,uid)
 	}
 	return room
 }

@@ -3,6 +3,7 @@ var tips = require("../../../conf/tips.js").tipsConf
 var giveCfg = require("../../../conf/give.js")
 var goldMingpai = require("../../../goldGames/goldMingpai.js")
 var goldNiuNiu = require("../../../goldGames/niuniu.js")
+var flopGame = require("../../../solitaireGames/flop.js")
 var goldLogger = require("pomelo-logger").getLogger("goldRoom-log")
 var solitaireLogger = require("pomelo-logger").getLogger("solitaire-log")
 var lottoConf = require("../../../conf/lotto.js")
@@ -297,7 +298,7 @@ local.settlementCB = function(roomId,curScores,player,rate,currencyType) {
 			if(curScores){
 				if(player[index].isActive && !player[index].isRobot){
 					allCurrencyValue -= curScores[index]
-					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],"游戏结算",function(){})				
+					GameRemote.app.rpc.db.remote.setValue(null,player[index].uid,currencyType,curScores[index],"游戏结算",function(){})
 				}
 			}
 		}
@@ -464,7 +465,7 @@ local.gemeOver = function(roomId,players,type) {
 //===============单人游戏房间内容================================//
 
 var S_ROOM_TYPE = {
-	"flop" : true
+	"flop" : flopGame
 }
 
 
@@ -474,27 +475,36 @@ GameRemote.prototype.S_createRoom = function(params,uid,sid,info,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = S_ROOM_TYPE[params.gameType].createRoom(roomId,GameRemote.channelService,local.S_beginCB,local.S_settlementCB,local.S_gemeOverCB)
+	info.sid = sid
+	GameRemote.roomList[roomId] = S_ROOM_TYPE[params.gameType].createRoom(roomId,GameRemote.channelService,info,local.S_beginCB,local.S_settlementCB,local.S_gemeOverCB)
 	GameRemote.userMap[uid] = roomId
 	clearTimeout(GameRemote.liveTimer[roomId])
 	GameRemote.liveTimer[roomId] = setTimeout(S_finishGameOfTimer(roomId),1 * 60 * 1000)	
 	//记录日志
 	solitaireLogger.info("uid : "+uid+" createRoom : "+params.gameType)
+	cb(true)
 }
 
 //游戏开始回调
-local.S_beginCB = function(roomId) {
+local.S_beginCB = function(roomId,uid) {	
 	console.log(roomId+ " : roomId game begin")
 }
 
 //小结算回调
-local.S_settlementCB = function(roomId) {
+local.S_settlementCB = function(roomId,uid,value) {
+	GameRemote.app.rpc.db.remote.setValue(null,uid,"gold",value,"游戏结算",function(){})	
 	console.log(roomId+" : roomId game settlement")
 }
 
 //房间结束回调
-local.S_gemeOverCB = function(roomId) {
+local.S_gemeOverCB = function(roomId,player) {
 	console.log(roomId+" : roomId game gemeOver")
+	clearTimeout(GameRemote.liveTimer[roomId])
+	delete GameRemote.userMap[player.uid]
+	var info = "singleRoom finish   roomId  : "+ roomId
+	solitaireLogger.info(info)
+	GameRemote.app.rpc.goldGame.remote.gameOver(null,roomId,{"0" : player},"none",function(){})
+	GameRemote.roomList[roomId] = false	
 }
 
 
