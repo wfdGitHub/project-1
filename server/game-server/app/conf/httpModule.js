@@ -31,7 +31,7 @@ module.exports.H5GetData = function(code,count,cb) {
       console.log(e)
       if(count > 3){
         cb(null,{"flag" : false,"err" : e})
-        console.error(e);        
+        console.error(e);
       }else{
         module.exports.H5GetData(code,count++,cb)
       }
@@ -128,15 +128,23 @@ module.exports.sendLoginHttp = function(notify) {
     // }
     // string += "key=niuniuyiyousecretkey"
     // data.sign = md5(string)
+    local.sendLoginHttp(data,100)
+  })
+}
+
+local.sendLoginHttp = function(data,time) {
+    if(time > 100000){
+      return
+    }
     var req=http.request('http://pay.5d8d.com/niu_admin.php/Api/userLogin?'+require('querystring').stringify(data),function(res){
     })
     req.on("error",function(err){
+      setTimeout(function() {
+          local.sendLoginHttp(data,time * 10)
+      },time*10)
       console.log(err.message)
     })
-    req.end()    
-  })
-
-
+    req.end()
 }
 
 module.exports.sendDiamondHttp = function(uid,coin,diamond,type) {
@@ -230,6 +238,8 @@ var getCity = function(ip,cb) {
         })
     })
     req.on('error', function(e) {
+      console.log("获取IP失败 : "+ip)
+      cb({"area" : "","region" : "", "city" : ""})
       console.error(e);
     })
 }
