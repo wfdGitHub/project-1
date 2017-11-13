@@ -25,12 +25,7 @@
        {"id": "game-node-server-2", "host": "127.0.0.1", "port": 3902},
        {"id": "game-node-server-3", "host": "127.0.0.1", "port": 3903},
        {"id": "game-node-server-4", "host": "127.0.0.1", "port": 3904},
-       {"id": "game-node-server-5", "host": "127.0.0.1", "port": 3905},
-       {"id": "game-node-server-6", "host": "127.0.0.1", "port": 3906},
-       {"id": "game-node-server-7", "host": "127.0.0.1", "port": 3907},
-       {"id": "game-node-server-8", "host": "127.0.0.1", "port": 3908},
-       {"id": "game-node-server-9", "host": "127.0.0.1", "port": 3909},
-       {"id": "game-node-server-10", "host": "127.0.0.1", "port": 3910}     
+       {"id": "game-node-server-5", "host": "127.0.0.1", "port": 3905}   
     ]          
   },
   "production":{ 
@@ -59,12 +54,7 @@
        {"id": "game-node-server-2", "host": "127.0.0.1", "port": 3902},
        {"id": "game-node-server-3", "host": "127.0.0.1", "port": 3903},
        {"id": "game-node-server-4", "host": "127.0.0.1", "port": 3904},
-       {"id": "game-node-server-5", "host": "127.0.0.1", "port": 3905},
-       {"id": "game-node-server-6", "host": "127.0.0.1", "port": 3906},
-       {"id": "game-node-server-7", "host": "127.0.0.1", "port": 3907},
-       {"id": "game-node-server-8", "host": "127.0.0.1", "port": 3908},
-       {"id": "game-node-server-9", "host": "127.0.0.1", "port": 3909},
-       {"id": "game-node-server-10", "host": "127.0.0.1", "port": 3910}
+       {"id": "game-node-server-5", "host": "127.0.0.1", "port": 3905}
     ]   
   }
 }
