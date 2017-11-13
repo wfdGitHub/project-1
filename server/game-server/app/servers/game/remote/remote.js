@@ -143,7 +143,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 		}
 	}else if(code == "newRoom"){
 		//无效数据判断
-		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
+		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 15 && params.gameNumber != 20)){
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
 	      return
@@ -162,6 +162,12 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	console.log("agency error   param.consumeMode : "+params.consumeMode)
 	    	cb(false)
 	    	return	    	
+	    }
+	    if(!diamondConf.getNeedDiamond(params.gameType,params.playerNumber,params.consumeMode,params.gameNumber)){
+	    	console.log("无钻石配置")
+	    	console.log(params)
+	    	cb(false)
+	    	return
 	    }
 	    self.app.rpc.db.remote.checkGameSwitch(null,params.gameType,function(flag) {
 	    	if(flag == true){
@@ -252,8 +258,10 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	cb(false)
 	    	return
 	    }
-		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 20)){
+		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 15 && params.gameNumber != 20)){
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
+	      console.log(typeof(params.gameNumber))
+	      console.log((params.gameNumber != 10 && params.gameNumber != 15 && params.gameNumber != 20))
 	      cb(false)
 	      return
 	    }
@@ -264,8 +272,14 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    }
 	    if(!params.consumeMode || params.consumeMode < 1 || params.consumeMode > 3){
 	    	cb(false)
-	    	return	    	
-	    }	     
+	    	return
+	    }
+	    if(!diamondConf.getNeedDiamond(params.gameType,params.playerNumber,params.consumeMode,params.gameNumber)){
+	    	console.log("无钻石配置")
+	    	console.log(params)
+	    	cb(false)
+	    	return
+	    }	    
 	    var roomId = 0
 	    var needMond = 0
 
