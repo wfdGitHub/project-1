@@ -32,8 +32,7 @@ frameFactory.createFrame = function() {
         chair : chair
       }
       local.sendAll(notify)
-
-
+      cb(true)
       //房间内玩家全部准备且人数大于2时开始游戏
       var readyFlag = true
       var readyCount = 0
@@ -104,8 +103,11 @@ frameFactory.createFrame = function() {
           }
         }
       }
+    }else{
+      console.log("已准备 : ")
+      console.log(player[chair])
+      cb(false)
     }
-    cb(true)
   }
 
 

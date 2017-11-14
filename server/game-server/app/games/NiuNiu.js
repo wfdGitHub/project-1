@@ -1190,7 +1190,11 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           player[i].isReady = false;
           betList[i] = 0;
           player[i].isBanker = false          
-      }    
+      }
+      //斗公牛庄家标识
+      if(room.gameMode === conf.MODE_GAME_BULL){
+        player[banker].isBanker = true
+      }
       readyCount = 0
       if(room.gameNumber <= 0){
           local.gameOver()
