@@ -81,6 +81,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
       room.maxRob = 0                      //抢庄倍数
+      room.basicScore = 1                  //底分
       readyCount = 0                       //游戏准备人数
       gameState = conf.GS_FREE             //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
@@ -129,27 +130,31 @@ var MING_CARD_NUM = 4               //明牌数量
         log("newRoom error   param.consumeMode : "+param.consumeMode)
         cb(false)
         return
-      } 
+      }
       if(!param.bankerMode || typeof(param.bankerMode) !== "number" || 
         (param.bankerMode != 1 && param.bankerMode != 5)){
         log("newRoom error   param.bankerMode : "+param.bankerMode)
         cb(false)
         return
-      }  
+      }
       if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
-      }    
+      }
       if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
         log("newRoom error   param.cardMode : "+param.cardMode)
         cb(false)
         return
-      } 
+      }
       if(!param.basicType || typeof(param.basicType) !== "number" || !betType[param.basicType]){
         log("newRoom error   param.basicType : "+param.basicType)
         cb(false)
         return        
+      }
+      if(!param.basicScore || typeof(param.basicScore) !== "number" || param.basicScore < 1 || param.basicScore > 5){
+        log("newRoom error   param.basicScore : "+param.basicScore)
+        param.basicScore = 1
       }
       if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
         log("newRoom error   param.waitMode : "+param.waitMode)
@@ -167,6 +172,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basicType = param.basicType
+      room.basicScore = param.basicScore
       room.basic = basicType
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -777,12 +783,14 @@ var MING_CARD_NUM = 4               //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  curScores[i] += betList[i] * result[i].award * room.maxRob
-                  curScores[banker] -= betList[i] * result[i].award * room.maxRob
+                  var tmpScore = betList[i] * result[i].award * room.maxRob * room.basicScore
+                  curScores[i] += tmpScore
+                  curScores[banker] -= tmpScore
               }else{
                   //庄家赢
-                  curScores[i] -= betList[i] * result[banker].award * room.maxRob
-                  curScores[banker] += betList[i] * result[banker].award * room.maxRob
+                  var tmpScore = betList[i] * result[banker].award * room.maxRob * room.basicScore
+                  curScores[i] -= tmpScore
+                  curScores[banker] += tmpScore
               }              
           }
         }
