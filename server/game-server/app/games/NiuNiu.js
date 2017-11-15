@@ -123,6 +123,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       return
     }
     frame.start(param.waitMode)
+    room.waitMode = param.waitMode
     if(param.halfwayEnter === false){
       room.halfwayEnter = false
     }

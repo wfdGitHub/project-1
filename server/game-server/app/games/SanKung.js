@@ -134,6 +134,7 @@ var MING_CARD_NUM = 2               //明牌数量
         return
       }
       frame.start(param.waitMode)
+      room.waitMode = param.waitMode
       //是否允许中途加入
       if(param.halfwayEnter === false){
         room.halfwayEnter = false
