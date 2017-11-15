@@ -33,8 +33,10 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 	var bet = 0
 	//房间私有方法
 	var local = {}
-
+	var award = 0
+	var casinoTimer = 0
 	local.gameBegin = function() {
+		casinoTimer = 0
 		//改变状态
 		room.state = conf.GS_GAMEING
 		//发牌
@@ -60,15 +62,32 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 				var rand = Math.floor(Math.random() * 48.9999999) + 5
 		    	var tmpCard = cards[rand]
 		    	cards[rand] = player.handCard[list[i]]
-		    	player.handCard[list[i]] = tmpCard				
+		    	player.handCard[list[i]] = tmpCard
 			}
 		}
 		result = logic.getType(player.handCard)
+		award = bet * result.award
         local.settlement()
 	}
+
+	local.casinoWar  = function() {
+		//比大小
+		if(random() < 0.5){
+			award *= 2 
+		}else{
+			award = 0
+			local.settlemnt()
+		}
+		casinoTimer++
+		if(casinoTimer >= 3){
+			local.settlemnt()
+		}
+	}
+
 	local.settlement = function() {
 		console.log(result)
-		var award = bet * result.award
+		var tmpAward = award
+		var tmpBet = bet
 		award -= bet
 		console.log("award : " + award)
 		bet = 0
@@ -77,7 +96,9 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
         	"cmd" : "settlement",
         	"handCard" : player.handCard,
         	"result" : result,
-        	"award" : award
+        	"award" : tmpAward,
+        	"bet" : bet,
+        	"curScore" : player.score
         }
         local.sendAll(notify)
 		//结算回调
