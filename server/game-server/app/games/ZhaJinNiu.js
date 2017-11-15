@@ -862,6 +862,7 @@ var MING_CARD_NUM = 3               //明牌数量
         }
       }
       room.scores = tmpscores
+      frame.close()
       //结束游戏
       roomCallBack(room.roomId,player,flag,local.init)
     }

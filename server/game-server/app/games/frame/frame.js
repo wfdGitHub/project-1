@@ -151,6 +151,8 @@ frameFactory.createFrame = function() {
         nextcb()
     }      
   }
-
+  frame.close = function() {
+    clearTimeout(frame.timer)
+  }
   return frame
 }

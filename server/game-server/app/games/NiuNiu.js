@@ -1226,6 +1226,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       }
     }
     room.scores = tmpscores
+    frame.close()
     //结束游戏
     roomCallBack(room.roomId,player,flag,local.init)
   }
