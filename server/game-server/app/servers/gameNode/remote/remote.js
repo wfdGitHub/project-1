@@ -324,7 +324,6 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"waitMode" : GameRemote.roomList[roomId].waitMode,
 			"consumeMode" : GameRemote.roomList[roomId].consumeMode,
 			"basic" : GameRemote.roomList[roomId].basic,
-			"basicScore" : GameRemote.roomList[roomId].basicScore,
 			"room_uid" : GameRemote.roomList[roomId].agencyId || players[0].uid,
 			"basicType" : GameRemote.roomList[roomId].basicType,
 			"maxBet" : GameRemote.roomList[roomId].maxBet,

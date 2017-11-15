@@ -81,7 +81,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
       room.maxRob = 0                      //抢庄倍数
-      room.basicScore = 1                  //底分
+      room.basic = 1                  //底分
       readyCount = 0                       //游戏准备人数
       gameState = conf.GS_FREE             //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
@@ -152,9 +152,9 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return        
       }
-      if(!param.basicScore || typeof(param.basicScore) !== "number" || param.basicScore < 1 || param.basicScore > 5){
-        log("newRoom error   param.basicScore : "+param.basicScore)
-        param.basicScore = 1
+      if(!param.basic || typeof(param.basic) !== "number" || param.basic < 1 || param.basic > 5){
+        log("newRoom error   param.basic : "+param.basic)
+        param.basic = 1
       }
       if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
         log("newRoom error   param.waitMode : "+param.waitMode)
@@ -172,8 +172,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basicType = param.basicType
-      room.basicScore = param.basicScore
-      room.basic = basicType
+      room.basic = param.basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
       readyCount = 0                   //游戏准备人数
@@ -284,7 +283,7 @@ var MING_CARD_NUM = 4               //明牌数量
     }
     //游戏开始
     local.gameBegin = function(argument) {
-      log("gameBegin") 
+      log("gameBegin")
       frame.begin()
       gameState = conf.GS_GAMEING   
       //第一次开始游戏调用游戏开始回调
@@ -783,12 +782,12 @@ var MING_CARD_NUM = 4               //明牌数量
               //比较大小
               if(logic.compare(result[i],result[banker])){
                   //闲家赢
-                  var tmpScore = betList[i] * result[i].award * room.maxRob * room.basicScore
+                  var tmpScore = betList[i] * result[i].award * room.maxRob * room.basic
                   curScores[i] += tmpScore
                   curScores[banker] -= tmpScore
               }else{
                   //庄家赢
-                  var tmpScore = betList[i] * result[banker].award * room.maxRob * room.basicScore
+                  var tmpScore = betList[i] * result[banker].award * room.maxRob * room.basic
                   curScores[i] -= tmpScore
                   curScores[banker] += tmpScore
               }              
@@ -889,6 +888,7 @@ var MING_CARD_NUM = 4               //明牌数量
         }
       }
       room.scores = tmpscores
+      frame.close()
       //结束游戏
       roomCallBack(room.roomId,player,flag,local.init)
     }
