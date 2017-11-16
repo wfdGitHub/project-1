@@ -35,17 +35,19 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 	var local = {}
 	var award = 0
 	var casinoTimer = 0
+	var casinoFlag = 1   //1 小  2 大
 	local.gameBegin = function() {
 		casinoTimer = 0
 		//改变状态
 		room.state = conf.GS_GAMEING
+		cards = logic.shuffle()
 		//发牌
         for(var i = 0;i < 5;i++){
           player.handCard[i] = cards[i];
         }
         result = logic.getType(player.handCard)
         var notify = {
-        	"cmd" : "oneHandCard",
+        	"cmd" : "onceBegin",
         	"handCard" : player.handCard,
         	"result" : result
         }
@@ -67,20 +69,72 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		}
 		result = logic.getType(player.handCard)
 		award = bet * result.award
-        local.settlement()
+        var notify = {
+        	"cmd" : "againBegin",
+        	"handCard" : player.handCard,
+        	"result" : result,
+        	"award" : award,
+        	"bet" : bet
+        }
+        local.sendAll(notify)
+		if(award == 0){
+			local.settlement()
+		}else{
+			room.state = conf.GS_CASINOWAR
+		}
 	}
 
-	local.casinoWar  = function() {
+	local.casinoWar  = function(flag) {
+		casinoTimer++
+		casinoFlag = flag
 		//比大小
-		if(random() < 0.5){
-			award *= 2 
+		if(Math.random() < 0.5){
+			award *= 2
+			var notify = {
+				"cmd" : "casinoWar",
+				"isWin" : true,
+				"award" : award,
+				"casinoTimer" : casinoTimer
+			}			
+			if(casinoFlag == 1){
+				//押小出小
+				var card = {}
+				card.num = Math.floor(Math.random() * 6.9999) + 1
+				card.type = Math.floor(Math.random() * 3.9999)
+				notify.card = card
+			}else{
+				//押大出大
+				var card = {}
+				card.num = Math.floor(Math.random() * 5.9999) + 8
+				card.type = Math.floor(Math.random() * 3.9999)
+				notify.card = card				
+			}
+			local.sendAll(notify)
 		}else{
 			award = 0
-			local.settlemnt()
+			var notify = {
+				"cmd" : "casinoWar",
+				"isWin" : true,
+				"award" : award
+			}			
+			if(casinoFlag == 1){
+				//押小出大
+				var card = {}
+				card.num = Math.floor(Math.random() * 5.9999) + 8
+				card.type = Math.floor(Math.random() * 3.9999)
+				notify.card = card
+			}else{
+				//押大出小
+				var card = {}
+				card.num = Math.floor(Math.random() * 6.9999) + 1
+				card.type = Math.floor(Math.random() * 3.9999)
+				notify.card = card				
+			}
+			local.sendAll(notify)
+			local.settlement()
 		}
-		casinoTimer++
 		if(casinoTimer >= 3){
-			local.settlemnt()
+			local.settlement()
 		}
 	}
 
@@ -94,8 +148,6 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		player.score += award
         var notify = {
         	"cmd" : "settlement",
-        	"handCard" : player.handCard,
-        	"result" : result,
         	"award" : tmpAward,
         	"bet" : bet,
         	"curScore" : player.score
@@ -144,7 +196,7 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		cb(true)
 		local.gameBegin()
 	}
-	//翻牌
+	//再次翻牌
 	room.handle.again = function(uid,sid,params,cb) {
 		if(room.state != conf.GS_GAMEING){
 			cb(false)
@@ -158,7 +210,28 @@ module.exports.createRoom = function(roomId,channelService,userInfo,beginCB,sett
 		cb(true)
 		local.againBegin(params.list)
 	}
-
+	//比大小
+	room.handle.casinoWar = function(uid,sid,params,cb) {
+		if(room.state != conf.GS_CASINOWAR){
+			cb(false)
+			return
+		}
+		if(!params.casinoFlag || typeof(params.casinoFlag) != "number" || params.casinoFlag < 1 || params.casinoFlag > 2){
+			console.log("params.casinoFlag error : "+params.casinoFlag)
+			cb(false)
+			return
+		}
+		cb(true)
+		local.casinoWar(params.casinoFlag)
+	}
+	room.handle.over = function(uid,sid,params,cb) {
+		if(room.state != conf.GS_CASINOWAR){
+			cb(false)
+			return
+		}
+		cb(true)
+		local.settlement()
+	}
 	//================================//
 	
     //公共方法

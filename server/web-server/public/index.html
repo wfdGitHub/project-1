@@ -358,12 +358,26 @@
       //选择换牌，第二次发牌
       var sagain = function(list) {
           //list为数组   如[0,1,2]  代表换0 1 2这三张牌   全保留则传[]
+          if(!list){
+            list = []
+          }
           pomelo.request("connector.entryHandler.sendData",{"code" : "again","params" : {list : list}}, function(data) {
               console.log(data)
             }
           );
       }
-
+      var casinoWar = function(flag) {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "casinoWar","params" : {"casinoFlag" : flag}}, function(data) {
+              console.log(data)
+            }
+          );
+      }
+      var over = function() {
+          pomelo.request("connector.entryHandler.sendData",{"code" : "over"}, function(data) {
+              console.log(data)
+            }
+          );
+      }
     </script>
   </head>
   <body>

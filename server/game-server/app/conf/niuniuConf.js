@@ -42,6 +42,7 @@ conf.GS_DEAL         = 1003              //发牌阶段
 conf.GS_SETTLEMENT   = 1004              //结算阶段
 conf.GS_ROB_BANKER   = 1005              //抢庄阶段
 conf.GS_GAMEING 	 = 1006				 //游戏已开始
+conf.GS_CASINOWAR    = 1007              //比大小阶段
 conf.GS_NONE 		 = 1099 			 //不可操作阶段
 
 //游戏模式
