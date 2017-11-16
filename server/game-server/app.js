@@ -35,6 +35,9 @@ app.configure('production|development', 'game', function() {
 app.configure('production|development', 'db', function() {
   app.load(dbService(app))
 });
+app.configure('production|development', 'gameNode', function() {
+  app.load(dbService(app))
+});
 //游戏服务器分配路由
 var gameNodeRoute = function(session, msg, app, cb) {
   var gameNodeServers = app.getServersByType('gameNode')

@@ -37,6 +37,10 @@ var GameRemote = function(app) {
 	GameRemote.app = app
 	GameRemote.channelService = this.app.get('channelService');
 	freeFrame.start(GameRemote)
+    GameRemote.dbService = this.app.get("dbService")
+    if(GameRemote.dbService && GameRemote.dbService.db){
+    	GameRemote.db = GameRemote.dbService.db
+    }
 }
 
 GameRemote.roomList = {}
@@ -49,6 +53,26 @@ GameRemote.roomLock = {}
 GameRemote.lockState = {}
 //解散请求计时器
 GameRemote.lockTimer = {}
+
+//恢复房间
+GameRemote.prototype.recoverRoom = function(roomId,userMap,cb) {
+
+	getRoomDB(roomId,function(data) {
+		console.log(data)
+		if(ROOM_FACTORY[data.roomType]){
+			GameRemote.roomList[roomId] = ROOM_FACTORY[data.roomType].createRoom(roomId,GameRemote.channelService,data.playerNumber,gameBegin,gemeOver)
+			for(var index in userMap){
+				GameRemote.userMap[userMap[index]] = roomId
+			}
+			clearTimeout(GameRemote.liveTimer[roomId])
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
+			//还原房间
+		}
+	})
+
+}
+
+
 //新建房间
 GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 	console.log("rid : "+roomId+"    uid : "+uid)
@@ -71,6 +95,8 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
 			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
+			setRoomDB(roomId,"roomType",params.gameType)
+			setRoomDB(roomId,"playerNumber",params.playerNumber)
     	}else{
     		delete GameRemote.roomList[roomId]
     	}
@@ -99,6 +125,8 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 			//房间计时器
 			clearTimeout(GameRemote.liveTimer[roomId])
 			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
+			setRoomDB(roomId,"roomType",params.gameType)
+			setRoomDB(roomId,"playerNumber",params.playerNumber)
     	}else{
     		delete GameRemote.roomList[roomId]
     	}
@@ -362,3 +390,38 @@ var gemeOver = function(roomId,players,flag,cb) {
 
 //解散房间
 GameRemote.prototype.onFrame = freeFrame.onFrame
+
+
+var getRoomDB = function(hashKey,cb){
+	GameRemote.dbService.db.hgetall("gameNodeRoom:"+hashKey,function(err,data) {
+		if(err){
+			cb(false)
+		}else{
+			cb(data)
+		}
+	})
+}
+
+var setRoomDB = function(hashKey,subKey,data,cb){
+	GameRemote.dbService.db.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+		if(err){
+			console.log("setRoomDB error : "+err)
+			if(cb){
+				cb(false)
+			}
+		}else{
+			console.log(data)
+			if(cb){
+				cb(data)
+			}
+		}
+	})
+}
+
+var delRoomDB = function(hashKey,subKey) {
+	GameRemote.dbService.db.hdel("gameNodeRoom:"+hashKey,subKey,function(err,data) {
+		if(err){
+			console.log(err)
+		}
+	})
+}
