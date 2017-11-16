@@ -21,9 +21,9 @@ GameService.roomState = {}
 //开房时间
 GameService.roomTime = {}
 //用户房间映射表
-GameService.userMap = {}		
+GameService.userMap = {}
 //房间与用户映射表
-GameService.RoomMap = {}	
+GameService.RoomMap = {}
 //代开房数据
 GameService.agencyList = {}
 //剩余可用次数
@@ -39,7 +39,9 @@ GameService.prototype.start = function(cb) {
 	this.app.set("GameService",GameService)
 	cb()
 }
-
+GameService.setDB = function(db) {
+	GameService.db = db
+}
 //分配房间号
 GameService.getUnusedRoom = function(roomType) {
 	//随机分配房间号
@@ -83,6 +85,7 @@ GameService.setAgencyRoom = function(uid,agencyRoom) {
 	}	
 	agencyInfo.List[0] = agencyRoom
 	GameService.agencyList[uid] = agencyInfo
+	setRoomDB("agencyList",uid,JSON.stringify(agencyInfo))
 }
 
 GameService.updateAgencyRoom = function(agencyId,agencyRoom) {
@@ -93,6 +96,7 @@ GameService.updateAgencyRoom = function(agencyId,agencyRoom) {
 			if(agencyInfo.List[i].roomId === agencyRoom.roomId){
 				agencyInfo.List[i] = agencyRoom
 				GameService.agencyList[agencyId] = agencyInfo
+				setRoomDB("agencyList",agencyId,JSON.stringify(agencyInfo))
 				return
 			}
 		}
@@ -127,11 +131,37 @@ GameService.setAgencyRoomByID = function(agencyId,roomId,agencyRoom) {
 			if(agencyInfo.List[i].roomId === roomId && agencyInfo.List[i].beginTime == agencyRoom.beginTime){
 				agencyInfo.List[i] = agencyRoom
 				GameService.agencyList[agencyId] = agencyInfo
+				setRoomDB("agencyList",agencyId,JSON.stringify(agencyInfo))
 				// console.log("setAgencyRoomByID====")
 				// console.log(GameService.agencyList[agencyId])
 				return
 			}
 		}
-	}	
+	}
+}
 
+
+
+var setRoomDB = function(hashKey,subKey,data,cb){
+	GameRemote.dbService.db.hset("gameServer:"+hashKey,subKey,data,function(err,data) {
+		if(err){
+			console.log("setRoomDB error : "+err)
+			if(cb){
+				cb(false)
+			}
+		}else{
+			console.log(data)
+			if(cb){
+				cb(data)
+			}
+		}
+	})
+}
+
+var delRoomDB = function(hashKey,subKey) {
+	GameRemote.dbService.db.hdel("gameServer:"+hashKey,subKey,function(err,data) {
+		if(err){
+			console.log(err)
+		}
+	})
 }

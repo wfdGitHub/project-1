@@ -18,8 +18,55 @@ var GameRemote = function(app) {
 	GameRemote.NodeNumber = 0
 	//房间房主映射表
 	GameRemote.roomHostList = {}
-};
+    GameRemote.dbService = this.app.get("dbService")
+    if(GameRemote.dbService && GameRemote.dbService.db){
+    	GameRemote.db = GameRemote.dbService.db
+    }
 
+    if(GameRemote.dbService){
+    	GameRemote.GameService.setDB(GameRemote.dbService.db)
+	    //初始化表
+	    setTimeout(function() {
+	    	GameRemote.dbService.db.hgetall("gameServer:roomList",function(err,data) {
+	    		GameRemote.GameService.roomList = data
+	    		console.log(GameRemote.GameService.roomList)
+	    	})
+	    	GameRemote.dbService.db.hgetall("gameServer:roomState",function(err,data) {
+	    		GameRemote.GameService.roomState = data
+	    	})
+	    	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
+	    		GameRemote.GameService.userMap  = data
+	    	})
+	    	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
+	    		GameRemote.GameService.roomMap  = data
+	    		for(var index in GameRemote.GameService.roomMap){
+	    			if(typeof(GameRemote.GameService.roomMap[index]) === "string"){
+	    				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
+	    			}
+	    		}
+	    		console.log(GameRemote.GameService.roomMap)
+	    	})
+	    	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
+	    		GameRemote.GameService.AgencyReopenList  = data
+	    		for(var index in GameRemote.GameService.AgencyReopenList){
+	    			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string"){
+	    				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
+	    			}
+	    		}
+	    		console.log(GameRemote.GameService.AgencyReopenList)
+	    	})
+	    	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
+	    		GameRemote.GameService.agencyList  = data
+	    		for(var index in GameRemote.GameService.agencyList){
+	    			if(typeof(GameRemote.GameService.agencyList[index]) === "string"){
+	    				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
+	    			}
+	    		}
+	    		console.log(GameRemote.GameService.agencyList)
+	    	})
+	    },3000)
+    }
+};
 
 //获取代开房数据
 GameRemote.prototype.getAgencyRoom = function(uid,cb) {
@@ -55,6 +102,7 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 		if(params.gid !== undefined && params.gid !== false){
 			// console.log(params.gid)
 			delete GameRemote.GameService.AgencyReopenList[roomId]
+			delRoomDB("AgencyReopenList",roomId)
 			this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
 				cb(flag)
 			})
@@ -78,15 +126,6 @@ GameRemote.prototype.userConnect = function(uid,sid,cb) {
 }
 
 GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
-	// console.log("uid : "+uid+"code : "+code)
-	// //房间已锁定则拒绝操作
-	// if(GameRemote.GameService.userMap[uid]){
-	// 	var roomId = GameRemote.GameService.userMap[uid]
-	// 	if(GameRemote.GameService.roomLock[roomId] == false){
-	// 		cb(false)
-	// 		return
-	// 	}
-	// }
 	var self = this
 	//加入房间需要用户不在房间内
 	if(code == "join"){
@@ -118,6 +157,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					self.app.rpc.gameNode.remote.join(null,params,uid,sid,roomId,function(flag,msg,playerInfo){
 						if(flag === true){
 							GameRemote.GameService.userMap[uid] = roomId;
+							setRoomDB("userMap",uid,roomId)
 							if(GameRemote.GameService.RoomMap[roomId]){
 								var info = {
 									"uid" : playerInfo.uid,
@@ -125,6 +165,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 									"head" : playerInfo.head
 								}
 								GameRemote.GameService.RoomMap[roomId].push(info)
+								setRoomDB("RoomMap",roomId,JSON.stringify(GameRemote.GameService.RoomMap[roomId]))
 							}
 						}
 						cb(flag,msg)
@@ -213,27 +254,31 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							}
 							//记录房间对应游戏服务器
 							GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
-							GameRemote.GameService.roomTime[roomId] = (new Date()).getTime()
-
+							setRoomDB("roomList",roomId,GameRemote.NodeNumber)
 							params.gid = GameRemote.GameService.roomList[roomId]
 							//与游戏服务器连接
 							self.app.rpc.gameNode.remote.newRoom(null,params,uid,sid,roomId,function (flag) {
 								// console.log("======== : "+flag)
 								if(flag === true){
 									GameRemote.GameService.userMap[uid] = roomId;
+									setRoomDB("userMap",uid,roomId)
 									GameRemote.GameService.roomState[roomId] = false;
+									setRoomDB("roomState",roomId,false)
 									GameRemote.GameService.RoomMap[roomId] = []
 									GameRemote.roomHostList[roomId] = uid
+									setRoomDB("roomHostList",roomId)
 									var info = {
 										"uid" : playerInfo.uid,
 										"nickname" : playerInfo.playerInfo,
 										"head" : playerInfo.head
 									}
 									GameRemote.GameService.RoomMap[roomId].push(info)
+									setRoomDB("RoomMap",roomId,JSON.stringify(GameRemote.GameService.RoomMap[roomId]))
 								}else{
 									GameRemote.GameService.roomState[roomId] = true
+									setRoomDB("roomState",roomId,true)
 									GameRemote.GameService.roomList[roomId] = false
-									delete GameRemote.GameService.roomTime[roomId]
+									delRoomDB("roomList",roomId)
 								}
 								cb(flag)
 							})
@@ -326,14 +371,16 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 					}
 					//记录房间对应游戏服务器
 					GameRemote.GameService.roomList[roomId] = GameRemote.NodeNumber
-					GameRemote.GameService.roomTime[roomId] = (new Date()).getTime()
+					setRoomDB("roomList",roomId,GameRemote.NodeNumber)
 					params.gid = GameRemote.GameService.roomList[roomId]
 					//与游戏服务器连接
 					self.app.rpc.gameNode.remote.agencyRoom(null,params,uid,sid,roomId,function (flag) {
 						// console.log("======== : "+flag)
 						if(flag === true){
 							GameRemote.GameService.roomState[roomId] = false;
+							setRoomDB("roomState",roomId,false)
 							GameRemote.roomHostList[roomId] = uid
+							setRoomDB("roomHostList",roomId,uid)
 	                        //保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
 	                        var agencyRoomInfo = {
 	                            "roomId" : roomId,
@@ -351,20 +398,24 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	                        }
 	                        GameRemote.GameService.setAgencyRoom(uid,agencyRoomInfo)
 	                        GameRemote.GameService.RoomMap[roomId] = []
+	                        setRoomDB("RoomMap",roomId,JSON.stringify(GameRemote.GameService.RoomMap[roomId]))
 	                        if(GameRemote.GameService.AgencyReopenList[roomId]){
 	                        	GameRemote.GameService.AgencyReopenList[roomId].count--
+	                        	setRoomDB("AgencyReopenList",roomId,JSON.stringify(GameRemote.GameService.AgencyReopenList[roomId]))
 	                        }else{
 		                        GameRemote.GameService.AgencyReopenList[roomId] = {
 		                        	"uid" : uid,
 		                        	"params" : params,
 		                        	"count" : 1
 		                        }
+		                        setRoomDB("AgencyReopenList",roomId,JSON.stringify(GameRemote.GameService.AgencyReopenList[roomId]))
 	                        }
 							next(null,roomId)
 						}else{
 							GameRemote.GameService.roomState[roomId] = true
+							setRoomDB("roomState",roomId,true)
 							GameRemote.GameService.roomList[roomId] = false
-							delete GameRemote.GameService.roomTime[roomId]
+							delRoomDB("roomList",roomId)
 							cb(false)
 						}
 					})
@@ -374,8 +425,9 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 						if(!flag){
 							//删除房间
 							GameRemote.GameService.roomState[roomId] = true
+							setRoomDB("roomState",roomId,true)
 							GameRemote.GameService.roomList[roomId] = false
-							delete GameRemote.GameService.roomTime[roomId]
+							delRoomDB("roomList",roomId)
 							cb(false)
 							return
 						}
@@ -427,6 +479,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 			if(players[index].isActive){		
                 roomPlayerCount++
                 delete GameRemote.GameService.userMap[players[index].uid]
+                delRoomDB("userMap",players[index].uid)
 			}
 		}
 	}
@@ -465,20 +518,27 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 				this.receive(tmpUid, tmpSid,"agency",tmpParams,function(flag) {
 					if(!flag){
 						delete GameRemote.GameService.AgencyReopenList[roomId]
+						delRoomDB("AgencyReopenList",roomId)
 					}
 				})
 			}else{
 				delete GameRemote.GameService.AgencyReopenList[roomId]
+				delRoomDB("AgencyReopenList",roomId)
 			}
 		}else{
 			delete GameRemote.GameService.AgencyReopenList[roomId]
+			delRoomDB("AgencyReopenList",roomId)
 		}
 	}
 
 	GameRemote.GameService.roomState[roomId] = true
+	setRoomDB("roomState",roomId,true)
 	GameRemote.GameService.roomList[roomId] = false
-	delete GameRemote.GameService.roomTime[roomId]
+	delRoomDB("roomList",roomId)
 	delete GameRemote.GameService.RoomMap[roomId]
+	delRoomDB("RoomMap",roomId)
+	delete GameRemote.roomHostList[roomId]
+	delRoomDB("roomHostList",roomId)
 	if(cb){
 		cb()
 	}
@@ -509,6 +569,7 @@ GameRemote.prototype.changeAgencyReopenCount = function(uid,roomId,count,cb) {
 	}
 	if(flag){
 		GameRemote.GameService.AgencyReopenList[roomId].count = count
+		setRoomDB("AgencyReopenList",roomId,JSON.stringify(GameRemote.GameService.AgencyReopenList[roomId]))
 		cb(true)
 	}else{
 		cb(false)
@@ -566,12 +627,14 @@ GameRemote.prototype.userQuit = function(uid,cb) {
 			if(GameRemote.GameService.RoomMap[roomId].hasOwnProperty(index)){
 				if(GameRemote.GameService.RoomMap[roomId][index].uid == uid){
 					GameRemote.GameService.RoomMap[roomId].splice(index,1)
+					setRoomDB("RoomMap",roomId,JSON.stringify(GameRemote.GameService.RoomMap[roomId]))
 					break;
 				}
 			}
 		}
 	}
 	delete GameRemote.GameService.userMap[uid]
+	setRoomDB("userMap",uid)
 	cb(true)
 }
 
@@ -591,4 +654,38 @@ var deepCopy = function(source) {
         result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
      } 
   return result;
+}
+
+var getRoomDB = function(hashKey,subKey,cb){
+	GameRemote.dbService.db.hget("gameServer:"+hashKey,subKey,function(err,data) {
+		if(err){
+			cb(false)
+		}else{
+			cb(data)
+		}
+	})
+}
+
+var setRoomDB = function(hashKey,subKey,data,cb){
+	GameRemote.dbService.db.hset("gameServer:"+hashKey,subKey,data,function(err,data) {
+		if(err){
+			console.log("setRoomDB error : "+err)
+			if(cb){
+				cb(false)
+			}
+		}else{
+			console.log(data)
+			if(cb){
+				cb(data)
+			}
+		}
+	})
+}
+
+var delRoomDB = function(hashKey,subKey) {
+	GameRemote.dbService.db.hdel("gameServer:"+hashKey,subKey,function(err,data) {
+		if(err){
+			console.log(err)
+		}
+	})
 }
