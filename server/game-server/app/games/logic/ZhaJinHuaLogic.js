@@ -138,85 +138,80 @@ module.exports.compare = function(result1,result2) {
 
 //换牌
 module.exports.changeHandCard = function(handCard,cards,endCount,flag) {
-  // var tmpResult = {}
-  // tmpResult = module.exports.getType(handCard)
-  // if(flag == true){
-  //   //换好牌
-  //   var value = 6
-  //   var tmpRand = Math.random()
-  //   var times = 5
-  //   if(tmpRand < 0.4){
-  //     value = 7
-  //     times = 10
-  //   }else if(tmpRand < 0.1){
-  //     value = 8
-  //     times = 20
-  //   }
-  //   if(tmpResult.type < value){
-  //     for(var z = 0;z < 3;z++){
-  //       cards[endCount++] = deepCopy(handCard[z])
-  //     }
-  //     var randTimes = 0
-  //     var dealFlag = false
-  //     do{
-  //       randTimes++
-  //       dealFlag = false
-  //       //洗牌
-  //       for(var i = 0;i < endCount;i++){
-  //         var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
-  //         var tmpCard = cards[i]
-  //         cards[i] = cards[tmpIndex]
-  //         cards[tmpIndex] = tmpCard
-  //       }
-  //       //发牌
-  //       for(var i = 0; i < 3; i++){
-  //         handCard[i] = cards[endCount - 3 + i]
-  //       }
-  //       tmpResult = module.exports.getType(handCard)
-  //       if(tmpResult.type < value){
-  //         dealFlag = true
-  //       }
-  //     }while(dealFlag && randTimes < times)      
-  //   }
-  // }else{
-  //   //换差牌
-  //   var value = 5
-  //   var tmpRand = Math.random()
-  //   var times = 3
-  //   if(tmpRand < 0.4){
-  //     value = 4
-  //     times = 4
-  //   }else if(tmpRand < 0.1){
-  //     value = 3
-  //     times = 5
-  //   }
-  //   if(tmpResult.type > value){
-  //     for(var z = 0;z < 5;z++){
-  //       cards[endCount++] = deepCopy(handCard[z])
-  //     }
-  //     var randTimes = 0
-  //     var dealFlag = false
-  //     do{
-  //       randTimes++
-  //       dealFlag = false
-  //       //洗牌
-  //       for(var i = 0;i < endCount;i++){
-  //         var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
-  //         var tmpCard = cards[i]
-  //         cards[i] = cards[tmpIndex]
-  //         cards[tmpIndex] = tmpCard
-  //       }
-  //       //发牌
-  //       for(var i = 0; i < 5; i++){
-  //         handCard[i] = cards[endCount - 5 + i]
-  //       }
-  //       tmpResult = module.exports.getType(handCard)
-  //       if(tmpResult.type > value){
-  //         dealFlag = true
-  //       }
-  //     }while(dealFlag && randTimes < times)      
-  //   } 
-  // }
+  var tmpResult = {}
+  tmpResult = module.exports.getType(handCard)
+  if(flag == true){
+    //换好牌
+    var value = 1
+    var tmpRand = Math.random()
+    var times = 10
+    if(tmpRand < 0.8 && tmpRand >= 0.3){
+      value = 2
+      times = 20
+    }else if(tmpRand < 0.3){
+      value = 3
+      times = 30
+    }
+    // console.log("换好牌 : "+value)
+
+    if(tmpResult.type < value){
+      for(var z = 0;z < 3;z++){
+        cards[endCount++] = deepCopy(handCard[z])
+      }
+      var randTimes = 0
+      var dealFlag = false
+      do{
+        randTimes++
+        dealFlag = false
+        //洗牌
+        for(var i = 0;i < endCount;i++){
+          var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
+          var tmpCard = cards[i]
+          cards[i] = cards[tmpIndex]
+          cards[tmpIndex] = tmpCard
+        }
+        //发牌
+        for(var i = 0; i < 3; i++){
+          handCard[i] = cards[endCount - 3 + i]
+        }
+        tmpResult = module.exports.getType(handCard)
+        if(tmpResult.type < value){
+          dealFlag = true
+        }
+      }while(dealFlag && randTimes < times)      
+    }
+  }else{
+    //换差牌
+    // console.log("换差牌")
+    var value = 0
+    var times = 10
+    if(tmpResult.type > value){
+      for(var z = 0;z < 3;z++){
+        cards[endCount++] = deepCopy(handCard[z])
+      }
+      var randTimes = 0
+      var dealFlag = false
+      do{
+        randTimes++
+        dealFlag = false
+        //洗牌
+        for(var i = 0;i < endCount;i++){
+          var tmpIndex = Math.floor(Math.random() * (endCount - 0.000001))
+          var tmpCard = cards[i]
+          cards[i] = cards[tmpIndex]
+          cards[tmpIndex] = tmpCard
+        }
+        //发牌
+        for(var i = 0; i < 3; i++){
+          handCard[i] = cards[endCount - 3 + i]
+        }
+        tmpResult = module.exports.getType(handCard)
+        if(tmpResult.type > value){
+          dealFlag = true
+        }
+      }while(dealFlag && randTimes < times)
+    } 
+  }
 }
 
 

@@ -338,7 +338,41 @@ var MING_CARD_NUM = 3               //明牌数量
       //       dealFlag = true
       //   }
       // }while(dealFlag && randTimes < 2000)
-
+      //找出剩余牌
+      var tmpCards = {}
+      var tmpCardCount = 0
+      for(var i = index;i < cardCount;i++){
+        tmpCards[tmpCardCount++] = deepCopy(cards[i])
+      }
+      var luckyValue = {}
+      //特殊控制
+      for(var i = 0;i < GAME_PLAYER;i++){
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].playerInfo["contorl"] && player[i].playerInfo["contorl"] != 0){
+              if(!luckyValue[i]){
+                luckyValue[i] = 0
+              }
+              var contorlValue = parseFloat(player[i].playerInfo["contorl"])
+              luckyValue[i] -= contorlValue
+          }      
+        }
+      }
+      //运气值低的先执行控制 
+      for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+              if(luckyValue[i] < 0){
+                if(Math.random() < -luckyValue[i]){
+                  //换好牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                }
+              }else if(luckyValue[i] > 0){
+                if(Math.random() < luckyValue[i]){
+                  //换差牌
+                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                }
+              }
+          }
+      }
       //计算牌型
       result = {}
       for(var i = 0;i < GAME_PLAYER;i++){
