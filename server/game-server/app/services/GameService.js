@@ -48,7 +48,10 @@ GameService.getUnusedRoom = function(roomType) {
 	var roomId = Math.floor((Math.random() * ROOM_ALL_AMOUNT))
 	for(var i = roomId;i < ROOM_ALL_AMOUNT + roomId;i++){
 		var index = (roomId % ROOM_ALL_AMOUNT) + ROOM_BEGIN_INDEX
-		if(GameService.roomState[index] == true){
+		console.log(index)
+		console.log(GameService.roomState[index])
+		console.log(typeof(GameService.roomState[index]))
+		if(GameService.roomState[index] == true || GameService.roomState[index] == "true"){
 			// GameService.liveTimer[index] = setTimeout(finishGameOfTimer(index),8 * 60 * 60 * 1000)
 			return index
 		}

@@ -55,21 +55,24 @@ GameRemote.lockState = {}
 GameRemote.lockTimer = {}
 
 //恢复房间
-GameRemote.prototype.recoverRoom = function(roomId,userMap,cb) {
-
+GameRemote.prototype.recoverRoom = function(params,roomId,userMap,cb) {
+	console.log("recoverRoom : "+roomId)
+	console.log(userMap)
 	getRoomDB(roomId,function(data) {
 		console.log(data)
 		if(ROOM_FACTORY[data.roomType]){
 			GameRemote.roomList[roomId] = ROOM_FACTORY[data.roomType].createRoom(roomId,GameRemote.channelService,data.playerNumber,gameBegin,gemeOver)
 			for(var index in userMap){
-				GameRemote.userMap[userMap[index]] = roomId
+				GameRemote.userMap[userMap[index].uid] = roomId
 			}
+			//刷新解散房间
 			clearTimeout(GameRemote.liveTimer[roomId])
 			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
 			//还原房间
+			GameRemote.roomList[roomId].recover()
 		}
 	})
-
+	cb(true)
 }
 
 

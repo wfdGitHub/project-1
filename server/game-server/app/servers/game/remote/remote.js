@@ -11,62 +11,79 @@ module.exports = function(app) {
 };
 var local = {}
 var GameRemote = function(app) {
-	this.app = app
+	var self = this
+	self.app = app
 	GameRemote.app = app
-	GameRemote.GameService = this.app.get("GameService")
-	GameRemote.backendSessionService = this.app.get('backendSessionService');
+	GameRemote.GameService = self.app.get("GameService")
+	GameRemote.backendSessionService = self.app.get('backendSessionService');
 	GameRemote.NodeNumber = 0
 	//房间房主映射表
 	GameRemote.roomHostList = {}
-    GameRemote.dbService = this.app.get("dbService")
+    GameRemote.dbService = self.app.get("dbService")
     if(GameRemote.dbService && GameRemote.dbService.db){
     	GameRemote.db = GameRemote.dbService.db
     }
-
-    if(GameRemote.dbService){
-    	GameRemote.GameService.setDB(GameRemote.dbService.db)
-	    //初始化表
-	    setTimeout(function() {
-	    	GameRemote.dbService.db.hgetall("gameServer:roomList",function(err,data) {
-	    		GameRemote.GameService.roomList = data
-	    		console.log(GameRemote.GameService.roomList)
-	    	})
-	    	GameRemote.dbService.db.hgetall("gameServer:roomState",function(err,data) {
-	    		GameRemote.GameService.roomState = data
-	    	})
-	    	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
-	    		GameRemote.GameService.userMap  = data
-	    	})
-	    	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
-	    		GameRemote.GameService.roomMap  = data
-	    		for(var index in GameRemote.GameService.roomMap){
-	    			if(typeof(GameRemote.GameService.roomMap[index]) === "string"){
-	    				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
-	    			}
-	    		}
-	    		console.log(GameRemote.GameService.roomMap)
-	    	})
-	    	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
-	    		GameRemote.GameService.AgencyReopenList  = data
-	    		for(var index in GameRemote.GameService.AgencyReopenList){
-	    			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string"){
-	    				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
-	    			}
-	    		}
-	    		console.log(GameRemote.GameService.AgencyReopenList)
-	    	})
-	    	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
-	    		GameRemote.GameService.agencyList  = data
-	    		for(var index in GameRemote.GameService.agencyList){
-	    			if(typeof(GameRemote.GameService.agencyList[index]) === "string"){
-	    				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
-	    			}
-	    		}
-	    		console.log(GameRemote.GameService.agencyList)
-	    	})
-	    },3000)
-    }
 };
+//执行恢复操作
+GameRemote.prototype.recover = function(cb) {
+	var self = this
+	GameRemote.GameService.setDB(GameRemote.dbService.db)
+	console.log(GameRemote.app.getCurServer())
+	console.log(GameRemote.app.getServerType())
+	GameRemote.dbService.db.hgetall("gameServer:roomList",function(err,data) {
+		GameRemote.GameService.roomList = data
+		for(var index in GameRemote.GameService.roomList){
+			if(index != "flag"){
+    			var params = {}
+    			params.gid = GameRemote.GameService.roomList[index]
+    			//还原房间
+    			getRoomDB("RoomMap",index,function(params,index) {
+    				return function(data) {
+		    			var roomId = index
+		    			self.app.rpc.gameNode.remote.recoverRoom(null,params,roomId,data,function(flag) {
+		    				console.log(flag)
+		    			})
+    				}
+    			}(params,index))
+			}
+		}
+		console.log(GameRemote.GameService.roomMap)
+	})
+	GameRemote.dbService.db.hgetall("gameServer:roomState",function(err,data) {
+		GameRemote.GameService.roomState = data
+	})
+	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
+		GameRemote.GameService.userMap  = data
+	})
+	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
+		GameRemote.GameService.roomMap  = data
+		for(var index in GameRemote.GameService.roomMap){
+			if(typeof(GameRemote.GameService.roomMap[index]) === "string"){
+				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
+			}
+		}
+		console.log(GameRemote.GameService.roomList)
+	})
+	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
+		GameRemote.GameService.AgencyReopenList  = data
+		for(var index in GameRemote.GameService.AgencyReopenList){
+			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string"){
+				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
+			}
+		}
+		console.log(GameRemote.GameService.AgencyReopenList)
+	})
+	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
+		GameRemote.GameService.agencyList  = data
+		for(var index in GameRemote.GameService.agencyList){
+			if(typeof(GameRemote.GameService.agencyList[index]) === "string"){
+				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
+			}
+		}
+		console.log(GameRemote.GameService.agencyList)
+	})
+	cb()
+}
 
 //获取代开房数据
 GameRemote.prototype.getAgencyRoom = function(uid,cb) {
