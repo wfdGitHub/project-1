@@ -708,6 +708,44 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
             betList[i] = 0;
             player[i].isShowCard = false
       }
+      //斗牛模式更新积分池
+      if(room.gameMode == MODE_GAME_BULL){
+        var notify = {
+          "cmd" : "bonusPool",
+          "bonusPool" : bonusPool,
+          "bankerScore" : player[banker].score,
+          "change" : oldBanker !== banker,
+          "oldBanker" : banker,
+          "oldBankerScore" : player[banker].score
+        }
+        if(room.runCount == 0){
+          bonusPool = (room.GAME_PLAYER - 1) * 30
+          player[banker].score -= bonusPool
+          notify.change = true
+          notify.oldBankerScore = player[banker].score
+        }else{
+          //积分池小于房间最大人数 * 10 时换庄
+          if(bonusPool < (room.GAME_PLAYER - 1) * 10){
+            player[banker].isBanker = false
+            player[banker].score += bonusPool
+            local.updatePlayerScore(banker)
+            notify.oldBankerScore = player[banker].score
+            do{
+                banker = (banker + 1)%GAME_PLAYER
+            }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
+            bonusPool = (room.GAME_PLAYER - 1) * 30
+            player[banker].score -= bonusPool
+            player[banker].isBanker = true
+            bankerTime = 0
+            log("banker change : "+banker)
+            notify.change = true            
+          } 
+        }
+        notify.bankerScore = player[banker].score
+        notify.bonusPool = bonusPool
+        notify.banker = banker
+        local.sendAll(notify)          
+      }
       if(banker !== -1){
         //重置庄家信息
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -723,42 +761,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           chair : banker
         }
         local.sendAll(notify)   
-      }
-      //斗牛模式更新积分池
-      if(room.gameMode == MODE_GAME_BULL){
-
-        var notify = {
-          "cmd" : "bonusPool",
-          "bonusPool" : bonusPool,
-          "bankerScore" : player[banker].score,
-          "change" : oldBanker !== banker
-        }
-        if(bonusPool == 0 && room.runCount == 0){
-          bonusPool = (room.GAME_PLAYER - 1) * 30
-          player[banker].score -= bonusPool
-          notify.change = true
-          notify.bonusPool = bonusPool
-          notify.bankerScore = player[banker].score
-        }else{
-          //积分池小于房间最大人数 * 10 时换庄
-          if(bonusPool < (room.GAME_PLAYER - 1) * 10){
-            player[banker].isBanker = false
-            player[banker].score += bonusPool
-            local.updatePlayerScore(banker)
-            do{
-                banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
-            bonusPool = (room.GAME_PLAYER - 1) * 30
-            player[banker].score -= bonusPool
-            player[banker].isBanker = true
-            bankerTime = 0
-            log("banker change : "+banker)
-            notify.change = true
-            notify.bonusPool = bonusPool
-            notify.bankerScore = player[banker].score
-          } 
-        }
-        local.sendAll(notify)          
       }
       var index = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
@@ -865,6 +867,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           }      
         }
       }
+      luckyValue[banker] = 1
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
         if(luckyValue[i]){
@@ -930,8 +933,8 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
             var tmpBet = 1
             if(room.gameMode === conf.MODE_GAME_BULL){
-              tmpBet = Math.floor(bonusPool / room.playerCount / 5)
-              if(tmpBet === 0){
+              tmpBet = Math.floor(bonusPool / ((room.GAME_PLAYER - 1) * 2) / 5)
+              if(tmpBet < 1){
                 tmpBet = 1
               }
               if(tmpBet > 40){
@@ -942,7 +945,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
             betAmount += tmpBet
             local.betMessege(i,tmpBet)  
           }
-      }  
+      }
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
