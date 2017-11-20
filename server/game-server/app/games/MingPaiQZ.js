@@ -215,6 +215,7 @@ var MING_CARD_NUM = 4               //明牌数量
       console.log("recover : ")
       console.log(data)
       local.init()
+      room.state = false
       basicType = parseInt(data.basicType)
       room.basic = parseInt(data.basic)
       gameState = parseInt(data.gameState)
@@ -244,22 +245,19 @@ var MING_CARD_NUM = 4               //明牌数量
           }
         return
         case conf.GAMEING : 
-          local.chooseBanker()
+          local.gameBegin()
         return
         case conf.GS_ROB_BANKER:
-          timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)
+          local.chooseBanker()
         return
         case conf.GS_NONE:
-          timer = setTimeout(local.betting,1000)
+          local.endRob()
         return
         case conf.GS_BETTING:
-          timer = setTimeout(local.deal,conf.TID_BETTING)
+          local.betting()
         return
         case conf.GS_DEAL:
-          timer = setTimeout(function(){
-            gameState = conf.GS_FREE
-            local.settlement()
-          },conf.TID_SETTLEMENT)
+          local.deal()
         return
       }
     }
