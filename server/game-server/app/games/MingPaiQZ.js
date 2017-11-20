@@ -162,6 +162,7 @@ var MING_CARD_NUM = 4               //明牌数量
         return
       }
       frame.start(param.waitMode)
+      room.waitMode = param.waitMode
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }
