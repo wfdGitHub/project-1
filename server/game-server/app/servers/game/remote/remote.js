@@ -51,32 +51,58 @@ GameRemote.prototype.recover = function(cb) {
 	})
 	GameRemote.dbService.db.hgetall("gameServer:roomState",function(err,data) {
 		GameRemote.GameService.roomState = data
+		for(var index in GameRemote.GameService.roomState){
+			if(index !== "flag"){
+				if(GameRemote.GameService.roomState[index] === "false"){
+					GameRemote.GameService.roomState[index] = false
+				}else{
+					GameRemote.GameService.roomState[index] = true
+				}
+			}
+		}		
 	})
 	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
-		GameRemote.GameService.userMap  = data
+		GameRemote.GameService.userMap = {}
+		for(var index in data){
+			if(index !== "flag"){
+				GameRemote.GameService.userMap[index] = parseInt(data[index])
+			}
+		}
+	})
+
+	GameRemote.dbService.db.hgetall("gameServer:roomHostList",function(err,data) {
+		GameRemote.roomHostList = {}
+		for(var index in data){
+			if(index !== "flag"){
+				GameRemote.roomHostList[index] = parseInt(data[index])
+			}
+		}
+		console.log("roomHostList")
+		console.log(data)
+		console.log(GameRemote.roomHostList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
-		GameRemote.GameService.roomMap  = data
+		GameRemote.GameService.roomMap  = {}
 		for(var index in GameRemote.GameService.roomMap){
-			if(typeof(GameRemote.GameService.roomMap[index]) === "string"){
+			if(index !== "flag"){
 				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
 			}
 		}
 		console.log(GameRemote.GameService.roomList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
-		GameRemote.GameService.AgencyReopenList  = data
+		GameRemote.GameService.AgencyReopenList  = {}
 		for(var index in GameRemote.GameService.AgencyReopenList){
-			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string"){
+			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string" && index !== "flag"){
 				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
 			}
 		}
 		console.log(GameRemote.GameService.AgencyReopenList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
-		GameRemote.GameService.agencyList  = data
+		GameRemote.GameService.agencyList  = {}
 		for(var index in GameRemote.GameService.agencyList){
-			if(typeof(GameRemote.GameService.agencyList[index]) === "string"){
+			if(typeof(GameRemote.GameService.agencyList[index]) === "string" && index !== "flag"){
 				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
 			}
 		}
@@ -283,7 +309,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 									setRoomDB("roomState",roomId,false)
 									GameRemote.GameService.RoomMap[roomId] = []
 									GameRemote.roomHostList[roomId] = uid
-									setRoomDB("roomHostList",roomId)
+									setRoomDB("roomHostList",roomId,uid)
 									var info = {
 										"uid" : playerInfo.uid,
 										"nickname" : playerInfo.playerInfo,
@@ -556,6 +582,12 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 	delRoomDB("RoomMap",roomId)
 	delete GameRemote.roomHostList[roomId]
 	delRoomDB("roomHostList",roomId)
+	//删除房间记录
+	GameRemote.dbService.db.del("gameNodeRoom:"+roomId,function(err,data) {
+		if(err){
+			console.log(err)
+		}
+	})
 	if(cb){
 		cb()
 	}

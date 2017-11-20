@@ -64,11 +64,6 @@ var MING_CARD_NUM = 4               //明牌数量
       "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
       "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
     }
-    //下注上限
-    var maxBet = 0
-
-    //斗公牛模式积分池
-    var bonusPool = 40
     var robState,betList
     room.runCount = 0
    //房间初始化
@@ -107,11 +102,6 @@ var MING_CARD_NUM = 4               //明牌数量
         betList[i] = 0
         lastScore[i] = 0
       }
-
-      //下注上限
-      maxBet = 0
-      //斗公牛模式积分池
-      bonusPool = 40
       //玩家属性
       player = {}
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -163,6 +153,7 @@ var MING_CARD_NUM = 4               //明牌数量
         return
       }
       frame.start(param.waitMode)
+      room.waitMode = param.waitMode
       if(!param.allowAllin || param.allowAllin == false){
         allowAllin = false
       }
@@ -186,19 +177,91 @@ var MING_CARD_NUM = 4               //明牌数量
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式   
-
-      setRoomDB(room.roomId,"basicType",basicType)
-      setRoomDB(room.roomId,"basic",room.basic)
-      setRoomDB(room.roomId,"readyCount",0)
-      setRoomDB(room.roomId,"gameState",gameState)
-      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))
-      setRoomDB(room.roomId,"roomHost",roomHost)
-      setRoomDB(room.roomId,"banker",roomHost)
-      setRoomDB(room.roomId,"bankerMode",room.state)
-      setRoomDB(room.roomId,"gameNumber",room.gameNumber)
-      setRoomDB(room.roomId,"maxGameNumber",room.maxGameNumber)
-      setRoomDB(room.roomId,"cardMode",room.cardMode)
-      cb(true)
+      //备份
+      local.backups(function() {
+        cb(true)
+      })
+    }
+    local.backups = function(cb){
+      console.log("begin backups=====")
+      var dbObj = {
+        "basicType" : basicType,
+        "basic" : room.basic,
+        "gameState" : gameState,
+        "chairMap" : JSON.stringify(room.chairMap),
+        "roomHost" : roomHost,
+        "banker" : banker,
+        "bankerMode" : room.bankerMode,
+        "gameNumber" : room.gameNumber,
+        "maxGameNumber" : room.maxGameNumber,
+        "consumeMode" : room.consumeMode,
+        "cardMode" : room.cardMode,
+        "betList" : JSON.stringify(betList),
+        "player" : JSON.stringify(player),
+        "result" : JSON.stringify(result),
+        "playerNumber" : room.GAME_PLAYER,
+        "roomType" : room.roomType,
+        "agencyId" : false,
+        "waitMode" : room.waitMode,
+      }
+      setRoomDBObj(room.roomId,dbObj,function() {
+        console.log("end backups=====")
+        if(cb){
+          cb()
+        }
+      })
+    }
+    room.recover = function(data) {
+      console.log("recover : ")
+      console.log(data)
+      local.init()
+      basicType = parseInt(data.basicType)
+      room.basic = parseInt(data.basic)
+      gameState = parseInt(data.gameState)
+      room.chairMap = JSON.parse(data.chairMap)
+      roomHost = parseInt(data.roomHost)
+      banker = parseInt(data.banker)
+      room.bankerMode = parseInt(data.bankerMode)
+      room.gameNumber = parseInt(data.gameNumber)
+      room.maxGameNumber = parseInt(data.maxGameNumber)
+      room.consumeMode = parseInt(data.consumeMode)
+      room.cardMode = parseInt(data.cardMode)
+      betList = JSON.parse(data.betList)
+      player = JSON.parse(data.player)
+      result = JSON.parse(data.result)
+      room.GAME_PLAYER = parseInt(data.playerNumber)
+      room.roomType = data.roomType
+      room.agencyId = parseInt(data.agencyId)
+      room.waitMode = parseInt(data.waitMode)
+      frame.start(room.waitMode)
+      for(var index in player){
+        player[index].isOnline = false
+      }      
+      switch(gameState){
+        case conf.GS_FREE : 
+          for(var index in player){
+            player[index].isReady = false
+          }
+        return
+        case conf.GAMEING : 
+          local.chooseBanker()
+        return
+        case conf.GS_ROB_BANKER:
+          timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)
+        return
+        case conf.GS_NONE:
+          timer = setTimeout(local.betting,1000)
+        return
+        case conf.GS_BETTING:
+          timer = setTimeout(local.deal,conf.TID_BETTING)
+        return
+        case conf.GS_DEAL:
+          timer = setTimeout(function(){
+            gameState = conf.GS_FREE
+            local.settlement()
+          },conf.TID_SETTLEMENT)
+        return
+      }
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
@@ -206,8 +269,8 @@ var MING_CARD_NUM = 4               //明牌数量
             roomHost = -1
             room.agencyId = uid
             room.consumeMode = "agency"
-            setRoomDB(room.roomId,"consumeMode",room.consumeMode)
-            setRoomDB(room.roomId,"agencyId",room.agencyId)
+            //备份
+            local.backups()
           }
           cb(flag)
       })
@@ -216,8 +279,6 @@ var MING_CARD_NUM = 4               //明牌数量
     room.handle.newRoom = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
           if(flag){
-            setRoomDB(room.roomId,"consumeMode",room.consumeMode)
-            setRoomDB(room.roomId,"agencyId",false)            
             room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
           }else{
             cb(false)
@@ -283,7 +344,9 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       notify = local.getRoomInfo(chair)
       local.sendUid(uid,notify)
-      setRoomDB(room.roomId,"player",player)
+
+      setRoomDB(room.roomId,"player",JSON.stringify(player))
+      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -478,9 +541,10 @@ var MING_CARD_NUM = 4               //明牌数量
         }
         local.sendUid(player[index].uid,notify)        
       }
-
-      //TODO 下个阶段
-      local.chooseBanker()
+      local.backups(function() {
+        //TODO 下个阶段
+        local.chooseBanker()
+      })
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
@@ -495,7 +559,9 @@ var MING_CARD_NUM = 4               //明牌数量
           "cmd" : "beginRob"
         }
         local.sendAll(notify)
-        timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)         
+        local.backups(function() {
+          timer = setTimeout(local.endRob,conf.TID_MINGPAIQZ_ROB_TIME)
+        })
       }else{
         local.betting()
       }
@@ -536,7 +602,9 @@ var MING_CARD_NUM = 4               //明牌数量
       player[banker].isBanker = true
       player[banker].bankerCount++
       gameState = conf.GS_NONE
-      setTimeout(local.betting,1000)
+      local.backups(function() {
+        setTimeout(local.betting,1000)
+      })
     }
     //下注阶段
     local.betting = function() {
@@ -551,7 +619,9 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       local.sendAll(notify)
       //定时器启动下一阶段
-      timer = setTimeout(local.deal,conf.TID_BETTING)      
+      local.backups(function() {
+        timer = setTimeout(local.deal,conf.TID_BETTING)
+      })
     }
     //发送聊天
     room.handle.say = function(uid,sid,param,cb) {
@@ -775,12 +845,13 @@ var MING_CARD_NUM = 4               //明牌数量
           local.sendUid(player[i].uid,notify)
         }
       }
-      
-      timer = setTimeout(function(){
-        gameState = conf.GS_FREE
-        local.settlement()
-      },conf.TID_SETTLEMENT)
-  }    
+      local.backups(function() {
+        timer = setTimeout(function(){
+          gameState = conf.GS_FREE
+          local.settlement()
+        },conf.TID_SETTLEMENT)
+      })
+  }
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
@@ -885,6 +956,8 @@ var MING_CARD_NUM = 4               //明牌数量
         }
         if(room.gameNumber <= 0){
             local.gameOver()
+        }else{
+            local.backups()
         }
       }
     }
@@ -1128,6 +1201,37 @@ var MING_CARD_NUM = 4               //明牌数量
       cb()
     }
   }
+    var setRoomDB = function(hashKey,subKey,data,cb){
+      gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+        if(err){
+          console.log("setRoomDB error : "+err)
+          if(cb){
+            cb(false)
+          }
+        }else{
+          console.log(data)
+          if(cb){
+            cb(data)
+          }
+        }
+      })
+    }
+
+    var setRoomDBObj = function(hashKey,obj,cb){
+      gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
+        if(err){
+          console.log("setRoomDB error : "+err)
+          if(cb){
+            cb(false)
+          }
+        }else{
+          console.log(data)
+          if(cb){
+            cb(data)
+          }
+        }
+      })
+    }
     return room 
 }
 
