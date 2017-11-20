@@ -186,6 +186,18 @@ var MING_CARD_NUM = 4               //明牌数量
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式   
+
+      setRoomDB(room.roomId,"basicType",basicType)
+      setRoomDB(room.roomId,"basic",room.basic)
+      setRoomDB(room.roomId,"readyCount",0)
+      setRoomDB(room.roomId,"gameState",gameState)
+      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))
+      setRoomDB(room.roomId,"roomHost",roomHost)
+      setRoomDB(room.roomId,"banker",roomHost)
+      setRoomDB(room.roomId,"bankerMode",room.state)
+      setRoomDB(room.roomId,"gameNumber",room.gameNumber)
+      setRoomDB(room.roomId,"maxGameNumber",room.maxGameNumber)
+      setRoomDB(room.roomId,"cardMode",room.cardMode)
       cb(true)
     }
     room.handle.agency = function(uid,sid,param,cb) {
@@ -194,14 +206,18 @@ var MING_CARD_NUM = 4               //明牌数量
             roomHost = -1
             room.agencyId = uid
             room.consumeMode = "agency"
+            setRoomDB(room.roomId,"consumeMode",room.consumeMode)
+            setRoomDB(room.roomId,"agencyId",room.agencyId)
           }
           cb(flag)
-      })  
+      })
     }
     //创建房间
     room.handle.newRoom = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
           if(flag){
+            setRoomDB(room.roomId,"consumeMode",room.consumeMode)
+            setRoomDB(room.roomId,"agencyId",false)            
             room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
           }else{
             cb(false)
@@ -267,6 +283,7 @@ var MING_CARD_NUM = 4               //明牌数量
       }
       notify = local.getRoomInfo(chair)
       local.sendUid(uid,notify)
+      setRoomDB(room.roomId,"player",player)
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -286,11 +303,11 @@ var MING_CARD_NUM = 4               //明牌数量
     local.gameBegin = function(argument) {
       log("gameBegin")
       frame.begin()
-      gameState = conf.GS_GAMEING   
+      gameState = conf.GS_GAMEING
       //第一次开始游戏调用游戏开始回调
       if(room.gameNumber === room.maxGameNumber){
         roomBeginCB(room.roomId,room.agencyId)
-      }       
+      }
       if(room.bankerMode == conf.MODE_BANKER_NIUNIU){
         if(banker !== -1){
           //重置庄家信息
@@ -299,7 +316,7 @@ var MING_CARD_NUM = 4               //明牌数量
               player[i].isBanker = false
           }
           //console.log("banker : "+banker)
-          player[banker].isBanker = true    
+          player[banker].isBanker = true
         }
       }
       room.gameNumber--
