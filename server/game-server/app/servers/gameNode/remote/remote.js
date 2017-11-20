@@ -61,7 +61,7 @@ GameRemote.prototype.recoverRoom = function(params,roomId,userMap,cb) {
 	getRoomDB(roomId,function(data) {
 		console.log(data)
 		if(ROOM_FACTORY[data.roomType]){
-			GameRemote.roomList[roomId] = ROOM_FACTORY[data.roomType].createRoom(roomId,GameRemote.channelService,data.playerNumber,gameBegin,gemeOver)
+			GameRemote.roomList[roomId] = ROOM_FACTORY[data.roomType].createRoom(roomId,GameRemote.db,GameRemote.channelService,data.playerNumber,gameBegin,gemeOver)
 			for(var index in userMap){
 				GameRemote.userMap[userMap[index].uid] = roomId
 			}
@@ -69,7 +69,7 @@ GameRemote.prototype.recoverRoom = function(params,roomId,userMap,cb) {
 			clearTimeout(GameRemote.liveTimer[roomId])
 			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
 			//还原房间
-			GameRemote.roomList[roomId].recover()
+			// GameRemote.roomList[roomId].recover()
 		}
 	})
 	cb(true)
@@ -84,7 +84,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.db,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
@@ -115,7 +115,7 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}	
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.db,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber

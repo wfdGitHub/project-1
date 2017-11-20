@@ -26,7 +26,7 @@ var MODE_DIAMOND_HOST = 1              //房主扣钻
 var MODE_DIAMOND_EVERY = 2             //每人扣钻
 var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
-module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
+module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
