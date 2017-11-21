@@ -56,8 +56,8 @@ GameRemote.lockTimer = {}
 
 //恢复房间
 GameRemote.prototype.recoverRoom = function(params,roomId,userMap,cb) {
-	console.log("recoverRoom : "+roomId)
 	console.log(userMap)
+	freeFrame.start(GameRemote)
 	getRoomDB(roomId,function(data) {
 		console.log(data)
 		if(ROOM_FACTORY[data.roomType]){

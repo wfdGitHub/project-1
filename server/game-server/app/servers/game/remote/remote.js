@@ -39,8 +39,8 @@ GameRemote.prototype.recover = function(cb) {
     			//还原房间
     			getRoomDB("RoomMap",index,function(params,index) {
     				return function(data) {
-		    			var roomId = index
-		    			self.app.rpc.gameNode.remote.recoverRoom(null,params,roomId,data,function(flag) {
+		    			var roomId = parseInt(index)
+		    			self.app.rpc.gameNode.remote.recoverRoom(null,params,roomId,JSON.parse(data),function(flag) {
 		    				console.log(flag)
 		    			})
     				}

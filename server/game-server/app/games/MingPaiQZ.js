@@ -33,6 +33,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var banker = -1                      //庄家椅子号
     var roomHost = -1                    //房主椅子号
     var timer                            //定时器句柄
+    var tmpGameState = 0                 //恢复时临时存储状态
     room.GAME_PLAYER = playerNumber      //游戏人数
     var GAME_PLAYER = playerNumber
     var curPlayer = -1                   //当前操作玩家
@@ -203,6 +204,7 @@ var MING_CARD_NUM = 4               //明牌数量
         "roomType" : room.roomType,
         "agencyId" : false,
         "waitMode" : room.waitMode,
+        "maxRob" : room.maxRob
       }
       setRoomDBObj(room.roomId,dbObj,function() {
         console.log("end backups=====")
@@ -218,7 +220,8 @@ var MING_CARD_NUM = 4               //明牌数量
       room.state = false
       basicType = parseInt(data.basicType)
       room.basic = parseInt(data.basic)
-      gameState = parseInt(data.gameState)
+      tmpGameState = parseInt(data.gameState)
+      gameState = conf.GS_RECOVER
       room.chairMap = JSON.parse(data.chairMap)
       roomHost = parseInt(data.roomHost)
       banker = parseInt(data.banker)
@@ -234,32 +237,49 @@ var MING_CARD_NUM = 4               //明牌数量
       room.roomType = data.roomType
       room.agencyId = parseInt(data.agencyId)
       room.waitMode = parseInt(data.waitMode)
+      room.maxRob = parseInt(data.maxRob)
       frame.start(room.waitMode)
       for(var index in player){
         player[index].isOnline = false
-      }      
+        robState[index] = 0
+      }
+    }
+    local.recover = function() {
+      gameState = tmpGameState
       switch(gameState){
         case conf.GS_FREE : 
           for(var index in player){
             player[index].isReady = false
           }
-        return
+        break
         case conf.GAMEING : 
           local.gameBegin()
-        return
+        break
         case conf.GS_ROB_BANKER:
           local.chooseBanker()
-        return
+        break
         case conf.GS_NONE:
           local.endRob()
-        return
+        break
         case conf.GS_BETTING:
           local.betting()
-        return
+        break
         case conf.GS_DEAL:
           local.deal()
+        break
+      }
+      var notify = {
+        "cmd" : "recover"
+      }
+      local.sendAll(notify)
+    }
+    room.handle.recover = function(uid,sid,param,cb) {
+      if(gameState !== conf.GS_RECOVER){
+        cb(false)
         return
       }
+      local.recover()
+      cb(true)
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
@@ -1133,7 +1153,7 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
         allowAllin : allowAllin,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
