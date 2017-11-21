@@ -173,6 +173,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basicType = param.basicType
+      room.basicType = basicType
       room.basic = param.basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -1037,7 +1038,7 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basicType : basicType,
+        basicType : room.basicType,
         basic : room.basic,
         maxRob : room.maxRob,
         lastScore : lastScore,
