@@ -867,7 +867,6 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           }      
         }
       }
-      luckyValue[banker] = 1
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
         if(luckyValue[i]){
