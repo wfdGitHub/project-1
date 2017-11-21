@@ -146,7 +146,7 @@ GameService.setAgencyRoomByID = function(agencyId,roomId,agencyRoom) {
 
 
 var setRoomDB = function(hashKey,subKey,data,cb){
-	GameRemote.dbService.db.hset("gameServer:"+hashKey,subKey,data,function(err,data) {
+	GameService.db.hset("gameServer:"+hashKey,subKey,data,function(err,data) {
 		if(err){
 			console.log("setRoomDB error : "+err)
 			if(cb){
@@ -162,7 +162,7 @@ var setRoomDB = function(hashKey,subKey,data,cb){
 }
 
 var delRoomDB = function(hashKey,subKey) {
-	GameRemote.dbService.db.hdel("gameServer:"+hashKey,subKey,function(err,data) {
+	GameService.db.hdel("gameServer:"+hashKey,subKey,function(err,data) {
 		if(err){
 			console.log(err)
 		}

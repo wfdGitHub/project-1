@@ -47,7 +47,7 @@ GameRemote.prototype.recover = function(cb) {
     			}(params,index))
 			}
 		}
-		console.log(GameRemote.GameService.roomMap)
+		// console.log(GameRemote.GameService.roomMap)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:roomState",function(err,data) {
 		GameRemote.GameService.roomState = data
@@ -77,9 +77,9 @@ GameRemote.prototype.recover = function(cb) {
 				GameRemote.roomHostList[index] = parseInt(data[index])
 			}
 		}
-		console.log("roomHostList")
-		console.log(data)
-		console.log(GameRemote.roomHostList)
+		// console.log("roomHostList")
+		// console.log(data)
+		// console.log(GameRemote.roomHostList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
 		GameRemote.GameService.roomMap  = {}
@@ -88,7 +88,7 @@ GameRemote.prototype.recover = function(cb) {
 				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
 			}
 		}
-		console.log(GameRemote.GameService.roomList)
+		// console.log(GameRemote.GameService.roomList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
 		GameRemote.GameService.AgencyReopenList  = {}
@@ -97,12 +97,12 @@ GameRemote.prototype.recover = function(cb) {
 				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
 			}
 		}
-		console.log(GameRemote.GameService.AgencyReopenList)
+		// console.log(GameRemote.GameService.AgencyReopenList)
 	})
 	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
 		GameRemote.GameService.agencyList  = {}
 		for(var index in GameRemote.GameService.agencyList){
-			if(typeof(GameRemote.GameService.agencyList[index]) === "string" && index !== "flag"){
+			if(index !== "flag"){
 				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
 			}
 		}
