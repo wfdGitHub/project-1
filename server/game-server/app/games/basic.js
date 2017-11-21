@@ -724,6 +724,11 @@ var MING_CARD_NUM = 3               //明牌数量
     room.gameNumber = 0
     local.gameOver(flag)
   }
+  //获取房间数据
+  room.getRoomInfo = function(){
+    var data = local.getRoomInfo(-1)
+    return data
+  }  
   //用户退出
   room.userQuit = function(uid,cb) {
     //再次确保游戏未开始

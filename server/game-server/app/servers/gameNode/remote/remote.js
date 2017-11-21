@@ -116,6 +116,15 @@ var finishGameOfTimer = function(index) {
 		}
 	}
 }
+//获取房间数据
+GameRemote.prototype.getRoomInfo = function(params,uid,sid,roomId,cb) {
+	if(!GameRemote.roomList[roomId]){
+		cb(false)
+		return
+	}
+	var data = GameRemote.roomList[roomId].getRoomInfo()
+	cb(data)
+}
 //加入房间
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 	var self = this

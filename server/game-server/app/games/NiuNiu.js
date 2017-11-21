@@ -231,40 +231,13 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     }
     //console.log(notify)
     local.sendAll(notify)
-    var newPlayer = deepCopy(player)
-    //deal阶段之前不返回牌
-    if(gameState < conf.GS_DEAL){
-      for(var i = 0; i < GAME_PLAYER;i++){
-          delete newPlayer[i].handCard
-      }
-    }
     //console.log("param.maxGameNumber : "+param.maxGameNumber)
     //console.log("room.gameNumber : "+room.gameNumber)
     if(!room.channel.getMember(uid)){
       room.channel.add(uid,sid)
     }
 
-    notify = {
-      cmd : "roomPlayer",
-      player:newPlayer,
-      gameMode : room.gameMode,
-      maxGameNumber : room.maxGameNumber,
-      gameNumber : room.maxGameNumber - room.gameNumber,
-      consumeMode : room.consumeMode,
-      bankerMode : room.bankerMode,
-      cardMode : room.cardMode,
-      roomId : room.roomId,
-      TID_ROB_TIME : conf.TID_ROB_TIME,
-      TID_BETTING : conf.TID_BETTING,
-      TID_SETTLEMENT : conf.TID_SETTLEMENT,
-      state : gameState,
-      roomType : room.roomType,
-      bankerTime : bankerTime,
-      betList : betList,
-      bonusPool : bonusPool,
-      basicType : room.basicType,
-      playerNumber : GAME_PLAYER
-    }
+    notify = local.getRoomInfo(chair)
     //console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
@@ -287,36 +260,8 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       if(!room.channel.getMember(uid)){
         room.channel.add(uid,sid)
       }
-      var newPlayer = deepCopy(player)
-      //deal阶段之前不返回牌
-      if(gameState < conf.GS_DEAL){
-        for(var i = 0; i < GAME_PLAYER;i++){
-            delete newPlayer[i].handCard
-        }
-        if(room.cardMode == conf.MODE_CARD_SHOW){
-          newPlayer[chair].handCard = deepCopy(player[chair].handCard)
-          delete newPlayer[chair].handCard[4]
-        }
-      }
       notify = {
-        roomInfo : {
-          player : newPlayer,
-          gameMode : room.gameMode,
-          maxGameNumber : room.maxGameNumber,
-          gameNumber : room.maxGameNumber - room.gameNumber,
-          consumeMode : room.consumeMode,
-          bankerMode : room.bankerMode,
-          cardMode : room.cardMode,
-          roomId : room.roomId,
-          TID_ROB_TIME : conf.TID_ROB_TIME, 
-          TID_BETTING : conf.TID_BETTING,
-          TID_SETTLEMENT : conf.TID_SETTLEMENT,
-          roomType : room.roomType,
-          bankerTime : bankerTime,
-          bonusPool : bonusPool,
-          basicType : room.basicType,
-          playerNumber : GAME_PLAYER
-        },
+        roomInfo : local.getRoomInfo(chair),
         betList : betList,
         state : gameState,
         bonusPool : bonusPool,
@@ -327,6 +272,41 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     }else{
       cb(false)
     }
+  }
+  local.getRoomInfo = function(chair) {
+    var newPlayer = deepCopy(player)
+    //deal阶段之前不返回牌
+    if(gameState < conf.GS_DEAL){
+      for(var i = 0; i < GAME_PLAYER;i++){
+          delete newPlayer[i].handCard
+      }
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        newPlayer[chair].handCard = deepCopy(player[chair].handCard)
+        delete newPlayer[chair].handCard[4]
+      }
+    }
+    var notify = {
+      cmd : "roomPlayer",
+      player:newPlayer,
+      gameMode : room.gameMode,
+      maxGameNumber : room.maxGameNumber,
+      gameNumber : room.maxGameNumber - room.gameNumber,
+      consumeMode : room.consumeMode,
+      bankerMode : room.bankerMode,
+      cardMode : room.cardMode,
+      roomId : room.roomId,
+      TID_ROB_TIME : conf.TID_ROB_TIME,
+      TID_BETTING : conf.TID_BETTING,
+      TID_SETTLEMENT : conf.TID_SETTLEMENT,
+      state : gameState,
+      roomType : room.roomType,
+      bankerTime : bankerTime,
+      betList : betList,
+      bonusPool : bonusPool,
+      basicType : room.basicType,
+      playerNumber : GAME_PLAYER
+    }
+    return notify
   }
   //玩家离线
   room.leave = function(uid) {
@@ -1369,6 +1349,11 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     room.gameNumber = 0
     local.gameOver(flag)
   }
+  //获取房间数据
+  room.getRoomInfo = function(){
+    var data = local.getRoomInfo(-1)
+    return data
+  }  
   //用户退出
   room.userQuit = function(uid,cb) {
     //再次确保游戏未开始
