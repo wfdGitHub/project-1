@@ -9,32 +9,13 @@ var TID_BETTING = conf.TID_BETTING      //下注时间
 var TID_SETTLEMENT = conf.TID_SETTLEMENT//结算时间
 
 var MING_CARD_NUM = 4               //明牌数量
-//游戏状态
-var GS_FREE         = 1001              //空闲阶段
-var GS_BETTING      = 1002              //下注阶段
-var GS_DEAL         = 1003              //发牌阶段
-var GS_SETTLEMENT   = 1004              //结算阶段
-var GS_ROB_BANKER   = 1005              //抢庄阶段
-
-//游戏模式
-var MODE_GAME_NORMAL = 1              //常规模式
-var MODE_GAME_BULL   = 3              //斗公牛模式
-var MODE_GAME_SHIP   = 4              //开船模式
-//定庄模式
-var MODE_BANKER_ROB   = 1              //随机抢庄
-var MODE_BANKER_HOST  = 2              //房主做庄
-var MODE_BANKER_ORDER = 3              //轮庄
-var MODE_BANKER_NONE  = 4              //无定庄模式
-//消耗模式
-var MODE_DIAMOND_HOST = 1              //房主扣钻
-var MODE_DIAMOND_EVERY = 2             //每人扣钻
-var MODE_DIAMOND_WIN = 3               //大赢家扣钻
 //创建房间
 module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
   console.log("createRoom"+roomId)
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
   var frame = frameFactory.createFrame()
+  var gameDB = db
   var room = {}
   room.roomId = roomId
   room.roomType = "niuniu"
@@ -50,7 +31,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
   var readyCount = 0                   //游戏准备人数
-  var gameState = GS_FREE              //游戏状态
+  var gameState = conf.GS_FREE              //游戏状态
   var banker = -1                      //庄家椅子号
   var oldBanker = banker               //上一局庄家
   var roomHost = -1                    //房主椅子号
@@ -71,7 +52,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var cardHistory = {}
   for(var i = 0;i < GAME_PLAYER;i++){
     cardHistory[i] = []
-  }  
+  }
   //下注信息
   
   var betAmount = 0
@@ -107,7 +88,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       log("newRoom error   param.gameNumber : "+param.gameNumber)
       cb(false)
       return
-    }    
+    }
     if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
       log("newRoom error   param.cardMode : "+param.cardMode)
       cb(false)
@@ -133,7 +114,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.state = false
     room.playerCount  = 0            //房间内玩家人数
     readyCount = 0                   //游戏准备人数
-    gameState = GS_FREE              //游戏状态
+    gameState = conf.GS_FREE              //游戏状态
     room.chairMap = {}               //玩家UID与椅子号映射表
     banker = -1                      //庄家椅子号
     roomHost = 0                     //房主椅子号
@@ -144,10 +125,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxGameNumber = param.gameNumber              //游戏最大局数
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
-    if(room.gameMode == MODE_GAME_SHIP || room.gameMode == MODE_GAME_BULL){
-      room.bankerMode = MODE_BANKER_NONE
+    if(room.gameMode == conf.MODE_GAME_SHIP || room.gameMode == conf.MODE_GAME_BULL){
+      room.bankerMode = conf.MODE_BANKER_NONE
     }
-    if(room.gameMode == MODE_GAME_BULL){
+    if(room.gameMode == conf.MODE_GAME_BULL){
       banker = roomHost
     }
     if(room.gameMode == conf.MODE_GAME_NORMAL){
@@ -155,7 +136,9 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         banker = roomHost
       }
     }   
-    cb(true)
+    local.backups(function() {
+      cb(true)
+    })
   }
   //代开房间
   room.handle.agency = function(uid,sid,param,cb) {
@@ -164,6 +147,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           room.agencyId = uid
           roomHost = -1
           room.consumeMode = "agency"
+          local.backups()
         }
         cb(flag)
     })
@@ -268,6 +252,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     //console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
+    setRoomDB(room.roomId,"player",JSON.stringify(player))
+    setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))
     cb(true)
   }
 
@@ -383,7 +369,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   //玩家下庄
   room.handle.downBanker = function(uid,sid,param,cb) {
-    if(gameState !== GS_FREE){
+    if(gameState !== conf.GS_FREE){
       cb(false)
       return
     }
@@ -428,7 +414,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   //玩家抢庄
   room.handle.robBanker = function(uid,sid,param,cb) {
-    if(gameState !== GS_ROB_BANKER){
+    if(gameState !== conf.GS_ROB_BANKER){
       cb(false)
       return
     }
@@ -504,7 +490,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   //玩家下注
   room.handle.bet = function(uid,sid,param,cb){
     //游戏状态为BETTING
-    if(gameState !== GS_BETTING){
+    if(gameState !== conf.GS_BETTING){
       cb(false)
       return
     }
@@ -525,7 +511,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       return
     }
     //斗公牛模式使用特殊下注限制
-    if(room.gameMode == MODE_GAME_BULL){
+    if(room.gameMode == conf.MODE_GAME_BULL){
       var tmpMinbet = Math.floor(bonusPool / room.playerCount / 5)
       if(tmpMinbet > 40){
         tmpMinbet = 40
@@ -575,7 +561,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   room.handle.showCard = function(uid,sid,param,cb) {
     //游戏状态为GS_DEAL
-    if(gameState !== GS_DEAL){
+    if(gameState !== conf.GS_DEAL){
       cb(false)
       return
     }
@@ -613,41 +599,41 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   //定庄阶段  有抢庄则进入抢庄
   local.chooseBanker = function() {
-    gameState = GS_ROB_BANKER
-    switch(room.bankerMode){
-      case MODE_BANKER_ROB :
-        //初始化抢庄状态为false
-        for(var i = 0; i < GAME_PLAYER;i++){
-          robState[i] = 0
-        }
-        //抢庄
-        var notify = {
-          "cmd" : "beginRob"
-        }
-        local.sendAll(notify)
-        timer = setTimeout(local.endRob,TID_ROB_TIME)    
-        break
-      case MODE_BANKER_ORDER :
-        //轮庄
-        do{
-            banker = (banker + 1)%GAME_PLAYER
-        }while(player[banker].isActive == false || player[banker].isReady == false)
-
-        local.gameBegin()
-        break
-      case MODE_BANKER_HOST :
-        //房主当庄
-        banker = roomHost
-        if(roomHost === -1){
-          banker = 0
-        }
-        local.gameBegin()
-        break
-      default:
-
-        local.gameBegin()
-        break
-    }
+    gameState = conf.GS_ROB_BANKER
+    local.backups(function() {
+      switch(room.bankerMode){
+        case conf.MODE_BANKER_ROB :
+          //初始化抢庄状态为false
+          for(var i = 0; i < GAME_PLAYER;i++){
+            robState[i] = 0
+          }
+          //抢庄
+          var notify = {
+            "cmd" : "beginRob"
+          }
+          local.sendAll(notify)
+          timer = setTimeout(local.endRob,TID_ROB_TIME)    
+          break
+        case conf.MODE_BANKER_ORDER :
+          //轮庄
+          do{
+              banker = (banker + 1)%GAME_PLAYER
+          }while(player[banker].isActive == false || player[banker].isReady == false)
+          local.gameBegin()
+          break
+        case conf.MODE_BANKER_HOST :
+          //房主当庄
+          banker = roomHost
+          if(roomHost === -1){
+            banker = 0
+          }
+          local.gameBegin()
+          break
+        default:
+          local.gameBegin()
+          break
+      }
+    })
   }
 
   //结束抢庄
@@ -716,7 +702,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         local.sendAll(notify)   
       }
       //斗牛模式更新积分池
-      if(room.gameMode == MODE_GAME_BULL){
+      if(room.gameMode == conf.MODE_GAME_BULL){
 
         var notify = {
           "cmd" : "bonusPool",
@@ -817,7 +803,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           }
       }
       //斗公牛模式庄家积分应加上积分池
-      if(room.gameMode == MODE_GAME_BULL){
+      if(room.gameMode == conf.MODE_GAME_BULL){
           var tmpFlag = true
           if(player[banker].score > 100){
               luckyValue[banker] = player[banker].score / randomMaxScore
@@ -893,28 +879,31 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         }
       }
       //进入下注
-      local.betting()      
+      local.betting()
     }    
   }
   //下注阶段
   local.betting = function() {
     log("betting")
     //状态改变
-    gameState = GS_BETTING
+    gameState = conf.GS_BETTING
     //通知客户端
     var notify = {
       cmd : "beginBetting",
       banker : banker
     }
     local.sendAll(notify)
-    //定时器启动下一阶段
-    timer = setTimeout(local.deal,TID_BETTING)      
+    local.backups(function() {
+      //定时器启动下一阶段
+      timer = setTimeout(local.deal,TID_BETTING)
+    })
+   
     
   }
   //发牌阶段  等待摊牌后进入结算
   local.deal = function(){
       log("deal")
-      gameState = GS_DEAL
+      gameState = conf.GS_DEAL
       //若玩家未下注默认下一分
       //默认底分
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -931,9 +920,9 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             }
             betList[i] = tmpBet
             betAmount += tmpBet
-            local.betMessege(i,tmpBet)  
+            local.betMessege(i,tmpBet)
           }
-      }  
+      }
       var tmpCards = {}
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -950,17 +939,19 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           local.sendUid(player[i].uid,notify)
         }
       }
-      
-      timer = setTimeout(function(){
-        gameState = GS_FREE
-        local.settlement()
-      },TID_SETTLEMENT)
+      local.backups(function() {
+        timer = setTimeout(function(){
+          gameState = conf.GS_FREE
+          local.settlement()
+        },TID_SETTLEMENT)
+      })
+
   }
 
   //结算阶段
   local.settlement = function(){
       clearTimeout(timer)
-      gameState = GS_FREE
+      gameState = conf.GS_FREE
       log("settlement")
       room.runCount++
       oldBanker = banker
@@ -986,6 +977,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         case conf.MODE_GAME_NORMAL : 
         case conf.MODE_GAME_CRAZE :
           //常规模式结算
+          console.log(result)
+          console.log(betList)
           for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
                 if(i === banker || player[i].isReady != true) continue
@@ -1083,7 +1076,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             } 
             bankerTime++
             //斗牛模式更新积分池
-            if(room.gameMode == MODE_GAME_BULL){
+            if(room.gameMode == conf.MODE_GAME_BULL){
               var notify = {
                 "cmd" : "bonusPool",
                 "bonusPool" : bonusPool,
@@ -1094,7 +1087,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             }
             //console.log("bonusPool : "+bonusPool)           
           break
-        case MODE_GAME_SHIP : 
+        case conf.MODE_GAME_SHIP : 
           //开船模式先收集所有人的下注，再按从大到小赔付
           //先减去下注额
           var tmpAllBet = 0
@@ -1139,9 +1132,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               tmpAllBet -= tmpScore
               curScores[tmpUidList[i]] += tmpScore
             }
-          }  
-
-          break 
+          }
+          break
       }
       //积分改变
       for(var i = 0;i < GAME_PLAYER;i++){
@@ -1190,7 +1182,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       for(var i = 0;i < GAME_PLAYER; i++){
           player[i].isReady = false;
           betList[i] = 0;
-          player[i].isBanker = false          
+          player[i].isBanker = false
       }
       //斗公牛庄家标识
       if(room.gameMode === conf.MODE_GAME_BULL){
@@ -1199,6 +1191,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       readyCount = 0
       if(room.gameNumber <= 0){
           local.gameOver()
+      }else{
+          local.backups()
       }
   }
   //总结算
@@ -1280,7 +1274,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.state = true                    //房间状态，true为可创建
     room.playerCount  = 0                //房间内玩家人数
     readyCount = 0                   //游戏准备人数
-    gameState = GS_FREE              //游戏状态
+    gameState = conf.GS_FREE              //游戏状态
     room.chairMap = {}                   //玩家UID与椅子号映射表
     banker = -1                      //庄家椅子号
     roomHost = -1                    //房主椅子号
@@ -1386,7 +1380,132 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       cb()     
     }
   }
+  local.backups = function(cb){
+    console.log("begin backups=====")
+    var dbObj = {
+      "basicType" : room.basicType,
+      "gameState" : gameState,
+      "chairMap" : JSON.stringify(room.chairMap),
+      "roomHost" : roomHost,
+      "banker" : banker,
+      "bankerMode" : room.bankerMode,
+      "gameNumber" : room.gameNumber,
+      "maxGameNumber" : room.maxGameNumber,
+      "consumeMode" : room.consumeMode,
+      "cardMode" : room.cardMode,
+      "betList" : JSON.stringify(betList),
+      "player" : JSON.stringify(player),
+      "playerNumber" : room.GAME_PLAYER,
+      "roomType" : room.roomType,
+      "agencyId" : false,
+      "betAmount" : betAmount,
+      "bonusPool" : bonusPool,
+      "waitMode" : room.waitMode,
+      "gameMode" : room.gameMode,
+      "cardHistory" : JSON.stringify(cardHistory)
+    }
+    setRoomDBObj(room.roomId,dbObj,function() {
+      console.log("end backups=====")
+      if(cb){
+        cb()
+      }
+    })
+  }  
 
+ var setRoomDB = function(hashKey,subKey,data,cb){
+    gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+
+  var setRoomDBObj = function(hashKey,obj,cb){
+    gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+  room.recover = function(data) {
+    console.log("recover : ")
+    console.log(data)
+    local.init()
+    room.state = false
+    basicType = parseInt(data.basicType)
+    tmpGameState = parseInt(data.gameState)
+    gameState = conf.GS_RECOVER
+    room.chairMap = JSON.parse(data.chairMap)
+    roomHost = parseInt(data.roomHost)
+    banker = parseInt(data.banker)
+    room.bankerMode = parseInt(data.bankerMode)
+    room.gameNumber = parseInt(data.gameNumber)
+    room.maxGameNumber = parseInt(data.maxGameNumber)
+    room.consumeMode = parseInt(data.consumeMode)
+    room.cardMode = parseInt(data.cardMode)
+    betList = JSON.parse(data.betList)
+    player = JSON.parse(data.player)
+    room.GAME_PLAYER = parseInt(data.playerNumber)
+    room.roomType = data.roomType
+    room.agencyId = parseInt(data.agencyId)
+    room.waitMode = parseInt(data.waitMode)
+    betAmount = parseInt(data.betAmount),
+    bonusPool = parseInt(data.bonusPool),
+    room.gameMode = parseInt(data.gameMode)
+    cardHistory = JSON.parse(data.cardHistory)
+    frame.start(room.waitMode)
+    for(var index in player){
+      player[index].isOnline = false
+      robState[index] = 0
+    }
+  }
+  local.recover = function() {
+    gameState = tmpGameState
+    switch(gameState){
+      case conf.GS_FREE : 
+        for(var index in player){
+          player[index].isReady = false
+        }
+      break
+      case conf.GS_ROB_BANKER:
+        local.chooseBanker()
+      break
+      case conf.GS_BETTING:
+        local.betting()
+      break
+      case conf.GS_DEAL:
+        local.deal()
+      break
+    }
+    var notify = {
+      "cmd" : "recover"
+    }
+    local.sendAll(notify)
+  }
+  room.handle.recover = function(uid,sid,param,cb) {
+    if(gameState !== conf.GS_RECOVER){
+      cb(false)
+      return
+    }
+    local.recover()
+    cb(true)
+  }
   return room 
 }
 

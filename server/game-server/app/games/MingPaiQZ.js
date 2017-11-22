@@ -57,7 +57,7 @@ var MING_CARD_NUM = 4               //明牌数量
     var cardHistory = {}
     for(var i = 0;i < GAME_PLAYER;i++){
       cardHistory[i] = []
-    }     
+    }
     var betType = {
       "1" : {"default" : 1,"1" : true,"2" : true,"max" : 4},
       "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
@@ -183,36 +183,6 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(true)
       })
     }
-    local.backups = function(cb){
-      console.log("begin backups=====")
-      var dbObj = {
-        "basicType" : basicType,
-        "basic" : room.basic,
-        "gameState" : gameState,
-        "chairMap" : JSON.stringify(room.chairMap),
-        "roomHost" : roomHost,
-        "banker" : banker,
-        "bankerMode" : room.bankerMode,
-        "gameNumber" : room.gameNumber,
-        "maxGameNumber" : room.maxGameNumber,
-        "consumeMode" : room.consumeMode,
-        "cardMode" : room.cardMode,
-        "betList" : JSON.stringify(betList),
-        "player" : JSON.stringify(player),
-        "result" : JSON.stringify(result),
-        "playerNumber" : room.GAME_PLAYER,
-        "roomType" : room.roomType,
-        "agencyId" : false,
-        "waitMode" : room.waitMode,
-        "maxRob" : room.maxRob
-      }
-      setRoomDBObj(room.roomId,dbObj,function() {
-        console.log("end backups=====")
-        if(cb){
-          cb()
-        }
-      })
-    }
     room.recover = function(data) {
       console.log("recover : ")
       console.log(data)
@@ -238,6 +208,7 @@ var MING_CARD_NUM = 4               //明牌数量
       room.agencyId = parseInt(data.agencyId)
       room.waitMode = parseInt(data.waitMode)
       room.maxRob = parseInt(data.maxRob)
+      cardHistory = JSON.parse(data.cardHistory)
       frame.start(room.waitMode)
       for(var index in player){
         player[index].isOnline = false
@@ -252,14 +223,8 @@ var MING_CARD_NUM = 4               //明牌数量
             player[index].isReady = false
           }
         break
-        case conf.GAMEING : 
-          local.gameBegin()
-        break
         case conf.GS_ROB_BANKER:
           local.chooseBanker()
-        break
-        case conf.GS_NONE:
-          local.endRob()
         break
         case conf.GS_BETTING:
           local.betting()
@@ -381,7 +346,7 @@ var MING_CARD_NUM = 4               //明牌数量
       frame.ready(uid,chair,player,gameState,local,local.gameBegin,tmpBanker,cb)
     }
     //游戏开始
-    local.gameBegin = function(argument) {
+    local.gameBegin = function() {
       log("gameBegin")
       frame.begin()
       gameState = conf.GS_GAMEING
@@ -559,10 +524,7 @@ var MING_CARD_NUM = 4               //明牌数量
         }
         local.sendUid(player[index].uid,notify)        
       }
-      local.backups(function() {
-        //TODO 下个阶段
-        local.chooseBanker()
-      })
+      local.chooseBanker()
     }
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
@@ -620,9 +582,7 @@ var MING_CARD_NUM = 4               //明牌数量
       player[banker].isBanker = true
       player[banker].bankerCount++
       gameState = conf.GS_NONE
-      local.backups(function() {
-        setTimeout(local.betting,1000)
-      })
+      setTimeout(local.betting,1000)
     }
     //下注阶段
     local.betting = function() {
@@ -1219,6 +1179,38 @@ var MING_CARD_NUM = 4               //明牌数量
       cb()
     }
   }
+
+    local.backups = function(cb){
+      console.log("begin backups=====")
+      var dbObj = {
+        "basicType" : basicType,
+        "basic" : room.basic,
+        "gameState" : gameState,
+        "chairMap" : JSON.stringify(room.chairMap),
+        "roomHost" : roomHost,
+        "banker" : banker,
+        "bankerMode" : room.bankerMode,
+        "gameNumber" : room.gameNumber,
+        "maxGameNumber" : room.maxGameNumber,
+        "consumeMode" : room.consumeMode,
+        "cardMode" : room.cardMode,
+        "betList" : JSON.stringify(betList),
+        "player" : JSON.stringify(player),
+        "result" : JSON.stringify(result),
+        "playerNumber" : room.GAME_PLAYER,
+        "roomType" : room.roomType,
+        "agencyId" : false,
+        "waitMode" : room.waitMode,
+        "maxRob" : room.maxRob,
+        "cardHistory" : JSON.stringify(cardHistory)
+      }
+      setRoomDBObj(room.roomId,dbObj,function() {
+        console.log("end backups=====")
+        if(cb){
+          cb()
+        }
+      })
+    }  
     var setRoomDB = function(hashKey,subKey,data,cb){
       gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
         if(err){
