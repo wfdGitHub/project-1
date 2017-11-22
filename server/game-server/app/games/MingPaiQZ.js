@@ -165,6 +165,7 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basicType = param.basicType
+      room.basicType = basicType
       room.basic = param.basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -1105,7 +1106,8 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basicType : basicType,
+        basicType : room.basicType,
+        basic : room.basic,
         maxRob : room.maxRob,
         lastScore : lastScore,
         TID_ROB_TIME : conf.TID_MINGPAIQZ_ROB_TIME,
@@ -1151,6 +1153,11 @@ var MING_CARD_NUM = 4               //明牌数量
     room.gameNumber = 0
     local.gameOver(flag)
   }
+  //获取房间数据
+  room.getRoomInfo = function(){
+    var data = local.getRoomInfo(-1)
+    return data
+  }  
   //用户退出
   room.userQuit = function(uid,cb) {
     //再次确保游戏未开始

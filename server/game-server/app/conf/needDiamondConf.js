@@ -15,7 +15,7 @@ var needDiamondConf = {
 				"1" : 10,
 				"2" : 2,
 				"3" : 10,
-				"agency" : 2
+				"agency" : 10
 			}
 		},
 		"9" : {

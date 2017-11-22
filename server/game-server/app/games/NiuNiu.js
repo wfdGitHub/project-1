@@ -62,7 +62,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
   }
   //斗公牛模式积分池
-  var bonusPool = 40
+  var bonusPool = (room.GAME_PLAYER - 1) * 30
   var robState,betList
   local.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
@@ -215,40 +215,13 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     }
     //console.log(notify)
     local.sendAll(notify)
-    var newPlayer = deepCopy(player)
-    //deal阶段之前不返回牌
-    if(gameState < conf.GS_DEAL){
-      for(var i = 0; i < GAME_PLAYER;i++){
-          delete newPlayer[i].handCard
-      }
-    }
     //console.log("param.maxGameNumber : "+param.maxGameNumber)
     //console.log("room.gameNumber : "+room.gameNumber)
     if(!room.channel.getMember(uid)){
       room.channel.add(uid,sid)
     }
 
-    notify = {
-      cmd : "roomPlayer",
-      player:newPlayer,
-      gameMode : room.gameMode,
-      maxGameNumber : room.maxGameNumber,
-      gameNumber : room.maxGameNumber - room.gameNumber,
-      consumeMode : room.consumeMode,
-      bankerMode : room.bankerMode,
-      cardMode : room.cardMode,
-      roomId : room.roomId,
-      TID_ROB_TIME : conf.TID_ROB_TIME,
-      TID_BETTING : conf.TID_BETTING,
-      TID_SETTLEMENT : conf.TID_SETTLEMENT,
-      state : gameState,
-      roomType : room.roomType,
-      bankerTime : bankerTime,
-      betList : betList,
-      bonusPool : bonusPool,
-      basicType : room.basicType,
-      playerNumber : GAME_PLAYER
-    }
+    notify = local.getRoomInfo(chair)
     //console.log(notify)
     local.sendUid(uid,notify)
     //console.log(room.channel)
@@ -273,36 +246,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       if(!room.channel.getMember(uid)){
         room.channel.add(uid,sid)
       }
-      var newPlayer = deepCopy(player)
-      //deal阶段之前不返回牌
-      if(gameState < conf.GS_DEAL){
-        for(var i = 0; i < GAME_PLAYER;i++){
-            delete newPlayer[i].handCard
-        }
-        if(room.cardMode == conf.MODE_CARD_SHOW){
-          newPlayer[chair].handCard = deepCopy(player[chair].handCard)
-          delete newPlayer[chair].handCard[4]
-        }
-      }
       notify = {
-        roomInfo : {
-          player : newPlayer,
-          gameMode : room.gameMode,
-          maxGameNumber : room.maxGameNumber,
-          gameNumber : room.maxGameNumber - room.gameNumber,
-          consumeMode : room.consumeMode,
-          bankerMode : room.bankerMode,
-          cardMode : room.cardMode,
-          roomId : room.roomId,
-          TID_ROB_TIME : conf.TID_ROB_TIME, 
-          TID_BETTING : conf.TID_BETTING,
-          TID_SETTLEMENT : conf.TID_SETTLEMENT,
-          roomType : room.roomType,
-          bankerTime : bankerTime,
-          bonusPool : bonusPool,
-          basicType : room.basicType,
-          playerNumber : GAME_PLAYER
-        },
+        roomInfo : local.getRoomInfo(chair),
         betList : betList,
         state : gameState,
         bonusPool : bonusPool,
@@ -313,6 +258,41 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     }else{
       cb(false)
     }
+  }
+  local.getRoomInfo = function(chair) {
+    var newPlayer = deepCopy(player)
+    //deal阶段之前不返回牌
+    if(gameState < conf.GS_DEAL){
+      for(var i = 0; i < GAME_PLAYER;i++){
+          delete newPlayer[i].handCard
+      }
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        newPlayer[chair].handCard = deepCopy(player[chair].handCard)
+        delete newPlayer[chair].handCard[4]
+      }
+    }
+    var notify = {
+      cmd : "roomPlayer",
+      player:newPlayer,
+      gameMode : room.gameMode,
+      maxGameNumber : room.maxGameNumber,
+      gameNumber : room.maxGameNumber - room.gameNumber,
+      consumeMode : room.consumeMode,
+      bankerMode : room.bankerMode,
+      cardMode : room.cardMode,
+      roomId : room.roomId,
+      TID_ROB_TIME : conf.TID_ROB_TIME,
+      TID_BETTING : conf.TID_BETTING,
+      TID_SETTLEMENT : conf.TID_SETTLEMENT,
+      state : gameState,
+      roomType : room.roomType,
+      bankerTime : bankerTime,
+      betList : betList,
+      bonusPool : bonusPool,
+      basicType : room.basicType,
+      playerNumber : GAME_PLAYER
+    }
+    return notify
   }
   //玩家离线
   room.leave = function(uid) {
@@ -397,7 +377,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     do{
         banker = (banker + 1)%GAME_PLAYER
     }while(player[banker].isActive == false)
-    bonusPool = room.playerCount * 8
+    bonusPool = (room.GAME_PLAYER - 1) * 30
     player[banker].score -= bonusPool
     bankerTime = 0
     log("banker change : "+banker)      
@@ -511,23 +491,32 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       return
     }
     //斗公牛模式使用特殊下注限制
-    if(room.gameMode == conf.MODE_GAME_BULL){
-      var tmpMinbet = Math.floor(bonusPool / room.playerCount / 5)
+    if(room.gameMode == MODE_GAME_BULL){
+      if(!param.bet || typeof(param.bet) !== "number"){
+        cb(false)
+        return        
+      }
+      var tmpMaxbet = Math.floor(bonusPool / ((room.GAME_PLAYER - 1) * 2) )
+      var tmpMinbet = Math.floor(tmpMaxbet / 5)
+      if(tmpMaxbet > 40){
+        tmpMaxbet = 40
+      }
       if(tmpMinbet > 40){
         tmpMinbet = 40
       }
-      if(param.bet && typeof(param.bet) == "number"
-        && (param.bet >= tmpMinbet) && param.bet > 0
-        && (param.bet + betList[chair]) <= 40
-        && (param.bet + betList[chair]) <= Math.floor(bonusPool / (room.playerCount - 1))
-        && (param.bet + betAmount) <= bonusPool ){
-        betList[chair] += param.bet
-        betAmount += param.bet
-        local.betMessege(chair,param.bet)
-      }else{
+      if(tmpMinbet < 1){
+        tmpMinbet = 1
+      }
+      if(tmpMaxbet < 1){
+        tmpMaxbet = 1
+      }
+      if(param.bet > tmpMaxbet || param.bet < tmpMinbet){
         cb(false)
         return
       }
+      betList[chair] += param.bet
+      betAmount += param.bet
+      local.betMessege(chair,param.bet)
     }else{
       //其他模式
       if(param.bet && typeof(param.bet) == "number"
@@ -685,6 +674,44 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             betList[i] = 0;
             player[i].isShowCard = false
       }
+      //斗牛模式更新积分池
+      if(room.gameMode == conf.MODE_GAME_BULL){
+        var notify = {
+          "cmd" : "bonusPool",
+          "bonusPool" : bonusPool,
+          "bankerScore" : player[banker].score,
+          "change" : oldBanker !== banker,
+          "oldBanker" : banker,
+          "oldBankerScore" : player[banker].score
+        }
+        if(room.runCount == 0){
+          bonusPool = (room.GAME_PLAYER - 1) * 30
+          player[banker].score -= bonusPool
+          notify.change = true
+          notify.oldBankerScore = player[banker].score
+        }else{
+          //积分池小于房间最大人数 * 10 时换庄
+          if(bonusPool < (room.GAME_PLAYER - 1) * 10){
+            player[banker].isBanker = false
+            player[banker].score += bonusPool
+            local.updatePlayerScore(banker)
+            notify.oldBankerScore = player[banker].score
+            do{
+                banker = (banker + 1)%GAME_PLAYER
+            }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
+            bonusPool = (room.GAME_PLAYER - 1) * 30
+            player[banker].score -= bonusPool
+            player[banker].isBanker = true
+            bankerTime = 0
+            log("banker change : "+banker)
+            notify.change = true            
+          } 
+        }
+        notify.bankerScore = player[banker].score
+        notify.bonusPool = bonusPool
+        notify.banker = banker
+        local.sendAll(notify)          
+      }
       if(banker !== -1){
         //重置庄家信息
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -700,42 +727,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           chair : banker
         }
         local.sendAll(notify)   
-      }
-      //斗牛模式更新积分池
-      if(room.gameMode == conf.MODE_GAME_BULL){
-
-        var notify = {
-          "cmd" : "bonusPool",
-          "bonusPool" : bonusPool,
-          "bankerScore" : player[banker].score,
-          "change" : oldBanker !== banker
-        }
-        if(bonusPool == 0 && room.runCount == 0){
-          bonusPool = room.playerCount * 8
-          player[banker].score -= bonusPool
-          notify.change = true
-          notify.bonusPool = bonusPool
-          notify.bankerScore = player[banker].score
-        }else{
-          //积分池小于人数则换庄
-          if(bonusPool < room.playerCount){
-            player[banker].isBanker = false
-            player[banker].score += bonusPool
-            local.updatePlayerScore(banker)
-            do{
-                banker = (banker + 1)%GAME_PLAYER
-            }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
-            bonusPool = room.playerCount * 8
-            player[banker].score -= bonusPool
-            player[banker].isBanker = true
-            bankerTime = 0
-            log("banker change : "+banker)
-            notify.change = true
-            notify.bonusPool = bonusPool
-            notify.bankerScore = player[banker].score
-          } 
-        }
-        local.sendAll(notify)          
       }
       var index = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
@@ -910,8 +901,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
             var tmpBet = 1
             if(room.gameMode === conf.MODE_GAME_BULL){
-              tmpBet = Math.floor(bonusPool / room.playerCount / 5)
-              if(tmpBet === 0){
+              tmpBet = Math.floor(bonusPool / ((room.GAME_PLAYER - 1) * 2) / 5)
+              if(tmpBet < 1){
                 tmpBet = 1
               }
               if(tmpBet > 40){
@@ -1293,7 +1284,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     betList = new Array(GAME_PLAYER)
     betAmount = 0
     //斗公牛模式积分池
-    bonusPool = room.playerCount * 8
+    bonusPool = (room.GAME_PLAYER - 1) * 30
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){
@@ -1352,6 +1343,11 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.gameNumber = 0
     local.gameOver(flag)
   }
+  //获取房间数据
+  room.getRoomInfo = function(){
+    var data = local.getRoomInfo(-1)
+    return data
+  }  
   //用户退出
   room.userQuit = function(uid,cb) {
     //再次确保游戏未开始

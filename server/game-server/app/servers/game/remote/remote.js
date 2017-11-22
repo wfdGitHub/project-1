@@ -225,6 +225,21 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			cb(false)
 			return
 		}
+	}else if(code == "getRoomInfo"){
+		//无效条件判断
+		if(typeof(params.roomId) != "number" || params.roomId < 0 
+			|| GameRemote.GameService.roomList[params.roomId] === undefined || GameRemote.GameService.roomState[params.roomId]){
+			//console.log("params.roomId : "+params.roomId)
+			//console.log("type : "+typeof(params.roomId))
+            //console.log(GameRemote.GameService.roomList[roomId])
+            cb(false,{"code" : tips.NO_ROOM})
+            return
+		}
+		var roomId = params.roomId
+		params.gid = GameRemote.GameService.roomList[roomId]
+		self.app.rpc.gameNode.remote.getRoomInfo(null,params,uid,sid,roomId,function(flag){
+			cb(flag)
+		})
 	}else if(code == "newRoom"){
 		//无效数据判断
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number" || (params.gameNumber != 10 && params.gameNumber != 15 && params.gameNumber != 20)){
@@ -432,7 +447,8 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	                            "gameNumber" : params.gameNumber,
 	                            "gameMode" : params.gameMode,
 	                            "cardMode" : params.cardMode,
-	                            "basic" : params.basic || params.basicType,
+	                            "basic" : params.basic,
+	                            "basicType" : params.basicType,
 	                            "maxBet" : params.maxBet,
 	                            "maxRound" : params.maxRound,
 	                            "stuffyRound" : params.stuffyRound,

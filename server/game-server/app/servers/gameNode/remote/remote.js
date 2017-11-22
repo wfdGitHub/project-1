@@ -1,9 +1,7 @@
 var conf = require("../../../conf/niuniuConf.js").niuConf
 var tips = require("../../../conf/tips.js").tipsConf
 var NiuNiu = require("../../../games/NiuNiu.js")
-var ZhaJinNiu = require("../../../games/ZhaJinNiu.js")
 var MingPaiQZ = require("../../../games/MingPaiQZ.js")
-var FengKuang = require("../../../games/FengKuang.js")
 var SanKung = require("../../../games/SanKung.js")
 var ZhaJinHua = require("../../../games/ZhaJinHua.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log")
@@ -16,9 +14,7 @@ var async = require("async")
 
 var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
-	//"zhajinniu" : ZhaJinNiu,
 	"mingpaiqz" : MingPaiQZ,
-	//"fengkuang" : FengKuang
 	"sanKung" : SanKung,
 	"zhajinhua" : ZhaJinHua
 }
@@ -146,6 +142,15 @@ var finishGameOfTimer = function(index) {
 			GameRemote.liveTimer[index] = setTimeout(finishGameOfTimer(index),1 * 60 * 60 * 1000)
 		}
 	}
+}
+//获取房间数据
+GameRemote.prototype.getRoomInfo = function(params,uid,sid,roomId,cb) {
+	if(!GameRemote.roomList[roomId]){
+		cb(false)
+		return
+	}
+	var data = GameRemote.roomList[roomId].getRoomInfo()
+	cb(data)
 }
 //加入房间
 GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
