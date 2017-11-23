@@ -43,7 +43,7 @@ frame.onFrame = function(params,uid,code,cb) {
 							if(frame.GameService.lockState[roomId][i] != false){
 								frame.GameService.lockState[roomId][i] = true
 							}
-						}					
+						}
 						local.endFinish(roomId)
 					}
 				}(roomId)
@@ -56,8 +56,8 @@ frame.onFrame = function(params,uid,code,cb) {
 						delete frame.GameService.userMap[uid]
 						frame.GameService.app.rpc.game.remote.userQuit(null,uid,function() {})
 					})
-				}			
-				cb(true)				
+				}
+				cb(true)
 			}
 			break
 		case "agreeFinish" :
@@ -65,8 +65,8 @@ frame.onFrame = function(params,uid,code,cb) {
 				cb(false)
 				return
 			}
-			var roomId = frame.GameService.userMap[uid]	
-			//房间必须已锁定		
+			var roomId = frame.GameService.userMap[uid]
+			//房间必须已锁定
 			if(frame.GameService.roomLock[roomId] == true){
 				cb(false)
 				return
@@ -85,8 +85,8 @@ frame.onFrame = function(params,uid,code,cb) {
 				cb(false)
 				return
 			}
-			var roomId = frame.GameService.userMap[uid]	
-			//房间必须已锁定		
+			var roomId = frame.GameService.userMap[uid]
+			//房间必须已锁定
 			if(frame.GameService.roomLock[roomId] == true){
 				cb(false)
 				return

@@ -37,6 +37,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var roomHost = -1                    //房主椅子号
   var timer                            //定时器句柄
   var bankerTime = 0                   //连庄次数
+  var tmpGameState = 0
   room.GAME_PLAYER = playerNumber      //游戏人数
   var GAME_PLAYER = playerNumber
   //游戏属性
@@ -290,7 +291,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       betList : betList,
       bonusPool : bonusPool,
       basicType : room.basicType,
-      playerNumber : GAME_PLAYER
+      playerNumber : room.GAME_PLAYER
     }
     return notify
   }
@@ -484,14 +485,14 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     if(!player[chair].isReady){
       cb(false)
       return
-    }    
+    }
     //庄家不能下注
     if(chair == banker){
       cb(false)
       return
     }
     //斗公牛模式使用特殊下注限制
-    if(room.gameMode == MODE_GAME_BULL){
+    if(room.gameMode == conf.MODE_GAME_BULL){
       if(!param.bet || typeof(param.bet) !== "number"){
         cb(false)
         return        
@@ -528,7 +529,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       }else{
         cb(false)
         return
-      }      
+      }
     }
     cb(true)
     //判断所有人都下注进入发牌阶段
@@ -1314,10 +1315,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
   }  
   //房间是否空闲
@@ -1393,7 +1394,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       "player" : JSON.stringify(player),
       "playerNumber" : room.GAME_PLAYER,
       "roomType" : room.roomType,
-      "agencyId" : false,
+      "agencyId" : room.agencyId,
       "betAmount" : betAmount,
       "bonusPool" : bonusPool,
       "waitMode" : room.waitMode,
@@ -1458,6 +1459,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     betList = JSON.parse(data.betList)
     player = JSON.parse(data.player)
     room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
     room.roomType = data.roomType
     room.agencyId = parseInt(data.agencyId)
     room.waitMode = parseInt(data.waitMode)
@@ -1473,19 +1475,24 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   local.recover = function() {
     gameState = tmpGameState
+    console.log(gameState)
     switch(gameState){
       case conf.GS_FREE : 
+        console.log("111111111")
         for(var index in player){
           player[index].isReady = false
         }
       break
       case conf.GS_ROB_BANKER:
+       console.log("11111111122222")
         local.chooseBanker()
       break
       case conf.GS_BETTING:
+       console.log("11111111133333")
         local.betting()
       break
       case conf.GS_DEAL:
+       console.log("11111111144444")
         local.deal()
       break
     }

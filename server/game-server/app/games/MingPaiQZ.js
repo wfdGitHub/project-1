@@ -205,6 +205,7 @@ var MING_CARD_NUM = 4               //明牌数量
       player = JSON.parse(data.player)
       result = JSON.parse(data.result)
       room.GAME_PLAYER = parseInt(data.playerNumber)
+      GAME_PLAYER = room.GAME_PLAYER
       room.roomType = data.roomType
       room.agencyId = parseInt(data.agencyId)
       room.waitMode = parseInt(data.waitMode)
@@ -1124,10 +1125,10 @@ var MING_CARD_NUM = 4               //明牌数量
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
   } 
   //房间是否空闲
@@ -1206,7 +1207,7 @@ var MING_CARD_NUM = 4               //明牌数量
         "result" : JSON.stringify(result),
         "playerNumber" : room.GAME_PLAYER,
         "roomType" : room.roomType,
-        "agencyId" : false,
+        "agencyId" : room.agencyId,
         "waitMode" : room.waitMode,
         "maxRob" : room.maxRob,
         "cardHistory" : JSON.stringify(cardHistory)

@@ -69,7 +69,6 @@ GameRemote.prototype.recover = function(cb) {
 			}
 		}
 	})
-
 	GameRemote.dbService.db.hgetall("gameServer:roomHostList",function(err,data) {
 		GameRemote.roomHostList = {}
 		for(var index in data){
@@ -83,31 +82,31 @@ GameRemote.prototype.recover = function(cb) {
 	})
 	GameRemote.dbService.db.hgetall("gameServer:RoomMap",function(err,data) {
 		GameRemote.GameService.roomMap  = {}
-		for(var index in GameRemote.GameService.roomMap){
+		for(var index in data){
 			if(index !== "flag"){
-				GameRemote.GameService.roomMap[index] = JSON.parse(GameRemote.GameService.roomMap[index])
+				GameRemote.GameService.roomMap[index] = JSON.parse(data[index])
 			}
 		}
 		// console.log(GameRemote.GameService.roomList)
 	})
-	GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
-		GameRemote.GameService.AgencyReopenList  = {}
-		for(var index in GameRemote.GameService.AgencyReopenList){
-			if(typeof(GameRemote.GameService.AgencyReopenList[index]) === "string" && index !== "flag"){
-				GameRemote.GameService.AgencyReopenList[index] = JSON.parse(GameRemote.GameService.AgencyReopenList[index])
-			}
-		}
-		// console.log(GameRemote.GameService.AgencyReopenList)
-	})
-	GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
-		GameRemote.GameService.agencyList  = {}
-		for(var index in GameRemote.GameService.agencyList){
-			if(index !== "flag"){
-				GameRemote.GameService.agencyList[index] = JSON.parse(GameRemote.GameService.agencyList[index])
-			}
-		}
-		console.log(GameRemote.GameService.agencyList)
-	})
+    GameRemote.dbService.db.hgetall("gameServer:AgencyReopenList",function(err,data) {
+        GameRemote.GameService.AgencyReopenList  = {}
+        for(var index in data){
+            if(index !== "flag"){
+                GameRemote.GameService.AgencyReopenList[index] = JSON.parse(data[index])
+            }
+        }
+        // console.log(GameRemote.GameService.AgencyReopenList)
+    })
+    GameRemote.dbService.db.hgetall("gameServer:agencyList",function(err,data) {
+        GameRemote.GameService.agencyList  = {}
+        for(var index in data){
+            if(index !== "flag"){
+                GameRemote.GameService.agencyList[index] = JSON.parse(data[index])
+            }
+        }
+        console.log(GameRemote.GameService.agencyList)
+    })
 	cb()
 }
 
@@ -132,6 +131,7 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 }
 
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
+	console.log("onFrame : "+code)
 	if(GameRemote.GameService.userMap[uid] !== undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
 		params = {}
@@ -142,14 +142,18 @@ GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {
 	}else if(code == "agencyFinish"){
 		var roomId = params.roomId
 		params.gid = GameRemote.GameService.roomList[roomId]
+		console.log("params.gid : "+params.gid)
 		if(params.gid !== undefined && params.gid !== false){
-			// console.log(params.gid)
-			delete GameRemote.GameService.AgencyReopenList[roomId]
-			delRoomDB("AgencyReopenList",roomId)
+			console.log(11111111)
 			this.app.rpc.gameNode.remote.onFrame(null,params,uid,code,function (flag){
+				if(flag){
+					delete GameRemote.GameService.AgencyReopenList[roomId]
+					delRoomDB("AgencyReopenList",roomId)
+				}
 				cb(flag)
 			})
 		}else{
+			console.log(22222222)
 			cb(false)
 		}
 	}else{

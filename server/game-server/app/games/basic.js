@@ -39,6 +39,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var result = {}                      //牌型
   var basic = 0                        //房间底分
   var actionFlag = true                //行动标志
+  var tmpGameState = 0
   //游戏属性
   var cards = {}                       //牌组
   var cardCount = 0                    //卡牌剩余数量
@@ -692,13 +693,13 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         roomType : room.roomType,
         basic : basic,
         curBet : curBet,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
       return false
     }else{
       return true
@@ -779,7 +780,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       // "result" : JSON.stringify(result),
       // "playerNumber" : room.GAME_PLAYER,
       // "roomType" : room.roomType,
-      // "agencyId" : false,
+      // "agencyId" : room.agencyId,
       // "waitMode" : room.waitMode,
       // "cardHistory" : JSON.stringify(cardHistory),
       // "maxRob" : room.maxRob
@@ -844,6 +845,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     // player = JSON.parse(data.player)
     // result = JSON.parse(data.result)
     // room.GAME_PLAYER = parseInt(data.playerNumber)
+    // GAME_PLAYER = room.GAME_PLAYER
     // room.roomType = data.roomType
     // room.agencyId = parseInt(data.agencyId)
     // room.waitMode = parseInt(data.waitMode)

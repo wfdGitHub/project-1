@@ -38,6 +38,7 @@ var MING_CARD_NUM = 2               //明牌数量
     var curRound = 0                     //当前轮数
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
+    var tmpGameState = 0
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -258,11 +259,11 @@ var MING_CARD_NUM = 2               //明牌数量
 
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
+      gameState = conf.GS_ROB_BANKER
       local.backups(function() {
         switch(room.bankerMode){
           case conf.MODE_BANKER_ROB :
             //初始化抢庄状态为false
-            gameState = conf.GS_ROB_BANKER
             for(var i = 0; i < GAME_PLAYER;i++){
               robState[i] = 0
             }
@@ -979,18 +980,18 @@ var MING_CARD_NUM = 2               //明牌数量
         roomType : room.roomType,
         cardMode : room.cardMode,
         basicType : room.basicType,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
-  } 
+  }
   //房间是否空闲
   room.isFree = function() {
     return gameState === conf.GS_FREE
@@ -1050,8 +1051,7 @@ var MING_CARD_NUM = 2               //明牌数量
   local.backups = function(cb){
     console.log("begin backups=====")
     var dbObj = {
-      "basicType" : basicType,
-      "basic" : room.basic,
+      "basicType" : room.basicType,
       "gameState" : gameState,
       "chairMap" : JSON.stringify(room.chairMap),
       "roomHost" : roomHost,
@@ -1066,7 +1066,7 @@ var MING_CARD_NUM = 2               //明牌数量
       "result" : JSON.stringify(result),
       "playerNumber" : room.GAME_PLAYER,
       "roomType" : room.roomType,
-      "agencyId" : false,
+      "agencyId" : room.agencyId,
       "waitMode" : room.waitMode,
       "cardHistory" : JSON.stringify(cardHistory)
     }
@@ -1114,8 +1114,7 @@ var MING_CARD_NUM = 2               //明牌数量
     console.log(data)
     local.init()
     room.state = false
-    basicType = parseInt(data.basicType)
-    room.basic = parseInt(data.basic)
+    room.basicType = parseInt(data.basicType)
     tmpGameState = parseInt(data.gameState)
     gameState = conf.GS_RECOVER
     room.chairMap = JSON.parse(data.chairMap)
@@ -1130,6 +1129,7 @@ var MING_CARD_NUM = 2               //明牌数量
     player = JSON.parse(data.player)
     result = JSON.parse(data.result)
     room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
     room.roomType = data.roomType
     room.agencyId = parseInt(data.agencyId)
     room.waitMode = parseInt(data.waitMode)

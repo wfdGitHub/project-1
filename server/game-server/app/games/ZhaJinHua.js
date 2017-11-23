@@ -41,7 +41,7 @@ var MING_CARD_NUM = 3               //明牌数量
     room.maxBet = 10                     //单注上限
     room.maxRound = 10                   //单局最大轮数
     room.stuffyRound = 0                 //闷牌轮数
-
+    var tmpGameState = 0
 
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
@@ -168,7 +168,9 @@ var MING_CARD_NUM = 3               //明牌数量
       room.maxBet = Math.floor(param.maxBet)                         //单注上限  
       room.maxRound = param.maxRound                                 //单局最大轮数
       room.stuffyRound = param.stuffyRound                           //闷牌轮数
-      cb(true)
+      local.backups(function() {
+        cb(true)
+      })
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
@@ -176,6 +178,7 @@ var MING_CARD_NUM = 3               //明牌数量
             roomHost = -1
             room.agencyId = uid
             room.consumeMode = "agency"
+            local.backups()
           }
           cb(flag)
       })  
@@ -399,7 +402,9 @@ var MING_CARD_NUM = 3               //明牌数量
         "curRound" : curRound
       }
       local.sendAll(notify)
-      timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+      local.backups(function() {
+        timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+      })
     }
 
     //操作权移交到下一位玩家
@@ -1030,18 +1035,18 @@ var MING_CARD_NUM = 3               //明牌数量
         basic : room.basic,
         maxRound : room.maxRound,
         stuffyRound : room.stuffyRound,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
-  } 
+  }
   //房间是否空闲
   room.isFree = function() {
     return gameState === conf.GS_FREE
@@ -1107,7 +1112,6 @@ var MING_CARD_NUM = 3               //明牌数量
       "chairMap" : JSON.stringify(room.chairMap),
       "roomHost" : roomHost,
       "banker" : banker,
-      "bankerMode" : room.bankerMode,
       "gameNumber" : room.gameNumber,
       "maxGameNumber" : room.maxGameNumber,
       "consumeMode" : room.consumeMode,
@@ -1116,7 +1120,7 @@ var MING_CARD_NUM = 3               //明牌数量
       "result" : JSON.stringify(result),
       "playerNumber" : room.GAME_PLAYER,
       "roomType" : room.roomType,
-      "agencyId" : false,
+      "agencyId" : room.agencyId,
       "waitMode" : room.waitMode,
       "curPlayer" : curPlayer,
       "curRound" : curRound,
@@ -1176,7 +1180,6 @@ var MING_CARD_NUM = 3               //明牌数量
     room.chairMap = JSON.parse(data.chairMap)
     roomHost = parseInt(data.roomHost)
     banker = parseInt(data.banker)
-    room.bankerMode = parseInt(data.bankerMode)
     room.gameNumber = parseInt(data.gameNumber)
     room.maxGameNumber = parseInt(data.maxGameNumber)
     room.consumeMode = parseInt(data.consumeMode)
@@ -1184,6 +1187,7 @@ var MING_CARD_NUM = 3               //明牌数量
     player = JSON.parse(data.player)
     result = JSON.parse(data.result)
     room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
     room.roomType = data.roomType
     room.agencyId = parseInt(data.agencyId)
     room.waitMode = parseInt(data.waitMode)
@@ -1193,7 +1197,7 @@ var MING_CARD_NUM = 3               //明牌数量
     room.maxBet = parseInt(data.maxBet)
     room.maxRound = parseInt(data.maxRound)
     room.stuffyRound = parseInt(data.stuffyRound)
-    cardHistory = parseInt(data.cardHistory)
+    cardHistory = JSON.parse(data.cardHistory)
     frame.start(room.waitMode)
     for(var index in player){
       player[index].isOnline = false
