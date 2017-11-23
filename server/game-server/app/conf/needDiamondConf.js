@@ -31,7 +31,6 @@ var needDiamondConf = {
 				"3" : 15,
 				"agency" : 6
 			}
-		}}
 		}
 	},
 	"niuniu" : {
