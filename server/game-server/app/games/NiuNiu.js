@@ -103,7 +103,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
       cb(false)
       return
     }       
-    if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+    if(!param.gameNumber || typeof(param.gameNumber) !== "number"){
       log("newRoom error   param.gameNumber : "+param.gameNumber)
       cb(false)
       return

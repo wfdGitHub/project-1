@@ -61,7 +61,8 @@ var MING_CARD_NUM = 4               //明牌数量
       "2" : {"default" : 2,"2" : true,"4" : true,"max" : 8},
       "3" : {"default" : 4,"4" : true,"8" : true,"max" : 16},
       "4" : {"default" : 1,"1" : true,"3" : true,"5" : true,"max" : 10},
-      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12}
+      "5" : {"default" : 2,"2" : true,"4" : true,"6" : true,"max" : 12},
+      "6" : {"default" : 1,"1" : true,"2" : true,"3" : true,"4" : true,"5" : true,"max" : 5}
     }
     //下注上限
     var maxBet = 0
@@ -137,7 +138,7 @@ var MING_CARD_NUM = 4               //明牌数量
         cb(false)
         return
       }
-      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+      if(!param.gameNumber || typeof(param.gameNumber) !== "number"){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return

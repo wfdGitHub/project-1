@@ -109,7 +109,7 @@ var MING_CARD_NUM = 2               //明牌数量
         cb(false)
         return
       }
-      if(!param.gameNumber || typeof(param.gameNumber) !== "number" || (param.gameNumber != 10 && param.gameNumber != 20)){
+      if(!param.gameNumber || typeof(param.gameNumber) !== "number"){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
