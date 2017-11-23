@@ -7,15 +7,14 @@ module.exports = {
 }
 var access_token = ""
 var jsapi_ticket = ""
-var appid = "wxd72486a200bde1db"
-var secret = "f3ffae2731f6c7b03880ee24abfff9ed"
+var appid = "wxc0f7af4749ce7176"
+var secret = "6b28b4d8efcc6ec0428aeb5f55448ff4"
 var timer = false
 var local = {}
 module.exports.H5GetData = function(code,count,cb) {
-    // var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
-    // +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
-    var string = "http://pay.5d8d.com/H5Index/getAccessToken?code="+code
-    var req=http.get(string,function(res){
+    var string = "https://api.weixin.qq.com/sns/oauth2/access_token?appid="+appid
+    +"&secret="+secret+"&code="+code+"&grant_type=authorization_code"
+    var req=https.get(string,function(res){
         var data = data
         res.on("data",function(chunk) {
           data += chunk
