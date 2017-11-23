@@ -29,9 +29,13 @@ app.configure('production|development', 'gate', function(){
 //加载GameService
 app.configure('production|development', 'game', function() {
   app.load(GameService(app))
+  app.load(dbService(app))
 });
 //加载dbService
 app.configure('production|development', 'db', function() {
+  app.load(dbService(app))
+});
+app.configure('production|development', 'gameNode', function() {
   app.load(dbService(app))
 });
 //游戏服务器分配路由

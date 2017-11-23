@@ -6,58 +6,60 @@ var MING_CARD_NUM = 3               //明牌数量
 //游戏状态
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
-    console.log("createRoom"+roomId)
-    var roomBeginCB = gameBegincb
-    var roomCallBack = gameOvercb
-    var frame = frameFactory.createFrame()
-    var room = {}
-    room.roomId = roomId
-    room.roomType = "zhajinniu"
-    room.isRecord = true
-    room.channel = channelService.getChannel(roomId,true)
-    room.handle = {}   //玩家操作
-    room.halfwayEnter = true             //允许中途加入
-    room.agencyId = 0                    //代开房玩家ID
-    room.beginTime = (new Date()).valueOf()
-    room.MatchStream = {}
-    //房间初始化
-    var local = {}                       //私有方法
-    var player = {}                      //玩家属性
-    var readyCount = 0                   //游戏准备人数
-    var gameState = conf.GS_FREE         //游戏状态
-    var banker = -1                      //庄家椅子号
-    var roomHost = -1                    //房主椅子号
-    var timer                            //定时器句柄
-    room.GAME_PLAYER = playerNumber      //游戏人数
-    GAME_PLAYER = playerNumber
-    var curPlayer = -1                   //当前操作玩家
-    var curRound = 0                     //当前轮数
-    var curPlayerCount = 0               //当前参与游戏人数
-    var curBet = 0                       //当前下注
-    var result = {}                      //牌型
-    var basic = 0                        //房间底分
-    var actionFlag = true                //行动标志
-    //游戏属性
-    var cards = {}                       //牌组
-    var cardCount = 0                    //卡牌剩余数量
-    for(var i = 1;i <= 13;i++){
-      for(var j = 0;j < 4;j++){
-        cards[cardCount++] = {num : i,type : j}
-      }
+module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
+  console.log("createRoom"+roomId)
+  var roomBeginCB = gameBegincb
+  var roomCallBack = gameOvercb
+  var frame = frameFactory.createFrame()
+  var gameDB = db
+  var room = {}
+  room.roomId = roomId
+  room.roomType = "zhajinniu"
+  room.isRecord = true
+  room.channel = channelService.getChannel(roomId,true)
+  room.handle = {}   //玩家操作
+  room.halfwayEnter = true             //允许中途加入
+  room.agencyId = 0                    //代开房玩家ID
+  room.beginTime = (new Date()).valueOf()
+  room.MatchStream = {}
+  //房间初始化
+  var local = {}                       //私有方法
+  var player = {}                      //玩家属性
+  var readyCount = 0                   //游戏准备人数
+  var gameState = conf.GS_FREE         //游戏状态
+  var banker = -1                      //庄家椅子号
+  var roomHost = -1                    //房主椅子号
+  var timer                            //定时器句柄
+  room.GAME_PLAYER = playerNumber      //游戏人数
+  GAME_PLAYER = playerNumber
+  var curPlayer = -1                   //当前操作玩家
+  var curRound = 0                     //当前轮数
+  var curPlayerCount = 0               //当前参与游戏人数
+  var curBet = 0                       //当前下注
+  var result = {}                      //牌型
+  var basic = 0                        //房间底分
+  var actionFlag = true                //行动标志
+  var tmpGameState = 0
+  //游戏属性
+  var cards = {}                       //牌组
+  var cardCount = 0                    //卡牌剩余数量
+  for(var i = 1;i <= 13;i++){
+    for(var j = 0;j < 4;j++){
+      cards[cardCount++] = {num : i,type : j}
     }
+  }
 
-    //下注信息
-    var betAmount = 0
+  //下注信息
+  var betAmount = 0
 
-    //下注上限
-    var maxBet = 0
+  //下注上限
+  var maxBet = 0
 
-    //斗公牛模式积分池
-    var robState,betList
-    room.runCount = 0
+  //斗公牛模式积分池
+  var robState,betList
+  room.runCount = 0
    //房间初始化
-    local.init = function() {
+   local.init = function() {
       //console.log("enter init=====================================")
       room.gameMode = 0                    //游戏模式
       room.gameNumber = 0                  //游戏局数
@@ -95,7 +97,7 @@ var MING_CARD_NUM = 3               //明牌数量
       //玩家属性
       player = {}
       for(var i = 0;i < GAME_PLAYER;i++){
-          local.initChairInfo(i)
+        local.initChairInfo(i)
       }    
       //牌型历史
       var cardHistory = {}
@@ -107,8 +109,8 @@ var MING_CARD_NUM = 3               //明牌数量
         channelService.destroyChannel(roomId)
         room.channel = channelService.getChannel(roomId,true)
         //console.log(room.channel)   
-    }
-    local.newRoom = function(uid,sid,param,cb) {
+      }
+      local.newRoom = function(uid,sid,param,cb) {
       //console.log("newRoom")
       log("newRoom"+uid)
         //无效条件判断
@@ -159,22 +161,22 @@ var MING_CARD_NUM = 3               //明牌数量
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
-          if(flag){
-            roomHost = -1
-            room.agencyId = uid
-            room.consumeMode = "agency"
-          }
-          cb(flag)
+        if(flag){
+          roomHost = -1
+          room.agencyId = uid
+          room.consumeMode = "agency"
+        }
+        cb(flag)
       })  
     }
     //创建房间
     room.handle.newRoom = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
-          if(flag){
-            room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
-          }else{
-            cb(false)
-          }
+        if(flag){
+          room.handle.join(uid,sid,{ip : param.ip,playerInfo : param.playerInfo},cb)
+        }else{
+          cb(false)
+        }
       })
     }
 
@@ -193,18 +195,18 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       //不可重复加入
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].uid === uid){
-            cb(false)
-            return
-          }
+        if(player[i].uid === uid){
+          cb(false)
+          return
+        }
       }
       //查找空闲位置
       var chair = -1
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive === false){
-            chair = i
-            break
-          }
+        if(player[i].isActive === false){
+          chair = i
+          break
+        }
       }
       log("chair : "+chair)
       if(chair == -1 || !player[chair]){
@@ -236,6 +238,8 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       notify = local.getRoomInfo(chair)
       local.sendUid(uid,notify)
+      setRoomDB(room.roomId,"player",JSON.stringify(player))
+      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))      
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -289,9 +293,9 @@ var MING_CARD_NUM = 3               //明牌数量
       //重置下注信息
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isReady){
-            betList[i] = 0
-            player[i].isShowCard = false    
-          }
+          betList[i] = 0
+          player[i].isShowCard = false    
+        }
       }
       betAmount = 0
       //增加大牌概率，当牌型权重较低时重新洗牌
@@ -321,19 +325,19 @@ var MING_CARD_NUM = 3               //明牌数量
         var tmpTypeCount = 0    //牌型权重 
 
         for(var i = 0;i < GAME_PLAYER;i++){
-            if(player[i].isActive && player[i].isReady){
-              for(var j = 0;j < 5;j++){
-                player[i].handCard[j] = cards[index++];
-              }
-              tmpAllCount++
-              tmpResult[i] = logic.getType(player[i].handCard)
-              tmpTypeCount += conf.typeWeight[tmpResult[i].type]
+          if(player[i].isActive && player[i].isReady){
+            for(var j = 0;j < 5;j++){
+              player[i].handCard[j] = cards[index++];
             }
+            tmpAllCount++
+            tmpResult[i] = logic.getType(player[i].handCard)
+            tmpTypeCount += conf.typeWeight[tmpResult[i].type]
+          }
         }
         var dealFlag = false
         //判断是否重新洗牌
         if((tmpTypeCount / tmpAllCount) < conf.TYPE_WEIGHT){
-            dealFlag = true
+          dealFlag = true
         }
       }while(dealFlag && randTimes < conf.ROUND_TIMES)
       //找出剩余牌
@@ -352,58 +356,58 @@ var MING_CARD_NUM = 3               //明牌数量
       var randomMaxScore = 500 + Math.floor(Math.random() * 300)
       var randomMinScore = 400 + Math.floor(Math.random() * 200)
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-            if(player[i].score > 100){
-                luckyValue[i] = player[i].score / randomMaxScore
-            }else if(player[i].score < -100){
-                luckyValue[i] = player[i].score / randomMinScore
-            }else{
-              continue
-            }
-            if(luckyValue[i] > 1){
-              luckyValue[i] = 1
-            }else if(luckyValue[i] < -1){
-              luckyValue[i] = -1
-            }
-            luckyValue[i] = luckyValue[i] * 0.6
+        if(player[i].isActive && player[i].isReady){
+          if(player[i].score > 100){
+            luckyValue[i] = player[i].score / randomMaxScore
+          }else if(player[i].score < -100){
+            luckyValue[i] = player[i].score / randomMinScore
+          }else{
+            continue
           }
+          if(luckyValue[i] > 1){
+            luckyValue[i] = 1
+          }else if(luckyValue[i] < -1){
+            luckyValue[i] = -1
+          }
+          luckyValue[i] = luckyValue[i] * 0.6
+        }
       }
       console.log("luckyValue : ")
       console.log(luckyValue)
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-              if(luckyValue[i] < 0){
-                if(Math.random() < -luckyValue[i]){
+        if(player[i].isActive && player[i].isReady){
+          if(luckyValue[i] < 0){
+            if(Math.random() < -luckyValue[i]){
                   //换好牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
+                  logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,true)
                 }
               }else if(luckyValue[i] > 0){
                 if(Math.random() < luckyValue[i]){
                   //换差牌
-                    logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
+                  logic.changeHandCard(player[i].handCard,tmpCards,tmpCardCount,false)
                 }
               }
+            }
           }
-      }
 
 
       //记录参与游戏人数
       curPlayerCount = 0
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isActive && player[i].isReady){
-            curPlayerCount++
-          }
+        if(player[i].isActive && player[i].isReady){
+          curPlayerCount++
+        }
       }
       //计算牌型
       result = {}
       for(var i = 0;i < GAME_PLAYER;i++){
-          if(player[i].isReady){
-            result[i] = logic.getType(player[i].handCard); 
+        if(player[i].isReady){
+          result[i] = logic.getType(player[i].handCard); 
             //player[i].cardsList[room.runCount] = result[i]      
             cardHistory[i].push(result[i])
           }
-      }
+        }
       //TODO 下个阶段
     }
 
@@ -445,10 +449,10 @@ var MING_CARD_NUM = 3               //明牌数量
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
-         room.runCount++
-         readyCount = 0
-         clearTimeout(timer)
-         gameState = conf.GS_SETTLEMENT
+       room.runCount++
+       readyCount = 0
+       clearTimeout(timer)
+       gameState = conf.GS_SETTLEMENT
         //console.log("settlemnt")
 
         var curScores = new Array(GAME_PLAYER)
@@ -459,14 +463,14 @@ var MING_CARD_NUM = 3               //明牌数量
 
         //积分改变
         for(var i = 0;i < GAME_PLAYER;i++){
-            if(curScores[i] != 0){
-              local.changeScore(i,curScores[i])
-            }
+          if(curScores[i] != 0){
+            local.changeScore(i,curScores[i])
+          }
         }
         var realScores = {}
         //返回玩家实际分数
         for(var i = 0;i < GAME_PLAYER;i++){
-            realScores[i] = player[i].score
+          realScores[i] = player[i].score
         }
 
         //发送当局结算消息
@@ -482,12 +486,12 @@ var MING_CARD_NUM = 3               //明牌数量
         var stream = {}
         for(var i = 0; i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
-              stream[i] = {
-                "uid" : player[i].uid,
-                "result" : result[i],
-                "handCard" : deepCopy(player[i].handCard),
-                "changeScore" : curScores[i]
-              }
+            stream[i] = {
+              "uid" : player[i].uid,
+              "result" : result[i],
+              "handCard" : deepCopy(player[i].handCard),
+              "changeScore" : curScores[i]
+            }
           }
         }
         room.MatchStream[room.runCount] = stream
@@ -495,13 +499,13 @@ var MING_CARD_NUM = 3               //明牌数量
         //TODO 房间重置
         gameState = conf.GS_FREE
         for(var i = 0;i < GAME_PLAYER; i++){
-            player[i].isReady = false
-            player[i].isNoGiveUp = true
-            player[i].isShowCard = false
+          player[i].isReady = false
+          player[i].isNoGiveUp = true
+          player[i].isShowCard = false
         }
 
         if(room.gameNumber <= 0){
-            local.gameOver()
+          local.gameOver()
         }
       }
     }
@@ -549,34 +553,34 @@ var MING_CARD_NUM = 3               //明牌数量
 
       if(room.cardMode == conf.MODE_CARD_SHOW){
         for(var i = 0; i < GAME_PLAYER;i++){
-            if(i == chair){
+          if(i == chair){
+            if(curRound == 0){
+              delete newPlayer[i].handCard[3]
+              delete newPlayer[i].handCard[4]
+            }else if(curRound == 1){
+              delete newPlayer[i].handCard[4]
+            }
+          }else{
+            delete newPlayer[i].handCard[3]
+            delete newPlayer[i].handCard[4]
+          }
+        }
+      }else if(room.cardMode == conf.MODE_CARD_HIDE){
+        for(var i = 0; i < GAME_PLAYER;i++){
+          if(i == chair){
+            if(player[chair].isShowCard){
               if(curRound == 0){
                 delete newPlayer[i].handCard[3]
                 delete newPlayer[i].handCard[4]
               }else if(curRound == 1){
-                  delete newPlayer[i].handCard[4]
-              }
-            }else{
-              delete newPlayer[i].handCard[3]
-              delete newPlayer[i].handCard[4]
-            }
-        }
-      }else if(room.cardMode == conf.MODE_CARD_HIDE){
-        for(var i = 0; i < GAME_PLAYER;i++){
-            if(i == chair){
-              if(player[chair].isShowCard){
-                if(curRound == 0){
-                  delete newPlayer[i].handCard[3]
-                  delete newPlayer[i].handCard[4]
-                }else if(curRound == 1){
-                    delete newPlayer[i].handCard[4]
-                }
-              }else{
-                delete newPlayer[i].handCard
+                delete newPlayer[i].handCard[4]
               }
             }else{
               delete newPlayer[i].handCard
             }
+          }else{
+            delete newPlayer[i].handCard
+          }
         }        
       }
       var notify = {
@@ -590,7 +594,7 @@ var MING_CARD_NUM = 3               //明牌数量
     }
   //初始化椅子信息
   local.initChairInfo = function(chair) {
-      player[chair] = {}
+    player[chair] = {}
       player[chair].chair = chair             //椅子号
       player[chair].uid = 0                   //uid
       player[chair].isActive = false          //当前椅子上是否有人
@@ -604,7 +608,7 @@ var MING_CARD_NUM = 3               //明牌数量
       player[chair].bankerCount = 0           //坐庄次数
       //player[chair].cardsList  = {}           //总战绩列表
       player[chair].ip  = undefined           //玩家ip地址
-  }
+    }
     //玩家离开
     room.leave = function(uid) {
       //判断是否在椅子上
@@ -634,7 +638,7 @@ var MING_CARD_NUM = 3               //明牌数量
     }
     //积分改变
     local.changeScore = function(chair,score) {
-          player[chair].score += score;
+      player[chair].score += score;
           // var notify = {
           //   "cmd" : "changeScore",
           //   "chair" : chair,
@@ -642,7 +646,7 @@ var MING_CARD_NUM = 3               //明牌数量
           //   "score" : player[chair].score
           // }      
           // local.sendAll(notify)        
-    }
+        }
 
     //广播消息
     local.sendAll = function(notify) {
@@ -652,12 +656,12 @@ var MING_CARD_NUM = 3               //明牌数量
     //通过uid 单播消息
     local.sendUid = function(uid,notify) {
       if(room.channel.getMember(uid)){
-          var tsid =  room.channel.getMember(uid)['sid']
-          channelService.pushMessageByUids('onMessage', notify, [{
-            uid: uid,
-            sid: tsid
-          }]);  
-        }
+        var tsid =  room.channel.getMember(uid)['sid']
+        channelService.pushMessageByUids('onMessage', notify, [{
+          uid: uid,
+          sid: tsid
+        }]);  
+      }
     }
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
@@ -689,16 +693,16 @@ var MING_CARD_NUM = 3               //明牌数量
         roomType : room.roomType,
         basic : basic,
         curBet : curBet,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
   } 
   //房间是否空闲
@@ -739,7 +743,7 @@ var MING_CARD_NUM = 3               //明牌数量
     room.playerCount--
     //房主退出解散房间
     if(chair == roomHost){
-        room.finishGame()
+      room.finishGame()
     }else{
       //清除座位信息
       local.initChairInfo(chair) 
@@ -757,28 +761,161 @@ var MING_CARD_NUM = 3               //明牌数量
       cb()
     }
   }
-    return room 
+  local.backups = function(cb){
+    console.log("begin backups=====")
+    var dbObj = {
+      // "basicType" : basicType,
+      // "basic" : room.basic,
+      // "gameState" : gameState,e
+      // "chairMap" : JSON.stringify(room.chairMap),
+      // "roomHost" : roomHost,
+      // "banker" : banker,
+      // "bankerMode" : room.bankerMode,
+      // "gameNumber" : room.gameNumber,
+      // "maxGameNumber" : room.maxGameNumber,
+      // "consumeMode" : room.consumeMode,
+      // "cardMode" : room.cardMode,
+      // "betList" : JSON.stringify(betList),
+      // "player" : JSON.stringify(player),
+      // "result" : JSON.stringify(result),
+      // "playerNumber" : room.GAME_PLAYER,
+      // "roomType" : room.roomType,
+      // "agencyId" : room.agencyId,
+      // "waitMode" : room.waitMode,
+      // "cardHistory" : JSON.stringify(cardHistory),
+      // "maxRob" : room.maxRob
+    }
+    setRoomDBObj(room.roomId,dbObj,function() {
+      console.log("end backups=====")
+      if(cb){
+        cb()
+      }
+    })
+  }  
+
+  var setRoomDB = function(hashKey,subKey,data,cb){
+    gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+
+  var setRoomDBObj = function(hashKey,obj,cb){
+    gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+  room.recover = function(data) {
+    console.log("recover : ")
+    console.log(data)
+    local.init()
+    room.state = false
+    // basicType = parseInt(data.basicType)
+    // room.basic = parseInt(data.basic)
+    // tmpGameState = parseInt(data.gameState)
+    // gameState = conf.GS_RECOVER
+    // room.chairMap = JSON.parse(data.chairMap)
+    // roomHost = parseInt(data.roomHost)
+    // banker = parseInt(data.banker)
+    // room.bankerMode = parseInt(data.bankerMode)
+    // room.gameNumber = parseInt(data.gameNumber)
+    // room.maxGameNumber = parseInt(data.maxGameNumber)
+    // room.consumeMode = parseInt(data.consumeMode)
+    // room.cardMode = parseInt(data.cardMode)
+    // betList = JSON.parse(data.betList)
+    // player = JSON.parse(data.player)
+    // result = JSON.parse(data.result)
+    // room.GAME_PLAYER = parseInt(data.playerNumber)
+    // GAME_PLAYER = room.GAME_PLAYER
+    // room.roomType = data.roomType
+    // room.agencyId = parseInt(data.agencyId)
+    // room.waitMode = parseInt(data.waitMode)
+    // room.maxRob = parseInt(data.maxRob)
+    //cardHistory = parseInt(data.cardHistory)
+    // frame.start(room.waitMode)
+    for(var index in player){
+      player[index].isOnline = false
+      robState[index] = 0
+    }
+  }
+  local.recover = function() {
+    // gameState = tmpGameState
+    // switch(gameState){
+    //   case conf.GS_FREE : 
+    //     for(var index in player){
+    //       player[index].isReady = false
+    //     }
+    //   break
+    //   case conf.GAMEING : 
+    //     local.gameBegin()
+    //   break
+    //   case conf.GS_ROB_BANKER:
+    //     local.chooseBanker()
+    //   break
+    //   case conf.GS_NONE:
+    //     local.endRob()
+    //   break
+    //   case conf.GS_BETTING:
+    //     local.betting()
+    //   break
+    //   case conf.GS_DEAL:
+    //     local.deal()
+    //   break
+    // }
+    // var notify = {
+    //   "cmd" : "recover"
+    // }
+    // local.sendAll(notify)
+  }
+  room.handle.recover = function(uid,sid,param,cb) {
+    if(gameState !== conf.GS_RECOVER){
+      cb(false)
+      return
+    }
+    local.recover()
+    cb(true)
+  }
+  return room 
 }
 
 
 var log = function(str) {
     // console.log("LOG NiuNiu : "+str)
-}
-
-var copyObj = function(obj) {
-  let res = {}
-  for (var key in obj) {
-    res[key] = obj[key]
   }
-  return res
-}
 
-var deepCopy = function(source) { 
-  var result={}
-  for (var key in source) {
-        result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
-     } 
-  return result;
-}
+  var copyObj = function(obj) {
+    let res = {}
+    for (var key in obj) {
+      res[key] = obj[key]
+    }
+    return res
+  }
+
+  var deepCopy = function(source) { 
+    var result={}
+    for (var key in source) {
+      result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
+    } 
+    return result;
+  }
 
 

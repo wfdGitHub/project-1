@@ -43,6 +43,7 @@ conf.GS_SETTLEMENT   = 1004              //结算阶段
 conf.GS_ROB_BANKER   = 1005              //抢庄阶段
 conf.GS_GAMEING 	 = 1006				 //游戏已开始
 conf.GS_NONE 		 = 1099 			 //不可操作阶段
+conf.GS_RECOVER      = 1100              //房间恢复阶段
 
 //游戏模式
 conf.MODE_GAME_NORMAL = 1              //常规模式

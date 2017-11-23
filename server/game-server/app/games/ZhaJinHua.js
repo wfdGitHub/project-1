@@ -8,11 +8,12 @@ var frameFactory = require("./frame/frame.js")
 var MING_CARD_NUM = 3               //明牌数量
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
+  module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var frame = frameFactory.createFrame()
+    var gameDB = db
     var room = {}
     room.roomId = roomId
     room.roomType = "zhajinhua"
@@ -40,7 +41,7 @@ var MING_CARD_NUM = 3               //明牌数量
     room.maxBet = 10                     //单注上限
     room.maxRound = 10                   //单局最大轮数
     room.stuffyRound = 0                 //闷牌轮数
-
+    var tmpGameState = 0
 
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
@@ -78,7 +79,6 @@ var MING_CARD_NUM = 3               //明牌数量
       roomHost = -1                    //房主椅子号
       timer = undefined                //定时器句柄
       //游戏属性
-      robState = new Array(GAME_PLAYER) //抢庄状态记录
       //console.log("enter init=====================================111111111111111")
       //下注信息
       betList = new Array(GAME_PLAYER)
@@ -97,7 +97,7 @@ var MING_CARD_NUM = 3               //明牌数量
         //channel清空
         channelService.destroyChannel(roomId)
         room.channel = channelService.getChannel(roomId,true)
-        //console.log(room.channel)   
+        //console.log(room.channel)
     }
     local.newRoom = function(uid,sid,param,cb) {
       //console.log("newRoom")
@@ -119,7 +119,7 @@ var MING_CARD_NUM = 3               //明牌数量
         log("newRoom error   param.basic : "+param.basic)
         cb(false)
         return
-      }   
+      }
       //最大单注
       if(!param.maxBet || typeof(param.maxBet) !== "number" || 
         param.maxBet < 0 || param.maxBet > 20){
@@ -168,7 +168,9 @@ var MING_CARD_NUM = 3               //明牌数量
       room.maxBet = Math.floor(param.maxBet)                         //单注上限  
       room.maxRound = param.maxRound                                 //单局最大轮数
       room.stuffyRound = param.stuffyRound                           //闷牌轮数
-      cb(true)
+      local.backups(function() {
+        cb(true)
+      })
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
@@ -176,6 +178,7 @@ var MING_CARD_NUM = 3               //明牌数量
             roomHost = -1
             room.agencyId = uid
             room.consumeMode = "agency"
+            local.backups()
           }
           cb(flag)
       })  
@@ -249,6 +252,8 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       notify = local.getRoomInfo(chair)
       local.sendUid(uid,notify)
+      setRoomDB(room.roomId,"player",JSON.stringify(player))
+      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))      
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -396,58 +401,62 @@ var MING_CARD_NUM = 3               //明牌数量
         "curBet" : curBet,
         "curRound" : curRound
       }
-      local.sendAll(notify)      
-      timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+      local.sendAll(notify)
+      local.backups(function() {
+        timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+      })
     }
 
     //操作权移交到下一位玩家
     local.nextCurPlayer = function() {
-      console.log("nextCurPlayer ==== ")
-      clearTimeout(timer)
-      if(actionFlag == false){
-        //未操作视为放弃
-        local.playerGiveUp(curPlayer) 
-      }
+      local.backups(function() {
+        console.log("nextCurPlayer ==== ")
+        clearTimeout(timer)
+        if(actionFlag == false){
+          //未操作视为放弃
+          local.playerGiveUp(curPlayer) 
+        }
 
-      //只剩一个玩家的时候结束本局
-      var curPlayerCount = 0
-      for(var i = 0; i < GAME_PLAYER; i++){
-        if(player[i].isActive && player[i].isReady && player[i].state == 0){
-          curPlayerCount++
+        //只剩一个玩家的时候结束本局
+        var curPlayerCount = 0
+        for(var i = 0; i < GAME_PLAYER; i++){
+          if(player[i].isActive && player[i].isReady && player[i].state == 0){
+            curPlayerCount++
+          }
         }
-      }
-      if(curPlayerCount < 2){
-        local.settlement()
-        return
-      }
-      //下一个玩家开始操作
-      actionFlag = false
-      var bankerFlag = false    //是否轮回到庄家
-      do{
-        curPlayer = (curPlayer + 1)%GAME_PLAYER
-        if(curPlayer == banker){
-          bankerFlag = true
-        }
-      }while(player[curPlayer].isActive == false || player[curPlayer].state !== 0 || player[curPlayer].isReady == false)
-      //当操作权转移到初始操作玩家  意味着进入下一轮
-      if(bankerFlag){
-        curRound++
-        //轮数超过最后一轮时进入结算
-        if(curRound > room.maxRound){
+        if(curPlayerCount < 2){
           local.settlement()
           return
         }
-      }
-      var notify = {
-        "cmd" : "nextPlayer",
-        "chair" : curPlayer,
-        "curBet" : curBet,
-        "curRound" : curRound
-      }
-      local.sendAll(notify)
-      //设定时器到下一位玩家
-      actionFlag = false
-      timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+        //下一个玩家开始操作
+        actionFlag = false
+        var bankerFlag = false    //是否轮回到庄家
+        do{
+          curPlayer = (curPlayer + 1)%GAME_PLAYER
+          if(curPlayer == banker){
+            bankerFlag = true
+          }
+        }while(player[curPlayer].isActive == false || player[curPlayer].state !== 0 || player[curPlayer].isReady == false)
+        //当操作权转移到初始操作玩家  意味着进入下一轮
+        if(bankerFlag){
+          curRound++
+          //轮数超过最后一轮时进入结算
+          if(curRound > room.maxRound){
+            local.settlement()
+            return
+          }
+        }
+        var notify = {
+          "cmd" : "nextPlayer",
+          "chair" : curPlayer,
+          "curBet" : curBet,
+          "curRound" : curRound
+        }
+        local.sendAll(notify)
+        //设定时器到下一位玩家
+        actionFlag = false
+        timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
+      })
     }
 
 
@@ -1026,18 +1035,18 @@ var MING_CARD_NUM = 3               //明牌数量
         basic : room.basic,
         maxRound : room.maxRound,
         stuffyRound : room.stuffyRound,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
-  } 
+  }
   //房间是否空闲
   room.isFree = function() {
     return gameState === conf.GS_FREE
@@ -1094,6 +1103,132 @@ var MING_CARD_NUM = 3               //明牌数量
       cb()
     }
   }
+
+  local.backups = function(cb){
+    console.log("begin backups=====")
+    var dbObj = {
+      "basic" : room.basic,
+      "gameState" : gameState,
+      "chairMap" : JSON.stringify(room.chairMap),
+      "roomHost" : roomHost,
+      "banker" : banker,
+      "gameNumber" : room.gameNumber,
+      "maxGameNumber" : room.maxGameNumber,
+      "consumeMode" : room.consumeMode,
+      "betList" : JSON.stringify(betList),
+      "player" : JSON.stringify(player),
+      "result" : JSON.stringify(result),
+      "playerNumber" : room.GAME_PLAYER,
+      "roomType" : room.roomType,
+      "agencyId" : room.agencyId,
+      "waitMode" : room.waitMode,
+      "curPlayer" : curPlayer,
+      "curRound" : curRound,
+      "curBet" : curBet,
+      "maxBet" : room.maxBet,
+      "maxRound" : room.maxRound,
+      "stuffyRound" : room.stuffyRound,
+      "cardHistory" : JSON.stringify(cardHistory)
+    }
+    setRoomDBObj(room.roomId,dbObj,function() {
+      console.log("end backups=====")
+      if(cb){
+        cb()
+      }
+    })
+  }  
+
+  var setRoomDB = function(hashKey,subKey,data,cb){
+    gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+
+  var setRoomDBObj = function(hashKey,obj,cb){
+    gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+  room.recover = function(data) {
+    console.log("recover : ")
+    console.log(data)
+    local.init()
+    room.state = false
+    room.basic = parseInt(data.basic)
+    tmpGameState = parseInt(data.gameState)
+    gameState = conf.GS_RECOVER
+    room.chairMap = JSON.parse(data.chairMap)
+    roomHost = parseInt(data.roomHost)
+    banker = parseInt(data.banker)
+    room.gameNumber = parseInt(data.gameNumber)
+    room.maxGameNumber = parseInt(data.maxGameNumber)
+    room.consumeMode = parseInt(data.consumeMode)
+    betList = JSON.parse(data.betList)
+    player = JSON.parse(data.player)
+    result = JSON.parse(data.result)
+    room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
+    room.roomType = data.roomType
+    room.agencyId = parseInt(data.agencyId)
+    room.waitMode = parseInt(data.waitMode)
+    curPlayer = parseInt(data.curPlayer)
+    curRound = parseInt(data.curRound)
+    curBet = parseInt(data.curBet)
+    room.maxBet = parseInt(data.maxBet)
+    room.maxRound = parseInt(data.maxRound)
+    room.stuffyRound = parseInt(data.stuffyRound)
+    cardHistory = JSON.parse(data.cardHistory)
+    frame.start(room.waitMode)
+    for(var index in player){
+      player[index].isOnline = false
+    }
+  }
+  local.recover = function() {
+    gameState = tmpGameState
+    switch(gameState){
+      case conf.GS_FREE : 
+        for(var index in player){
+          player[index].isReady = false
+        }
+      break
+      case conf.GS_GAMEING :
+        local.nextCurPlayer()
+      break
+    }
+    var notify = {
+      "cmd" : "recover"
+    }
+    local.sendAll(notify)
+  }
+  room.handle.recover = function(uid,sid,param,cb) {
+    if(gameState !== conf.GS_RECOVER){
+      cb(false)
+      return
+    }
+    local.recover()
+    cb(true)
+  }
+
     return room 
 }
 

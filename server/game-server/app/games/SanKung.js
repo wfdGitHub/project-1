@@ -8,11 +8,12 @@ var MING_CARD_NUM = 2               //明牌数量
 //游戏状态
 
 //创建房间
-  module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegincb,gameOvercb) {
+  module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
     console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var frame = frameFactory.createFrame()
+    var gameDB = db
     var room = {}
     room.roomId = roomId
     room.roomType = "sanKung"
@@ -37,6 +38,7 @@ var MING_CARD_NUM = 2               //明牌数量
     var curRound = 0                     //当前轮数
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
+    var tmpGameState = 0
     //游戏属性
     var cards = {}                       //牌组
     var cardCount = 0                    //卡牌剩余数量
@@ -154,8 +156,9 @@ var MING_CARD_NUM = 2               //明牌数量
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
       room.cardMode = param.cardMode                     //明牌模式
- 
-      cb(true)
+      local.backups(function() {
+        cb(true)
+      })
     }
     room.handle.agency = function(uid,sid,param,cb) {
       local.newRoom(uid,sid,param,function(flag) {
@@ -163,6 +166,7 @@ var MING_CARD_NUM = 2               //明牌数量
             roomHost = -1
             room.agencyId = uid
             room.consumeMode = "agency"
+            local.backups()
           }
           cb(flag)
       })
@@ -236,6 +240,8 @@ var MING_CARD_NUM = 2               //明牌数量
       }
       notify = local.getRoomInfo(chair)
       local.sendUid(uid,notify)
+      setRoomDB(room.roomId,"player",JSON.stringify(player))
+      setRoomDB(room.roomId,"chairMap",JSON.stringify(room.chairMap))      
       cb(true)
     }
     room.handle.ready = function(uid,sid,param,cb) {
@@ -253,37 +259,39 @@ var MING_CARD_NUM = 2               //明牌数量
 
     //定庄阶段  有抢庄则进入抢庄
     local.chooseBanker = function() {
-      switch(room.bankerMode){
-        case conf.MODE_BANKER_ROB :
-          //初始化抢庄状态为false
-          gameState = conf.GS_ROB_BANKER
-          for(var i = 0; i < GAME_PLAYER;i++){
-            robState[i] = 0
-          }
-          //抢庄
-          var notify = {
-            "cmd" : "beginRob"
-          }
-          local.sendAll(notify)
-          timer = setTimeout(local.endRob,conf.TID_ROB_TIME)
-          break
-        case conf.MODE_BANKER_JIUDIAN :
-          //九点上庄
-          local.gameBegin()
-          break
-        case conf.MODE_BANKER_HOST :
-          //房主当庄
-          banker = roomHost
-          if(roomHost === -1){
-            banker = 0
-          }
-          local.gameBegin()
-          break
-        default:
+      gameState = conf.GS_ROB_BANKER
+      local.backups(function() {
+        switch(room.bankerMode){
+          case conf.MODE_BANKER_ROB :
+            //初始化抢庄状态为false
+            for(var i = 0; i < GAME_PLAYER;i++){
+              robState[i] = 0
+            }
+            //抢庄
+            var notify = {
+              "cmd" : "beginRob"
+            }
+            local.sendAll(notify)
+            timer = setTimeout(local.endRob,conf.TID_ROB_TIME)
+            break
+          case conf.MODE_BANKER_JIUDIAN :
+            //九点上庄
+            local.gameBegin()
+            break
+          case conf.MODE_BANKER_HOST :
+            //房主当庄
+            banker = roomHost
+            if(roomHost === -1){
+              banker = 0
+            }
+            local.gameBegin()
+            break
+          default:
 
-          local.gameBegin()
-          break
-      }
+            local.gameBegin()
+            break
+        }
+      })
     }
 
     //结束抢庄
@@ -480,7 +488,7 @@ var MING_CARD_NUM = 2               //明牌数量
             local.sendUid(player[i].uid,notify)    
           }
         }
-      }      
+      }
       //进入下注
       local.betting()
     }
@@ -495,9 +503,10 @@ var MING_CARD_NUM = 2               //明牌数量
         banker : banker
       }
       local.sendAll(notify)
-      //定时器启动下一阶段
-      timer = setTimeout(local.deal,conf.TID_BETTING)      
-      
+      local.backups(function() {
+        //定时器启动下一阶段
+        timer = setTimeout(local.deal,conf.TID_BETTING)
+      })
     }    
     //发牌阶段  等待摊牌后进入结算
     local.deal = function(){
@@ -529,10 +538,12 @@ var MING_CARD_NUM = 2               //明牌数量
             local.sendUid(player[i].uid,notify)
           }
         }
-        timer = setTimeout(function(){
-          local.settlement()
-        },conf.TID_SETTLEMENT)
-    }    
+        local.backups(function() {
+          timer = setTimeout(function(){
+            local.settlement()
+          },conf.TID_SETTLEMENT)
+        })
+    }
     //结算
     local.settlement = function() {
       if(gameState !== conf.GS_SETTLEMENT){
@@ -632,6 +643,8 @@ var MING_CARD_NUM = 2               //明牌数量
 
         if(room.gameNumber <= 0){
             local.gameOver()
+        }else{
+          local.backups()
         }
       }
     }    
@@ -967,18 +980,18 @@ var MING_CARD_NUM = 2               //明牌数量
         roomType : room.roomType,
         cardMode : room.cardMode,
         basicType : room.basicType,
-        playerNumber : GAME_PLAYER
+        playerNumber : room.GAME_PLAYER
       }
       return notify
     }
   //房间是否已开始游戏
   room.isBegin = function() {
-    if(room.runCount === 0 && gameState === conf.GS_FREE){
-        return false
+    if(room.runCount === 0 && (gameState === conf.GS_FREE || gameState === conf.GS_RECOVER)){
+      return false
     }else{
-        return true
+      return true
     }
-  } 
+  }
   //房间是否空闲
   room.isFree = function() {
     return gameState === conf.GS_FREE
@@ -1035,6 +1048,129 @@ var MING_CARD_NUM = 2               //明牌数量
       cb()
     }
   }
+  local.backups = function(cb){
+    console.log("begin backups=====")
+    var dbObj = {
+      "basicType" : room.basicType,
+      "gameState" : gameState,
+      "chairMap" : JSON.stringify(room.chairMap),
+      "roomHost" : roomHost,
+      "banker" : banker,
+      "bankerMode" : room.bankerMode,
+      "gameNumber" : room.gameNumber,
+      "maxGameNumber" : room.maxGameNumber,
+      "consumeMode" : room.consumeMode,
+      "cardMode" : room.cardMode,
+      "betList" : JSON.stringify(betList),
+      "player" : JSON.stringify(player),
+      "result" : JSON.stringify(result),
+      "playerNumber" : room.GAME_PLAYER,
+      "roomType" : room.roomType,
+      "agencyId" : room.agencyId,
+      "waitMode" : room.waitMode,
+      "cardHistory" : JSON.stringify(cardHistory)
+    }
+    setRoomDBObj(room.roomId,dbObj,function() {
+      console.log("end backups=====")
+      if(cb){
+        cb()
+      }
+    })
+  }  
+
+  var setRoomDB = function(hashKey,subKey,data,cb){
+    gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+
+  var setRoomDBObj = function(hashKey,obj,cb){
+    gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
+      if(err){
+        console.log("setRoomDB error : "+err)
+        if(cb){
+          cb(false)
+        }
+      }else{
+        console.log(data)
+        if(cb){
+          cb(data)
+        }
+      }
+    })
+  }
+  room.recover = function(data) {
+    console.log("recover : ")
+    console.log(data)
+    local.init()
+    room.state = false
+    room.basicType = parseInt(data.basicType)
+    tmpGameState = parseInt(data.gameState)
+    gameState = conf.GS_RECOVER
+    room.chairMap = JSON.parse(data.chairMap)
+    roomHost = parseInt(data.roomHost)
+    banker = parseInt(data.banker)
+    room.bankerMode = parseInt(data.bankerMode)
+    room.gameNumber = parseInt(data.gameNumber)
+    room.maxGameNumber = parseInt(data.maxGameNumber)
+    room.consumeMode = parseInt(data.consumeMode)
+    room.cardMode = parseInt(data.cardMode)
+    betList = JSON.parse(data.betList)
+    player = JSON.parse(data.player)
+    result = JSON.parse(data.result)
+    room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
+    room.roomType = data.roomType
+    room.agencyId = parseInt(data.agencyId)
+    room.waitMode = parseInt(data.waitMode)
+    cardHistory = JSON.parse(data.cardHistory)
+    frame.start(room.waitMode)
+    for(var index in player){
+      player[index].isOnline = false
+      robState[index] = 0
+    }
+  }
+  local.recover = function() {
+    gameState = tmpGameState
+    switch(gameState){
+      case conf.GS_FREE : 
+        for(var index in player){
+          player[index].isReady = false
+        }
+      break
+      case conf.GS_ROB_BANKER:
+        local.chooseBanker()
+      break
+      case conf.GS_BETTING:
+        local.betting()
+      break
+      case conf.GS_DEAL:
+        local.deal()
+      break
+    }
+    var notify = {
+      "cmd" : "recover"
+    }
+    local.sendAll(notify)
+  }
+  room.handle.recover = function(uid,sid,param,cb) {
+    if(gameState !== conf.GS_RECOVER){
+      cb(false)
+      return
+    }
+    local.recover()
+    cb(true)
+  }  
     return room 
 }
 

@@ -33,6 +33,10 @@ var GameRemote = function(app) {
 	GameRemote.app = app
 	GameRemote.channelService = this.app.get('channelService');
 	freeFrame.start(GameRemote)
+    GameRemote.dbService = this.app.get("dbService")
+    if(GameRemote.dbService && GameRemote.dbService.db){
+    	GameRemote.db = GameRemote.dbService.db
+    }
 }
 
 GameRemote.roomList = {}
@@ -45,6 +49,29 @@ GameRemote.roomLock = {}
 GameRemote.lockState = {}
 //解散请求计时器
 GameRemote.lockTimer = {}
+
+//恢复房间
+GameRemote.prototype.recoverRoom = function(params,roomId,userMap,cb) {
+	// console.log(userMap)
+	freeFrame.start(GameRemote)
+	getRoomDB(roomId,function(data) {
+		// console.log(data)
+		if(ROOM_FACTORY[data.roomType]){
+			GameRemote.roomList[roomId] = ROOM_FACTORY[data.roomType].createRoom(roomId,GameRemote.dbService.db,GameRemote.channelService,data.playerNumber,gameBegin,gemeOver)
+			for(var index in userMap){
+				GameRemote.userMap[userMap[index].uid] = roomId
+			}
+			//刷新解散房间
+			clearTimeout(GameRemote.liveTimer[roomId])
+			GameRemote.liveTimer[roomId] = setTimeout(finishGameOfTimer(roomId),8 * 60 * 60 * 1000)
+			//还原房间
+			GameRemote.roomList[roomId].recover(data)
+		}
+	})
+	cb(true)
+}
+
+
 //新建房间
 GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 	console.log("rid : "+roomId+"    uid : "+uid)
@@ -53,7 +80,7 @@ GameRemote.prototype.newRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.dbService.db,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
     GameRemote.roomList[roomId].handle.newRoom(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   newRoom   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "   gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
@@ -82,7 +109,7 @@ GameRemote.prototype.agencyRoom = function(params,uid,sid,roomId,cb) {
 		cb(false)
 		return
 	}	
-	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
+	GameRemote.roomList[roomId] = ROOM_FACTORY[params.gameType].createRoom(roomId,GameRemote.dbService.db,GameRemote.channelService,params.playerNumber,gameBegin,gemeOver)
 	GameRemote.roomList[roomId].handle.agency(uid,sid,params,function (flag) {
     	if(flag){
 			var info = "   agency   roomId  : "+ roomId + "    uid : "+uid+ "   gameType : "+params.gameType + "gameNumber : "+params.gameNumber + "playerNumber" + params.playerNumber
@@ -367,3 +394,38 @@ var gemeOver = function(roomId,players,flag,cb) {
 
 //解散房间
 GameRemote.prototype.onFrame = freeFrame.onFrame
+
+
+var getRoomDB = function(hashKey,cb){
+	GameRemote.dbService.db.hgetall("gameNodeRoom:"+hashKey,function(err,data) {
+		if(err){
+			cb(false)
+		}else{
+			cb(data)
+		}
+	})
+}
+
+var setRoomDB = function(hashKey,subKey,data,cb){
+	GameRemote.dbService.db.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
+		if(err){
+			console.log("setRoomDB error : "+err)
+			if(cb){
+				cb(false)
+			}
+		}else{
+			console.log(data)
+			if(cb){
+				cb(data)
+			}
+		}
+	})
+}
+
+var delRoomDB = function(hashKey,subKey) {
+	GameRemote.dbService.db.hdel("gameNodeRoom:"+hashKey,subKey,function(err,data) {
+		if(err){
+			console.log(err)
+		}
+	})
+}
