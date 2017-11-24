@@ -205,7 +205,7 @@ handler.h5Enter = function(msg,session,next) {
       next(null,{"flag" : false , "err" : data.errmsg})
       return
     }
-    msg.openId = data.open_id
+    msg.openId = data.openid
     msg.token = data.access_token
     var enterFun = handler.enter.bind(self)
     enterFun(msg,session,next)
