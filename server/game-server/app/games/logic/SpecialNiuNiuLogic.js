@@ -119,11 +119,13 @@ module.exports.getType = function(handCard) {
       //葫芦
       if(tmpHandCard[0].num === tmpHandCard[1].num && tmpHandCard[0].num === tmpHandCard[2].num){
         if(tmpHandCard[3].num === tmpHandCard[4].num){
+          result.card = tmpHandCard[0]
           huluFlag = true
         }
       }
       if(tmpHandCard[0].num === tmpHandCard[1].num){
         if(tmpHandCard[2].num === tmpHandCard[3].num && tmpHandCard[3].num === tmpHandCard[4].num){
+           result.card = tmpHandCard[2]
           huluFlag = true
         }
       }      
@@ -210,11 +212,23 @@ module.exports.compare = function(result1,result2) {
     if(result1.type > result2.type){
         return true
     }
-    if(result1.type == result2.type && result1.card.num > result2.card.num){
-        return true
-    }
-    if(result1.type == result2.type && result1.card.num == result2.card.num && result1.card.type > result2.card.type){
-      return true
+    if(result1.type ==  result2.type){
+      //同花和同花顺先判断花色再判断点数,其他先判断点数再判断花色
+      if(result1.type == COMB_TYPE_TONGHUA || result1.type == COMB_TYPE_TONGHUASHUN){
+        if(result1.card.type > result2.card.type){
+            return true
+        }
+        if(result1.card.type == result2.card.type && result1.card.num > result2.card.num){
+          return true
+        }
+      }else{
+        if(result1.card.num > result2.card.num){
+            return true
+        }
+        if(result1.card.num == result2.card.num && result1.card.type > result2.card.type){
+          return true
+        }
+      }
     }
     return false
 }
