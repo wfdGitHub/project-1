@@ -223,6 +223,10 @@ GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {
 //玩家离开
 GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId].leave(uid)
+	//若游戏未开始则退出
+	if(!GameRemote.roomList[roomId].isBegin()){
+		GameRemote.roomList[roomId].userQuit(uid,function(){})
+	}
 	cb(true)
 }
 //结束房间
