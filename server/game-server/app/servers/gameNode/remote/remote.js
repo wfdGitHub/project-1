@@ -225,7 +225,10 @@ GameRemote.prototype.disconnect = function(params,uid,sid,roomId,cb) {
 	GameRemote.roomList[roomId].leave(uid)
 	//若游戏未开始则退出
 	if(!GameRemote.roomList[roomId].isBegin()){
-		GameRemote.roomList[roomId].userQuit(uid,function(){})
+		GameRemote.roomList[roomId].userQuit(uid,function(){
+			delete GameRemote.userMap[uid]
+			GameRemote.app.rpc.game.remote.userQuit(null,uid,function() {})
+		})
 	}
 	cb(true)
 }
