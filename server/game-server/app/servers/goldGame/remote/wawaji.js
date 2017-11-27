@@ -5,7 +5,6 @@ module.exports = function(app) {
 };
 
 var wawaRoom = {
-	"0" : true,
 	"1" : true,
 	"2" : true,
 	"3" : true,
@@ -34,9 +33,11 @@ GameRemote.prototype.getRoomInfo = function(cb){
 }
 
 //加入房间
-GameRemote.prototype.joinRoom = function(uid,cb) {
+GameRemote.prototype.joinRoom = function(uid,roomId,cb) {
 	GameRemote.app.rpc.db.remote.getPlayerInfoByUid(null,uid,function(data) {
-
+		if(data){
+			GameRemote.userMap[uid] = roomId
+		}
 	})
 }
 
