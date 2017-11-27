@@ -352,7 +352,7 @@ handler.sendData = function(msg, session, next){
             next(null,{flag : flag,msg : msg})
         }) 
     }else{
-        next(null,{flag : false})
+        next(null,{flag : false,code : 119})
     }
 }
 
@@ -367,7 +367,7 @@ handler.sendFrame = function(msg, session, next) {
             next(null,{flag : flag,msg : msg})
         })   
     }else{
-        next(null,{flag : false})
+        next(null,{flag : false,code : 119})
     }
 }
 //用户离开事件处理
