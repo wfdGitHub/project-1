@@ -858,7 +858,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           }          
         }
       }
-
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
         var notify = {
@@ -1404,7 +1403,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       "bonusPool" : bonusPool,
       "waitMode" : room.waitMode,
       "gameMode" : room.gameMode,
-      "cardHistory" : JSON.stringify(cardHistory)
+      "cardHistory" : JSON.stringify(cardHistory),
+      "special" : room.special
     }
     setRoomDBObj(room.roomId,dbObj,function() {
       console.log("end backups=====")
@@ -1472,7 +1472,14 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     bonusPool = parseInt(data.bonusPool),
     room.gameMode = parseInt(data.gameMode)
     cardHistory = JSON.parse(data.cardHistory)
+    room.special = data.special
     frame.start(room.waitMode)
+    if(room.special === true || room.special === "true"){
+      room.special = true
+      logic = require("./logic/SpecialNiuNiuLogic.js")
+    }else{
+      room.special = false
+    }
     for(var index in player){
       player[index].isOnline = false
       robState[index] = 0
