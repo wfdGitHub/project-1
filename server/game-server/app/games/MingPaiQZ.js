@@ -148,6 +148,9 @@ var MING_CARD_NUM = 4               //明牌数量
         log("newRoom error   param.basic : "+param.basic)
         param.basic = 1
       }
+      if(param.special === true){
+        logic = require("./logic/SpecialNiuNiuLogic.js")
+      }      
       if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
         log("newRoom error   param.waitMode : "+param.waitMode)
         cb(false)
@@ -178,7 +181,8 @@ var MING_CARD_NUM = 4               //明牌数量
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
-      room.cardMode = param.cardMode                     //明牌模式   
+      room.cardMode = param.cardMode                     //明牌模式 
+      room.special = param.special                         //特殊牌型  
       //备份
       local.backups(function() {
         cb(true)
@@ -1116,7 +1120,8 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
         allowAllin : allowAllin,
-        playerNumber : room.GAME_PLAYER
+        playerNumber : room.GAME_PLAYER,
+        special : room.special
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
