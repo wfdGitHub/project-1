@@ -615,7 +615,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 
 //修改代开房间剩余数量
 GameRemote.prototype.changeAgencyReopenCount = function(uid,roomId,count,cb) {
-	if(!count || typeof(count) !== "number" || count < 1 || count > 50){
+	if(!count || typeof(count) !== "number" || count < 1 || count > 500){
 		cb(false)
 		return
 	}
