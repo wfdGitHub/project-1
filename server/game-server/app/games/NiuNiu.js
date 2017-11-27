@@ -104,6 +104,9 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       cb(false)
       return
     }
+    if(param.specia === true){
+      logic = require("./logic/SpecialNiuNiuLogic.js")
+    }
     frame.start(param.waitMode)
     room.waitMode = param.waitMode
     if(param.halfwayEnter === false){
@@ -126,6 +129,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxGameNumber = param.gameNumber              //游戏最大局数
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
+    room.specia = param.specia                         //特殊牌型
     if(room.gameMode == conf.MODE_GAME_SHIP || room.gameMode == conf.MODE_GAME_BULL){
       room.bankerMode = conf.MODE_BANKER_NONE
     }
