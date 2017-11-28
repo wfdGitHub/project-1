@@ -1,5 +1,6 @@
 var httpConf = require("../../../conf/httpModule.js")
 var signInConf = require("../../../conf/signIn.js")
+var itemConf = require("../../../conf/item.js")
 var goldRecordLogger = require("pomelo-logger").getLogger("goldRecord-log")
 var diamondRecordLogger = require("pomelo-logger").getLogger("diamondRecord-log")
 
@@ -112,14 +113,27 @@ var createAccount = function(result,cb) {
 			"receiveRecord" : []
 		}
 		DBRemote.dbService.setPlayerObject(uid,"giveRecord",giveRecord)
-		//代理分红
-		var agencyRedList = {}
-		agencyRedList.time = dateString //领取时间
-		agencyRedList.list = {}    		//分红记录
-		DBRemote.dbService.setPlayerObject(uid,"agencyRedList",agencyRedList)
+		//背包
+		var bagList = []
+		DBRemote.dbService.setPlayerObject(uid,"bagList",bagList)
 		cb(false)
 	})
 }
+
+DBRemote.prototype.addItem = function(uid,ItemId,cb) {
+	if(!itemConf[ItemId]){
+		console.log("添加失败，错误的物品ID")
+		cb(false)
+		return
+	}
+	DBRemote.dbService.getPlayerObject(uid,"bagList",function(data) {
+		data.push(itemConf[ItemId])
+		DBRemote.dbService.setPlayerObject(uid,"bagList",data)
+		cb(true)
+	})
+}
+
+
 //每次登陆更新微信信息
 var updateAccount = function(result) {
 	var uid = result.playerId

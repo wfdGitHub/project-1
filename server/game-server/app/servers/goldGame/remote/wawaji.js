@@ -1,9 +1,10 @@
 var async = require("async")
-
+var itemConf = require("../../../conf/item.js")
 module.exports = function(app) {
 	return new GameRemote(app);
 };
 
+//房间ID  也是产出物品ID 
 var wawaRoom = {
 	"1001" : true,
 	"1002" : true,
@@ -176,8 +177,12 @@ GameRemote.prototype.catch = function(uid,cb) {
 			var tmpRand = Math.random()
 			if(tmpRand < RoomRand){
 				//抓中
+				GameRemote.app.rpc.connector.remote.addItem(null,uid,roomId,function(flag) {
+					cb(flag,{"item" : itemConf[roomId]})
+				})
 			}else{
 				//没抓中
+				cb(false)
 			}
 		}
 	],function(err,result) {
