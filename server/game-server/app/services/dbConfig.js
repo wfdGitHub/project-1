@@ -32,7 +32,7 @@ handler.start = function(dbService) {
                     var notify = {"1" : {"name" : "","content" : ""}}
                     db.set("nn:notifys",JSON.stringify(notify));
                 }
-            })       
+            })
             dbService.db.exists("nn:wawajiConctorl",function(err,data) {
             	if(err || !data){
                     var tmpObj = {

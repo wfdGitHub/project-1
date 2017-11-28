@@ -158,21 +158,6 @@ handler.visitorEnter = function(msg, session, next) {
           cb(null)        
         })
       },
-      function(cb){
-        self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-          if(data){
-            data.area = "goldRoom"
-            notify.reconnection = data
-            session.set("area","goldRoom")
-            session.push("area", function(err) {
-              if(err) {
-                console.error('set area for session failed! error is : %j', err.stack)
-              }
-            })
-          }
-          cb(null)
-        })
-      },
       function() {
         if(!self.gameChanel.getMember(playerId)){
           self.gameChanel.add(playerId,self.app.get('serverId'))
@@ -181,25 +166,7 @@ handler.visitorEnter = function(msg, session, next) {
         var info = "visitorEnter    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)    
         //通知gameServer
-        self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})     
-        var myDate = new Date()
-        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())      
-        console.log(dateString) 
-        if(notify.data.loginRecord.recordDate !== dateString){
-          self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
-            notify.data.loginRecord = loginRecord
-            //console.log(notify.data.loginRecord)
-            self.channelService.pushMessageByUids('onMessage', notify, [{
-              uid: playerId,
-              sid: self.app.get('serverId')
-            }])
-          })
-        }else{
-          self.channelService.pushMessageByUids('onMessage', notify, [{
-            uid: playerId,
-            sid: self.app.get('serverId')
-          }])          
-        }
+        self.app.rpc.goldGame.wawaji.userConnect(session,playerId,self.app.get('serverId'),function() {})
       }
       ],
     function(err,result) {
@@ -323,21 +290,6 @@ handler.enter = function(msg, session, next) {
           cb(null)
         })
       },
-      function(cb){
-        self.app.rpc.goldGame.remote.reconnection(null,playerId,self.app.get('serverId'),function(data) {
-          if(data){
-            data.area = "goldRoom"
-            notify.reconnection = data
-            session.set("area","goldRoom")
-            session.push("area", function(err) {
-              if(err) {
-                console.error('set area for session failed! error is : %j', err.stack)
-              }
-            })
-          }
-          cb(null)
-        })
-      },
       function() {
         if(!self.gameChanel.getMember(playerId)){
           self.gameChanel.add(playerId,self.app.get('serverId'))
@@ -346,23 +298,7 @@ handler.enter = function(msg, session, next) {
         var info = "    uid : "+playerId+"    name ： "+session.get("nickname")
         userLoginLogger.info(info)
         //通知gameServer
-        self.app.rpc.goldGame.remote.userConnect(session,playerId,self.app.get('serverId'),function() {})
-        var myDate = new Date()
-        var dateString = parseInt(""+myDate.getFullYear() + myDate.getMonth() + myDate.getDate())
-        if(notify.data.loginRecord.recordDate !== dateString){
-          self.app.rpc.db.remote.loginCB(null,playerId,function(loginRecord) {
-            notify.data.loginRecord = loginRecord
-            self.channelService.pushMessageByUids('onMessage', notify, [{
-              uid: playerId,
-              sid: self.app.get('serverId')
-            }])
-          })
-        }else{
-          self.channelService.pushMessageByUids('onMessage', notify, [{
-            uid: playerId,
-            sid: self.app.get('serverId')
-          }])          
-        }
+        self.app.rpc.goldGame.wawaji.userConnect(session,playerId,self.app.get('serverId'),function() {})
       }
       ],
     function(err,result) {
@@ -421,33 +357,13 @@ local.sendGoldRoomData = function(msg,session,next) {
     var uid = session.get("uid")
     //console.log("uid : "+uid)
     if(!!uid){
-        if(msg.code == "joinMatch"){
-          if(msg.params){
-            msg.params.ip = this.sessionService.getClientAddressBySessionId(session.id).ip   
-          }
-        }
-        self.app.rpc.goldGame.remote.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){        
+        self.app.rpc.goldGame.wawaji.receive(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){        
             next(null,{flag : flag,msg : msg})
         })
     }else{
         next(null,{flag : false})
     }
 }
-
-// handler.sendFrame = function(msg, session, next) {
-//     //console.log("code : "+msg.code)
-//     var self = this
-//     //判断登录
-//     var uid = session.get("uid")
-//     //console.log("uid : "+uid)  
-//     if(!!uid){
-//         self.app.rpc.game.remote.onFrame(session, uid, self.app.get('serverId'), msg.code,msg.params, function(flag,msg){
-//             next(null,{flag : flag,msg : msg})
-//         })   
-//     }else{
-//         next(null,{flag : false})
-//     }
-// }
 //用户离开事件处理
 var onUserLeave = function(self, session) {
   // console.log(self)
@@ -456,7 +372,7 @@ var onUserLeave = function(self, session) {
     return
   }
   self.gameChanel.leave(session.uid,self.app.get('serverId'))
-  self.app.rpc.goldGame.remote.kick(session,session.uid,null)
+  self.app.rpc.goldGame.wawaji.leave(session,session.uid,function(){})
 }
 
 

@@ -26,6 +26,7 @@ var GameRemote = function(app) {
     if(GameRemote.dbService && GameRemote.dbService.db){
     	GameRemote.db = GameRemote.dbService.db
     }
+    GameRemote.userConnectorMap = {}
 	//玩家所在房间映射表
 	GameRemote.userMap = {}
 }
@@ -69,7 +70,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 //获取房间数据
 local.getRoomInfo = function(cb){
 	var roomInfo = deepCopy(GameRemote.roomInfo)
-	cb(roomInfo)
+	cb(true,roomInfo)
 }
 
 //加入房间
@@ -96,6 +97,11 @@ local.joinRoom = function(uid,roomId,cb) {
 	})
 }
 
+GameRemote.prototype.leave = function(uid,cb) {
+	local.leaveRoom(uid)
+	cb(true)	
+}
+
 //离开房间
 local.leave = function(uid,cb) {
 	local.leaveRoom(uid)
@@ -111,7 +117,7 @@ local.leaveRoom = function(uid) {
 }
 
 //抓娃娃
-GameRemote.prototype.catch = function(uid,cb) {
+local.catch = function(uid,cb) {
 	var self = this
 	var roomId = GameRemote.userMap[uid]
 	if(!roomId){
@@ -122,8 +128,12 @@ GameRemote.prototype.catch = function(uid,cb) {
 	var useGold = 0
 	async.waterfall([
 		function(next) {
+			console.log("roomId ： "+roomId)
 			//获取消耗值
-			GameRemote.db.hget("nn:consume",roomId,function(err,data) {
+			GameRemote.dbService.db.hget("nn:consume",roomId,function(err,data) {
+				console.log(data)
+				console.log(typeof(data))
+				data = parseInt(data)
 				if(err || !data || typeof(data) != "number" || data <= 0){
 					console.log("获取消耗值失败")
 					cb(false)
@@ -135,16 +145,20 @@ GameRemote.prototype.catch = function(uid,cb) {
 		},
 		function(next) {
 			//获取玩家金钱
-			GameRemote.app.rpc.connector.remote.getValue(null,uid,"gold",function(data) {
+			GameRemote.app.rpc.db.remote.getValue(null,uid,"gold",function(data) {
+				console.log(data)
+				console.log(typeof(data))
+				data = parseInt(data)				
 				if(!data || typeof(data) != "number" || data < useGold){
 					console.log("玩家金钱不足 : "+data)
 					cb(false)
 					return
 				}
-				GameRemote.app.rpc.connector.remote.incrbyPlayer(null,uid,"gold",useGold,function(data) {
+				GameRemote.app.rpc.db.remote.incrbyPlayer(null,uid,"gold",-useGold,function(data) {
 					if(data){
 						next()
 					}else{
+						console.log("111111")
 						cb(false)
 						return
 					}
@@ -153,8 +167,12 @@ GameRemote.prototype.catch = function(uid,cb) {
 		},
 		function(next) {
 			//获取概率
-			GameRemote.db.hget("nn:wawajiConctorl",roomId,function(err,data) {
+			GameRemote.dbService.db.hget("nn:wawajiConctorl",roomId,function(err,data) {
+				console.log(data)
+				console.log(typeof(data))
+				data = parseFloat(data)
 				if(err || !data || typeof(data) != "number" || data <= 0){
+					console.log("概率错误")
 					RoomRand = 0
 				}else{
 					RoomRand = data
@@ -164,7 +182,10 @@ GameRemote.prototype.catch = function(uid,cb) {
 		},
 		function(next) {
 			//获取库存
-			GameRemote.db.hget("nn:inventory",roomId,function(err,data) {
+			GameRemote.dbService.db.hget("nn:inventory",roomId,function(err,data) {
+				console.log(data)
+				console.log(typeof(data))
+				data = parseInt(data)				
 				if(err || !data || typeof(data) != "number" || data <= 0){
 					console.log("库存不足")
 					RoomRand = 0
@@ -177,10 +198,14 @@ GameRemote.prototype.catch = function(uid,cb) {
 			var tmpRand = Math.random()
 			if(tmpRand < RoomRand){
 				//抓中
-				GameRemote.app.rpc.connector.remote.addItem(null,uid,roomId,function(flag) {
+				GameRemote.app.rpc.db.remote.addItem(null,uid,roomId,function(flag) {
+					if(flag){
+						GameRemote.dbService.db.hincrby("nn:inventory",roomId,-1,function(err){})						
+					}
 					cb(flag,{"item" : itemConf[roomId]})
 				})
 			}else{
+				console.log("1111112222")
 				//没抓中
 				cb(false)
 			}

@@ -203,7 +203,7 @@ DBRemote.prototype.loginCB = function(uid,cb) {
 				// 			"cmd" : "signInAward",
 				// 			"data" : signInConf[data.loginMax]
 				// 		}
-				// 		DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+				// 		DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,uid,notify,function(){})
     //           		})
     //           	}
     //           }
@@ -306,7 +306,7 @@ DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
 					"cmd" : "updateDiamond",
 					"data" : value
 				}
-				DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+				DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,uid,notify,function(){})
 				diamondRecordLogger.info("   "+uid + " change : "+oldValue + " now : "+value + "  type : "+type)
 				//通知后台
 				httpConf.sendDiamondHttp(uid,oldValue,value,oldValue > 0 ? "inc" : "dec","diamond",type)
@@ -317,7 +317,7 @@ DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
 					"cmd" : "updateGold",
 					"data" : value
 				}
-				DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+				DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,uid,notify,function(){})
 				//每日金币输赢更新
 				DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
 					//console.log(data)
@@ -340,7 +340,7 @@ DBRemote.prototype.setValue = function(uid,name,value,type,cb) {
 					"cmd" : "updateCharm",
 					"data" : value
 				}
-				DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+				DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,uid,notify,function(){})
 				//每日魅力值更新
 				DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
 					//console.log(data)
@@ -392,7 +392,7 @@ DBRemote.prototype.sendMail = function(targetUid,title,content,affix,addresser,u
 			var notify = {
 				"cmd" : "newMail"
 			}
-			DBRemote.app.rpc.goldGame.remote.sendByUid(null,targetUid,notify,function(){})			
+			DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,targetUid,notify,function(){})			
 			cb(true)
 		})
 	})
@@ -428,7 +428,7 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 			"cmd" : "updateHistory",
 			"data" : data
 		}
-		DBRemote.app.rpc.goldGame.remote.sendByUid(null,uid,notify,function(){})
+		DBRemote.app.rpc.goldGame.wawaji.sendByUid(null,uid,notify,function(){})
 		if(cb){
 			cb()
 		}
