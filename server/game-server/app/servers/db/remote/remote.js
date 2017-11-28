@@ -391,6 +391,9 @@ DBRemote.prototype.getRanklist = function(cb) {
 DBRemote.prototype.changeValue = function(uid,name,value,cb) {
 	DBRemote.dbService.setPlayer(uid,name,value,cb)
 }
+DBRemote.prototype.incrbyPlayer = function(uid,name,value,cb) {
+	DBRemote.dbService.incrbyPlayer(uid,name,value,cb)
+}
 //设置战绩
 DBRemote.prototype.setHistory = function(uid,record,cb) {
 	// console.log("uid : "+uid)

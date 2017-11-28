@@ -32,48 +32,46 @@ handler.start = function(dbService) {
                     var notify = {"1" : {"name" : "","content" : ""}}
                     db.set("nn:notifys",JSON.stringify(notify));
                 }
-            })
-            dbService.db.get("nn:robot:switch",function(err,data) {
-                if(data === null){
-                    db.set("nn:robot:switch",true);
-                }
-            })            
-            dbService.db.hexists("nn:robotContorl","normal",function(err,data) {
+            })       
+            dbService.db.exists("nn:wawajiConctorl",function(err,data) {
             	if(err || !data){
                     var tmpObj = {
-                    	"normal" : true,
-                        "goldMingpai-1-gold" : 0.05,
-                        "goldMingpai-2-gold" : 0.1,
-                        "goldMingpai-3-gold" : 0.2,
-                        "goldMingpai-4-gold" : 1,
-                        "goldMingpai-5-gold" : 0.35,
-                        "goldNiuNiu-1-gold" : 0.05,
-                        "goldNiuNiu-2-gold" : 0.1,
-                        "goldNiuNiu-3-gold" : 0.2,
-                        "goldNiuNiu-4-gold" : 1,
-                        "goldNiuNiu-5-gold" : 0.35
+                        "1001" : 0.3,
+                        "1002" : 0.25,
+                        "1003" : 0.2,
+                        "1004" : 0.15,
+                        "1005" : 0.1,
+                        "1006" : 0.05
                     }
-            		dbService.db.hmset("nn:robotContorl",tmpObj,function() {})
+            		dbService.db.hmset("nn:wawajiConctorl",tmpObj,function() {})
             	}
             })
-            dbService.db.hexists("nn:inventory","normal",function(err,data) {
+            dbService.db.exists("nn:inventory",function(err,data) {
                 if(err || !data){
                     var tmpObj = {
-                        "normal" : true,
-                        "goldMingpai-1-gold" : -100000,
-                        "goldMingpai-2-gold" : -100000,
-                        "goldMingpai-3-gold" : -100000,
-                        "goldMingpai-4-gold" : -100000,
-                        "goldMingpai-5-gold" : -100000,
-                        "goldNiuNiu-1-gold" : -100000,
-                        "goldNiuNiu-2-gold" : -100000,
-                        "goldNiuNiu-3-gold" : -100000,
-                        "goldNiuNiu-4-gold" : -100000,
-                        "goldNiuNiu-5-gold" : -100000
+                        "1001" : 100,
+                        "1002" : 100,
+                        "1003" : 100,
+                        "1004" : 100,
+                        "1005" : 100,
+                        "1006" : 100
                     }
                     dbService.db.hmset("nn:inventory",tmpObj,function() {})
                 }
-            })            
+            })
+            dbService.db.exists("nn:consume",function(err,data) {
+                if(err || !data){
+                    var tmpObj = {
+                        "1001" : 10,
+                        "1002" : 20,
+                        "1003" : 30,
+                        "1004" : 40,
+                        "1005" : 50,
+                        "1006" : 60
+                    }
+                    dbService.db.hmset("nn:consume",tmpObj,function() {})
+                }
+            })                    
 		})
 	})
 }
