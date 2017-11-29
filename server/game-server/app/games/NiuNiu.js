@@ -296,7 +296,9 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       bonusPool : bonusPool,
       basicType : room.basicType,
       playerNumber : room.GAME_PLAYER,
-      special : room.special
+      special : room.special,
+      waitMode : room.waitMode,
+      halfwayEnter : room.waitMode
     }
     return notify
   }

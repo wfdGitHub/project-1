@@ -1088,7 +1088,9 @@ var MING_CARD_NUM = 4               //明牌数量
         robState : robState,
         allowAllin : allowAllin,
         playerNumber : room.GAME_PLAYER,
-        special : room.special
+        special : room.special,
+        waitMode : room.waitMode,
+        halfwayEnter : room.waitMode        
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER

@@ -1035,7 +1035,9 @@ var MING_CARD_NUM = 3               //明牌数量
         basic : room.basic,
         maxRound : room.maxRound,
         stuffyRound : room.stuffyRound,
-        playerNumber : room.GAME_PLAYER
+        playerNumber : room.GAME_PLAYER,
+        waitMode : room.waitMode,
+        halfwayEnter : room.waitMode        
       }
       return notify
     }
