@@ -57,7 +57,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 			local.leave(uid,cb)
 		return
 		case "catch":
-			local.catch(uid,cb)
+			local.catch(uid,params.target,cb)
 		return
 		default : 
 			cb(false)
@@ -117,7 +117,7 @@ local.leaveRoom = function(uid) {
 }
 
 //抓娃娃
-local.catch = function(uid,cb) {
+local.catch = function(uid,target,cb) {
 	var self = this
 	var roomId = GameRemote.userMap[uid]
 	if(!roomId){
@@ -196,7 +196,7 @@ local.catch = function(uid,cb) {
 		function() {
 			//计算抓中概率
 			var tmpRand = Math.random()
-			if(tmpRand < RoomRand){
+			if(target === true && tmpRand < RoomRand){
 				//抓中
 				GameRemote.app.rpc.db.remote.addItem(null,uid,roomId,function(flag) {
 					if(flag){
