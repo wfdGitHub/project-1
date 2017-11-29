@@ -105,7 +105,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       return
     }
     if(param.special === true){
-      logic = require("./logic/specialNiuNiuLogic.js")
+      logic = require("./logic/SpecialNiuNiuLogic.js")
     }
     frame.start(param.waitMode)
     room.waitMode = param.waitMode
