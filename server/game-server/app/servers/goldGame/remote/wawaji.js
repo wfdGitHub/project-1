@@ -198,7 +198,7 @@ local.catch = function(uid,target,cb) {
 			var tmpRand = Math.random()
 			if(target === true && tmpRand < RoomRand){
 				//抓中
-				GameRemote.app.rpc.db.remote.addItem(null,uid,roomId,function(flag) {
+				GameRemote.app.rpc.db.remote.addItem(null,uid,roomId,1,function(flag) {
 					if(flag){
 						GameRemote.dbService.db.hincrby("nn:inventory",roomId,-1,function(err){})						
 					}

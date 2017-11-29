@@ -43,33 +43,40 @@
       pomelo.on("close",function(data) {
         console.log("close")
       })
-
+      //获取房间信息
+      var wawaGetRoom = function() {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "getRoomInfo"}, function(data) {
+              console.log(data)
+            }
+          );
+      }      
+      //加入一个房间
       var wwjoin = function(roomId) {
           pomelo.request("connector.entryHandler.sendData", {"code" : "joinRoom","params" : {"roomId" : roomId}}, function(data) {
              console.log(data)
             }
           );
       }
-
+      //离开一个房间，离线会自动离开房间
       var wwleave = function() {
           pomelo.request("connector.entryHandler.sendData", {"code" : "leave"}, function(data) {
               console.log(data)
             }
           );
       }
-
+      //抓娃娃 target表示有没有抓中，未抓中则必定失败
       var wawaCatch = function() {
-          pomelo.request("connector.entryHandler.sendData", {"code" : "catch"}, function(data) {
+          pomelo.request("connector.entryHandler.sendData", {"code" : "catch","target" : true}, function(data) {
               console.log(data)
             }
           );
       }
-
-      var wawaGetRoom = function() {
-          pomelo.request("connector.entryHandler.sendData", {"code" : "getRoomInfo"}, function(data) {
+      //获取每日奖励
+      var dayAward = function() {
+          pomelo.request("connector.award.dayAward", {}, function(data) {
               console.log(data)
             }
-          );
+          );        
       }
       var send = function(code,msg) {
           pomelo.request("connector.entryHandler.sendData", {"code" : code,"params" : msg}, function(data) {

@@ -53,39 +53,36 @@ var createAccount = function(result,cb) {
 		DBRemote.dbService.setPlayer(uid,"signature","玩家很懒什么都没有留下")
 		DBRemote.dbService.setPlayer(uid,"agencyId",false)
 
+		//获取时间
+  		var dateString = local.getDateString()
+
 		var history = {}
 		history.allGames = 0
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
 		//每日刷新数据
 		var refreshList = {}
-		refreshList.lottoTime = 0 					//抽奖
-		refreshList.lottoCount = 0
-		refreshList.bankruptTime = 0				//破产保护
-		refreshList.bankruptTimeCount = 0
-		refreshList.dayGoldTime = 0					//每日金币输赢
-		refreshList.dayGoldValue = 0
-		refreshList.charmTime = 0 					//今日魅力值
-		refreshList.charmValue = 0
-		refreshList.shareTime = 0 					//分享领取奖励
-		refreshList.shareCount = 0
+		refreshList.dayAwardCount = 1 					//今日可领取每日奖励次数
+		refreshList.dayAwardUse = 0 					//今日已使用领取奖励次数
+		refreshList.dayAwardTime = dateString 			//每日奖励基准日期
+		refreshList.dayAwardList = {} 					//每日奖励领取记录
+		refreshList.time = dateString          	 		//最后更新时间
+		// refreshList.lottoTime = 0 					//抽奖
+		// refreshList.lottoCount = 0
+		// refreshList.bankruptTime = 0				//破产保护
+		// refreshList.bankruptTimeCount = 0
+		// refreshList.dayGoldTime = 0					//每日金币输赢
+		// refreshList.dayGoldValue = 0
+		// refreshList.charmTime = 0 					//今日魅力值
+		// refreshList.charmValue = 0
+		// refreshList.shareTime = 0 					//分享领取奖励
+		// refreshList.shareCount = 0
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
-		//连续登陆记录
-  		var myDate = new Date()
-  		var month = myDate.getMonth()
-  		var date = myDate.getDate()
-  		if(month < 10){
-  			month = "0"+month
-  		}
-  		if(date < 10){
-  			date = "0"+date
-  		}
-  		var dateString = parseInt(""+myDate.getFullYear() + month + date)
-		var  loginRecord = {}
-		loginRecord.recordDate = dateString
-		loginRecord.loginDay = 1
-		loginRecord.loginMax = 1
-		DBRemote.dbService.setPlayerObject(uid,"loginRecord",loginRecord)
+		// //连续登陆记录
+		// var  loginRecord = {}
+		// loginRecord.recordDate = dateString
+		// loginRecord.lastRecord = 0
+		// DBRemote.dbService.setPlayerObject(uid,"loginRecord",loginRecord)
 		//充值记录
 		var rechargeRecord = {}
 		rechargeRecord.allValue = 0
@@ -96,8 +93,8 @@ var createAccount = function(result,cb) {
 		var mailList = []
 		var mailInfo = {
 			"id" : new Date().getTime() + "" + Math.floor(Math.random() * 100000),
-			"title" : "欢迎您来到欢乐赢棋牌",
-			"content" : "欢迎您来到欢乐赢棋牌，这是一个高逼格的斗牛游戏，祝您玩得开心！",
+			"title" : "欢迎夹娃娃",
+			"content" : "欢迎夹娃娃",
 			"affix" : false,
 			"time" : new Date().getTime(),
 			"addresser" : "运营团队",
@@ -107,12 +104,6 @@ var createAccount = function(result,cb) {
 		}
 		mailList.push(mailInfo)
 		DBRemote.dbService.setPlayerObject(uid,"mailList",mailList)
-		//赠送记录
-		var giveRecord = {
-			"sendRecord" : [],
-			"receiveRecord" : []
-		}
-		DBRemote.dbService.setPlayerObject(uid,"giveRecord",giveRecord)
 		//背包
 		var bagList = []
 		DBRemote.dbService.setPlayerObject(uid,"bagList",bagList)
@@ -120,14 +111,16 @@ var createAccount = function(result,cb) {
 	})
 }
 
-DBRemote.prototype.addItem = function(uid,ItemId,cb) {
-	if(!itemConf[ItemId]){
+DBRemote.prototype.addItem = function(uid,itemId,value,cb) {
+	if(!itemConf[itemId]){
 		console.log("添加失败，错误的物品ID")
 		cb(false)
 		return
 	}
 	DBRemote.dbService.getPlayerObject(uid,"bagList",function(data) {
-		data.push(itemConf[ItemId])
+		for(var i = 0; i < value;i++){
+			data.push(itemConf[itemId])
+		}
 		DBRemote.dbService.setPlayerObject(uid,"bagList",data)
 		cb(true)
 	})

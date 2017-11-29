@@ -74,9 +74,9 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd14 = "nn:acc:"+uid+":"+"signature" 		    //签名档
 	var cmd15 = "nn:acc:"+uid+":"+"contorl" 			//特殊控制
 	var cmd16 = "nn:acc:"+uid+":"+"agencyId" 			//代理ID
+	var notify = {}
 	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,cmd13,cmd14,cmd15,cmd16,function(err,data) {
 		if(!err){
-			var notify = {}
 			notify["diamond"] = parseInt(data[0])
 			notify["uid"] = parseInt(data[1])
 			notify["nickname"] = data[2]
@@ -94,7 +94,22 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["contorl"] = data[14] || 0
 			notify["agencyId"] = data[15]
 			notify["playerId"] = uid
-			cb(notify)
+			//刷新refreshList
+			var dateString = local.getDateString()
+			if(notify["refreshList"].time < dateString){
+				notify["refreshList"].time = dateString
+				notify["refreshList"].dayAwardCount = 1
+				notify["refreshList"].dayAwardUse = 0
+				if(dateString >= notify["refreshList"].dayAwardTime + 7){
+					notify["refreshList"].dayAwardTime = dateString
+					notify["refreshList"].dayAwardList = {}
+				}
+				dbService.setPlayerObject(uid,"refreshList",notify["refreshList"],function() {
+					cb(notify)
+				})
+			}else{
+				cb(notify)
+			}
 		}else{
 			cb(false)
 		}
@@ -246,7 +261,7 @@ var deepCopy = function(source) {
   return result;
 }
 
-var getDateString = function() {
+local.getDateString = function() {
 	var myDate = new Date()
 	var month = myDate.getMonth()
 	var date = myDate.getDate()
