@@ -1,7 +1,7 @@
 //var gameHandle = require('../handler/handle');
 var ROOM_ALL_AMOUNT = 20000			   //总房间数量
 var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
-
+var AGENCY_ROOM_COUNT = 99  		   //代开房显示数量
 module.exports = function(app) {
   return new GameService(app);
 };
@@ -81,7 +81,7 @@ GameService.setAgencyRoom = function(uid,agencyRoom) {
 		agencyInfo = {}
 		agencyInfo.List = {}
 	}
-	for(var i = 9;i > 0;i--){
+	for(var i = AGENCY_ROOM_COUNT;i > 0;i--){
 		if(agencyInfo.List[i - 1]){
 			agencyInfo.List[i] = agencyInfo.List[i - 1]
 		}
@@ -93,7 +93,7 @@ GameService.setAgencyRoom = function(uid,agencyRoom) {
 
 GameService.updateAgencyRoom = function(agencyId,agencyRoom) {
 	var agencyInfo = GameService.agencyList[agencyId]
-	for(var i = 9;i >= 0;i--){
+	for(var i = AGENCY_ROOM_COUNT;i >= 0;i--){
 		if(agencyInfo.List[i]){
 			//找到并修改代开房记录
 			if(agencyInfo.List[i].roomId === agencyRoom.roomId){
@@ -114,7 +114,7 @@ GameService.getAgencyRoom = function(agencyId) {
 //从房间ID获取代开房信息
 GameService.getAgencyRoomByID = function(agencyId,roomId) {
 	var agencyInfo = GameService.getAgencyRoom(agencyId)
-	for(var i = 0;i < 10;i++){
+	for(var i = 0;i <= AGENCY_ROOM_COUNT;i++){
 		if(agencyInfo.List[i]){
 			if(agencyInfo.List[i].roomId === roomId){
 				return agencyInfo.List[i]
@@ -129,7 +129,7 @@ GameService.setAgencyRoomByID = function(agencyId,roomId,agencyRoom) {
 	// console.log(GameService.agencyList[agencyId])
 	// console.log("setAgencyRoomByID  roomId : "+roomId)
 	var agencyInfo = GameService.agencyList[agencyId]
-	for(var i = 9;i >= 0;i--){
+	for(var i = AGENCY_ROOM_COUNT;i >= 0;i--){
 		if(agencyInfo.List[i]){
 			if(agencyInfo.List[i].roomId === roomId && agencyInfo.List[i].beginTime == agencyRoom.beginTime){
 				agencyInfo.List[i] = agencyRoom
