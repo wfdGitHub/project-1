@@ -304,7 +304,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 			httpConf.coinChangeRecord(agencyId,6,diamond)
 		}
 	}
-	if(GameRemote.roomList[roomId].isRecord == true){
+	if(GameRemote.roomList[roomId].isBegin()){
 		//代开房记录
 		if(agencyId){
 			GameRemote.app.rpc.db.remote.addAgencyRecord(null,agencyId,diamond,roomType,playerNumber,maxGameNumber,function(){})
