@@ -31,7 +31,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
   var readyCount = 0                   //游戏准备人数
-  var gameState = conf.GS_FREE              //游戏状态
+  var gameState = conf.GS_FREE         //游戏状态
   var banker = -1                      //庄家椅子号
   var oldBanker = banker               //上一局庄家
   var roomHost = -1                    //房主椅子号
@@ -104,6 +104,9 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       cb(false)
       return
     }
+    if(param.special === true){
+      logic = require("./logic/SpecialNiuNiuLogic.js")
+    }
     frame.start(param.waitMode)
     room.waitMode = param.waitMode
     if(param.halfwayEnter === false){
@@ -126,6 +129,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxGameNumber = param.gameNumber              //游戏最大局数
     room.consumeMode = param.consumeMode               //消耗模式
     room.cardMode = param.cardMode                     //明牌模式
+    room.special = param.special                         //特殊牌型
     if(room.gameMode == conf.MODE_GAME_SHIP || room.gameMode == conf.MODE_GAME_BULL){
       room.bankerMode = conf.MODE_BANKER_NONE
     }
@@ -291,7 +295,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       betList : betList,
       bonusPool : bonusPool,
       basicType : room.basicType,
-      playerNumber : room.GAME_PLAYER
+      playerNumber : room.GAME_PLAYER,
+      special : room.special,
+      waitMode : room.waitMode,
+      halfwayEnter : room.waitMode
     }
     return notify
   }
@@ -377,11 +384,11 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
-    }while(player[banker].isActive == false)
+    }while(player[banker].isActive == false || player[banker].isOnline == false)
     bonusPool = (room.GAME_PLAYER - 1) * 30
     player[banker].score -= bonusPool
     bankerTime = 0
-    log("banker change : "+banker)      
+    log("banker change : "+banker)
     var notify = {
       "cmd" : "downBanker",
       "chair" : chair,
@@ -853,7 +860,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           }          
         }
       }
-
       //明牌模式发牌
       if(room.cardMode == conf.MODE_CARD_SHOW){
         var notify = {
@@ -1011,7 +1017,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             }else{
               do{
                   banker = (banker + 1)%GAME_PLAYER
-              }while(player[banker].isActive == false || player[banker].isReady == false)
+              }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
             }
           }
           break
@@ -1399,7 +1405,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       "bonusPool" : bonusPool,
       "waitMode" : room.waitMode,
       "gameMode" : room.gameMode,
-      "cardHistory" : JSON.stringify(cardHistory)
+      "cardHistory" : JSON.stringify(cardHistory),
+      "special" : room.special
     }
     setRoomDBObj(room.roomId,dbObj,function() {
       console.log("end backups=====")
@@ -1467,7 +1474,14 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     bonusPool = parseInt(data.bonusPool),
     room.gameMode = parseInt(data.gameMode)
     cardHistory = JSON.parse(data.cardHistory)
+    room.special = data.special
     frame.start(room.waitMode)
+    if(room.special === true || room.special === "true"){
+      room.special = true
+      logic = require("./logic/SpecialNiuNiuLogic.js")
+    }else{
+      room.special = false
+    }
     for(var index in player){
       player[index].isOnline = false
       robState[index] = 0

@@ -263,7 +263,7 @@ var gemeOver = function(roomId,players,flag,cb) {
 	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	var playerNumber = GameRemote.roomList[roomId].GAME_PLAYER
 	var consumeMode = GameRemote.roomList[roomId].consumeMode
-	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
+	var gameMode = GameRemote.roomList[roomId].gameMode
 	var diamond = diamondConf.getNeedDiamond(roomType,playerNumber,consumeMode,maxGameNumber)	
 	//扣除钻石
 	var agencyId = GameRemote.roomList[roomId].agencyId
@@ -313,7 +313,11 @@ var gemeOver = function(roomId,players,flag,cb) {
 			httpConf.coinChangeRecord(agencyId,6,diamond)
 		}
 	}
-	if(GameRemote.roomList[roomId].isRecord == true){
+	if(GameRemote.roomList[roomId].isBegin()){
+		//代开房记录
+		if(agencyId){
+			GameRemote.app.rpc.db.remote.addAgencyRecord(null,agencyId,diamond,gameMode,playerNumber,maxGameNumber,function(){})
+		}
 		//记录战绩 
 		var date = new Date()
 		var record = {}
@@ -369,7 +373,8 @@ var gemeOver = function(roomId,players,flag,cb) {
 			"maxBet" : GameRemote.roomList[roomId].maxBet,
 			"maxRound" : GameRemote.roomList[roomId].maxRound,
 			"stuffyRound" : GameRemote.roomList[roomId].stuffyRound,
-			"playerNumber" : GameRemote.roomList[roomId].GAME_PLAYER
+			"playerNumber" : GameRemote.roomList[roomId].GAME_PLAYER,
+			"specia" : GameRemote.roomList[roomId].specia
 		}
 		info = "\r\n"
 		info += "roomId  "+roomId+"   gameMode : "+streamData.gameMode+" :\r\n"

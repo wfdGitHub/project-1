@@ -149,6 +149,9 @@ var MING_CARD_NUM = 4               //明牌数量
         log("newRoom error   param.basic : "+param.basic)
         param.basic = 1
       }
+      if(param.special === true){
+        logic = require("./logic/SpecialNiuNiuLogic.js")
+      }
       if(typeof(param.waitMode) !== "number" || param.waitMode < 0 || param.waitMode > 2){
         log("newRoom error   param.waitMode : "+param.waitMode)
         cb(false)
@@ -166,7 +169,6 @@ var MING_CARD_NUM = 4               //明牌数量
       //房间初始化
       local.init()
       basicType = param.basicType
-      room.basicType = basicType
       room.basic = param.basic
       room.state = false
       room.playerCount  = 0            //房间内玩家人数
@@ -179,44 +181,12 @@ var MING_CARD_NUM = 4               //明牌数量
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式
-      room.cardMode = param.cardMode                     //明牌模式   
+      room.cardMode = param.cardMode                     //明牌模式 
+      room.special = param.special                         //特殊牌型  
       //备份
       local.backups(function() {
         cb(true)
       })
-    }
-    room.recover = function(data) {
-      console.log("recover : ")
-      console.log(data)
-      local.init()
-      room.state = false
-      basicType = parseInt(data.basicType)
-      room.basic = parseInt(data.basic)
-      tmpGameState = parseInt(data.gameState)
-      gameState = conf.GS_RECOVER
-      room.chairMap = JSON.parse(data.chairMap)
-      roomHost = parseInt(data.roomHost)
-      banker = parseInt(data.banker)
-      room.bankerMode = parseInt(data.bankerMode)
-      room.gameNumber = parseInt(data.gameNumber)
-      room.maxGameNumber = parseInt(data.maxGameNumber)
-      room.consumeMode = parseInt(data.consumeMode)
-      room.cardMode = parseInt(data.cardMode)
-      betList = JSON.parse(data.betList)
-      player = JSON.parse(data.player)
-      result = JSON.parse(data.result)
-      room.GAME_PLAYER = parseInt(data.playerNumber)
-      GAME_PLAYER = room.GAME_PLAYER
-      room.roomType = data.roomType
-      room.agencyId = parseInt(data.agencyId)
-      room.waitMode = parseInt(data.waitMode)
-      room.maxRob = parseInt(data.maxRob)
-      cardHistory = JSON.parse(data.cardHistory)
-      frame.start(room.waitMode)
-      for(var index in player){
-        player[index].isOnline = false
-        robState[index] = 0
-      }
     }
     local.recover = function() {
       gameState = tmpGameState
@@ -1002,6 +972,7 @@ var MING_CARD_NUM = 4               //明牌数量
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
       }
+      console.log(notify)
       cb(notify)
     }
   //初始化椅子信息
@@ -1108,7 +1079,7 @@ var MING_CARD_NUM = 4               //明牌数量
         betList : betList,
         state : gameState,
         roomType : room.roomType,
-        basicType : room.basicType,
+        basicType : basicType,
         basic : room.basic,
         maxRob : room.maxRob,
         lastScore : lastScore,
@@ -1117,7 +1088,11 @@ var MING_CARD_NUM = 4               //明牌数量
         TID_SETTLEMENT : conf.TID_SETTLEMENT,
         robState : robState,
         allowAllin : allowAllin,
-        playerNumber : room.GAME_PLAYER
+        playerNumber : room.GAME_PLAYER,
+        special : room.special,
+        waitMode : room.waitMode,
+        halfwayEnter : room.waitMode,
+        bankerMode : room.bankerMode
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
@@ -1188,7 +1163,46 @@ var MING_CARD_NUM = 4               //明牌数量
       cb()
     }
   }
-
+    room.recover = function(data) {
+      console.log("recover : ")
+      console.log(data)
+      local.init()
+      room.state = false
+      basicType = parseInt(data.basicType)
+      room.basic = parseInt(data.basic)
+      tmpGameState = parseInt(data.gameState)
+      gameState = conf.GS_RECOVER
+      room.chairMap = JSON.parse(data.chairMap)
+      roomHost = parseInt(data.roomHost)
+      banker = parseInt(data.banker)
+      room.bankerMode = parseInt(data.bankerMode)
+      room.gameNumber = parseInt(data.gameNumber)
+      room.maxGameNumber = parseInt(data.maxGameNumber)
+      room.consumeMode = parseInt(data.consumeMode)
+      room.cardMode = parseInt(data.cardMode)
+      betList = JSON.parse(data.betList)
+      player = JSON.parse(data.player)
+      result = JSON.parse(data.result)
+      room.GAME_PLAYER = parseInt(data.playerNumber)
+      GAME_PLAYER = room.GAME_PLAYER
+      room.roomType = data.roomType
+      room.agencyId = parseInt(data.agencyId)
+      room.waitMode = parseInt(data.waitMode)
+      room.special = data.special
+      room.maxRob = parseInt(data.maxRob)
+      cardHistory = JSON.parse(data.cardHistory)
+      frame.start(room.waitMode)
+      if(room.special === true || room.special === "true"){
+        room.special = true
+        logic = require("./logic/SpecialNiuNiuLogic.js")
+      }else{
+        room.special = false
+      }
+      for(var index in player){
+        player[index].isOnline = false
+        robState[index] = 0
+      }
+    }
     local.backups = function(cb){
       console.log("begin backups=====")
       var dbObj = {
@@ -1211,7 +1225,8 @@ var MING_CARD_NUM = 4               //明牌数量
         "agencyId" : room.agencyId,
         "waitMode" : room.waitMode,
         "maxRob" : room.maxRob,
-        "cardHistory" : JSON.stringify(cardHistory)
+        "cardHistory" : JSON.stringify(cardHistory),
+        "special" : room.special
       }
       setRoomDBObj(room.roomId,dbObj,function() {
         console.log("end backups=====")
