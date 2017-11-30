@@ -81,7 +81,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     "1" : {"1" : 1,"2" : 5,"3" : 10,"4" : 20}
   }
   //斗公牛模式积分池
-  var bonusPool = (room.GAME_PLAYER - 1) * 30
+  var bonusPool = (room.GAME_PLAYER - 1) * 20
   var robState,betList
   local.newRoom = function(uid,sid,param,cb) {
     log("newRoom"+uid)
@@ -391,7 +391,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     do{
         banker = (banker + 1)%GAME_PLAYER
     }while(player[banker].isActive == false)
-    bonusPool = (room.GAME_PLAYER - 1) * 30
+    bonusPool = (room.GAME_PLAYER - 1) * 20
     player[banker].score -= bonusPool
     bankerTime = 0
     log("banker change : "+banker)      
@@ -510,7 +510,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
         cb(false)
         return        
       }
-      var tmpMaxbet = Math.floor(bonusPool / ((room.GAME_PLAYER - 1) * 2) )
+      var tmpMaxbet = Math.floor((bonusPool / ((room.GAME_PLAYER - 1) * 2)) * 1.5)
       var tmpMinbet = Math.floor(tmpMaxbet / 5)
       if(tmpMaxbet > 40){
         tmpMaxbet = 40
@@ -699,7 +699,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
           "oldBankerScore" : player[banker].score
         }
         if(room.runCount == 0){
-          bonusPool = (room.GAME_PLAYER - 1) * 30
+          bonusPool = (room.GAME_PLAYER - 1) * 20
           player[banker].score -= bonusPool
           notify.change = true
           notify.oldBankerScore = player[banker].score
@@ -713,7 +713,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
             do{
                 banker = (banker + 1)%GAME_PLAYER
             }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
-            bonusPool = (room.GAME_PLAYER - 1) * 30
+            bonusPool = (room.GAME_PLAYER - 1) * 20
             player[banker].score -= bonusPool
             player[banker].isBanker = true
             bankerTime = 0
@@ -1290,7 +1290,7 @@ module.exports.createRoom = function(roomId,channelService,playerNumber,gameBegi
     betList = new Array(GAME_PLAYER)
     betAmount = 0
     //斗公牛模式积分池
-    bonusPool = (room.GAME_PLAYER - 1) * 30
+    bonusPool = (room.GAME_PLAYER - 1) * 20
     //玩家属性
     player = {}
     for(var i = 0;i < GAME_PLAYER;i++){
