@@ -1,3 +1,4 @@
+//四咖
 var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
