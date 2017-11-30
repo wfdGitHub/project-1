@@ -908,7 +908,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           if(player[i].isReady && player[i].isActive && i != banker && betList[i] == 0){
             var tmpBet = 1
             if(room.gameMode === conf.MODE_GAME_BULL){
-              tmpBet = Math.floor(bonusPool / ((room.GAME_PLAYER - 1) * 2) / 5)
+              tmpBet = Math.floor((bonusPool / ((room.GAME_PLAYER - 1) * 2) * 1.5) / 5)
               if(tmpBet < 1){
                 tmpBet = 1
               }
