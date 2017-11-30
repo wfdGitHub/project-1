@@ -31,7 +31,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var local = {}                       //私有方法
   var player = {}                      //玩家属性
   var readyCount = 0                   //游戏准备人数
-  var gameState = conf.GS_FREE              //游戏状态
+  var gameState = conf.GS_FREE         //游戏状态
   var banker = -1                      //庄家椅子号
   var oldBanker = banker               //上一局庄家
   var roomHost = -1                    //房主椅子号
@@ -384,11 +384,11 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     //换庄
     do{
         banker = (banker + 1)%GAME_PLAYER
-    }while(player[banker].isActive == false)
+    }while(player[banker].isActive == false || player[banker].isOnline == false)
     bonusPool = (room.GAME_PLAYER - 1) * 30
     player[banker].score -= bonusPool
     bankerTime = 0
-    log("banker change : "+banker)      
+    log("banker change : "+banker)
     var notify = {
       "cmd" : "downBanker",
       "chair" : chair,
@@ -1017,7 +1017,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             }else{
               do{
                   banker = (banker + 1)%GAME_PLAYER
-              }while(player[banker].isActive == false || player[banker].isReady == false)
+              }while(player[banker].isActive == false || player[banker].isReady == false || player[banker].isOnline == false)
             }
           }
           break
