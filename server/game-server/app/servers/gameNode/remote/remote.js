@@ -255,7 +255,6 @@ var gemeOver = function(roomId,players,flag,cb) {
 	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	var playerNumber = GameRemote.roomList[roomId].GAME_PLAYER
 	var consumeMode = GameRemote.roomList[roomId].consumeMode
-	var maxGameNumber = GameRemote.roomList[roomId].maxGameNumber
 	var diamond = diamondConf.getNeedDiamond(roomType,playerNumber,consumeMode,maxGameNumber)	
 	//扣除钻石
 	var agencyId = GameRemote.roomList[roomId].agencyId
@@ -306,6 +305,10 @@ var gemeOver = function(roomId,players,flag,cb) {
 		}
 	}
 	if(GameRemote.roomList[roomId].isRecord == true){
+		//代开房记录
+		if(agencyId){
+			GameRemote.app.rpc.db.remote.addAgencyRecord(null,agencyId,diamond,roomType,playerNumber,maxGameNumber,function(){})
+		}
 		//记录战绩 
 		var date = new Date()
 		var record = {}

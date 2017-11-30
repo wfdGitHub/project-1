@@ -112,7 +112,7 @@ GameRemote.prototype.recover = function(cb) {
 
 //获取代开房数据
 GameRemote.prototype.getAgencyRoom = function(uid,cb) {
-	var data = GameRemote.GameService.getAgencyRoom(uid)
+	var data = GameRemote.GameService.getAgencyRoom(uid) || {}
 	//当前玩家数据
 	if(data){
 		for(var index in data.List){
@@ -125,9 +125,12 @@ GameRemote.prototype.getAgencyRoom = function(uid,cb) {
 			}
 		}
 	}
-	if(cb){
-		cb(data)
-	}
+	this.app.rpc.db.remote.getPlayerObject(null,uid,"refreshList",function(refreshList) {
+		data.refreshList = refreshList
+		if(cb){
+			cb(data)
+		}
+	})
 }
 
 GameRemote.prototype.onFrame = function(uid, sid,code,params,cb) {

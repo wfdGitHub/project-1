@@ -5,7 +5,7 @@ module.exports = function(app) {
 var dbService = function(app) {
 	this.app = app
 }
-
+var local = {}
 dbService.prototype.start = function(cb){
 	dbConfig.start(dbService)
 	this.app.set("dbService",dbService)	
@@ -66,7 +66,8 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 	var cmd10 = "nn:acc:"+uid+":"+"gold"
 	var cmd11 = "nn:acc:"+uid+":"+"contorl"
 	var cmd12 = "nn:acc:"+uid+":"+"clubLimit"
-	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,function(err,data) {
+	var cmd13 = "nn:acc:"+uid+":"+"refreshList"
+	dbService.db.mget(cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12,cmd13,function(err,data) {
 		if(!err){
 			var notify = {}
 			notify["diamond"] = data[0]
@@ -81,8 +82,28 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["gold"] = data[9] || 0
 			notify["contorl"] = data[10] || 0
 			notify["clubLimit"] = data[11] || 0
+			notify["refreshList"] = data[12]
 			notify["playerId"] = uid
-			cb(notify)
+			//更新每日数据
+			var dateString = local.getDateString()
+			if(notify["refreshList"].time < dateString){
+				notify["refreshList"].time = dateString
+				var list = {}
+				list[dateString] = {}
+				list[dateString].useDiamond = 0
+				if(notify["refreshList"].agencyStatistics[dateString - 1]){
+					list[dateString - 1] = notify["refreshList"].agencyStatistics[dateString - 1]
+				}
+				if(notify["refreshList"].agencyStatistics[dateString - 2]){
+					list[dateString - 2] = notify["refreshList"].agencyStatistics[dateString - 2]
+				}
+				notify["refreshList"].agencyStatistics = list
+				dbService.setPlayer(uid,"refreshList",notify["refreshList"],function() {
+					cb(notify)
+				})
+			}else{
+				cb(notify)
+			}
 		}else{
 			cb(false)
 		}
@@ -91,7 +112,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 
 dbService.setPlayer = function(uid,name,value,cb) {
 	var cmd = "nn:acc:"+uid+":"+name
-	console.log(cmd + "  data : "+value)	
+	console.log(cmd + "  data : "+value)
 	dbService.db.set(cmd,value,function(flag) {
 		if(cb){
 			if(!flag){
@@ -151,7 +172,6 @@ dbService.getPlayerObject = function(uid,name,cb) {
 			if(cb){
 				cb(false)
 			}
-
 		}else{
 			if(cb){
 				data = JSON.parse(data)
@@ -212,4 +232,18 @@ dbService.setUserId = function(uid,cb) {
 	        cb(playerId)
 		}
 	})
+}
+
+local.getDateString = function() {
+	var myDate = new Date()
+	var month = myDate.getMonth()
+	var date = myDate.getDate()
+	if(month < 10){
+		month = "0"+month
+	}
+	if(date < 10){
+		date = "0"+date
+	}
+	var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	return dateString
 }

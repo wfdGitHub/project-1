@@ -14,6 +14,8 @@ var DBRemote = function(app) {
     }
 }
 
+var local = {}
+
 var createAccount = function(result,cb) {
 	DBRemote.dbService.setUserId(result.unionid,function(playerId) {
 		var uid = playerId
@@ -34,9 +36,14 @@ var createAccount = function(result,cb) {
 		history.List = {}
 		DBRemote.dbService.setPlayerObject(uid,"history",history)
 		//每日刷新数据
+		var dateString = local.getDateString()
 		var refreshList = {}
+		refreshList.time =  dateString 				//最后更新时间
 		refreshList.shareTime = 0 					//分享领取奖励
-		refreshList.shareCount = 0 					
+		refreshList.shareCount = 0
+		refreshList.agencyStatistics = {} 			//代开房统计
+		refreshList.agencyStatistics[dateString] = {}
+		refreshList.agencyStatistics[dateString].useDiamond = 0
 		DBRemote.dbService.setPlayerObject(uid,"refreshList",refreshList)
         var tmpObj = {
         	"switch" : "false"
@@ -205,7 +212,26 @@ DBRemote.prototype.checkClubLimit = function(uid,playerId,cb) {
 		})		
 	})
 }
-
+DBRemote.prototype.addAgencyRecord = function(uid,diamond,roomType,playerNumber,gameNumber,cb) {
+	DBRemote.dbService.getPlayerObject(uid,"refreshList",function(data) {
+		if(!data["agencyStatistics"][data.time][roomType]){
+			data["agencyStatistics"][data.time][roomType] = {}
+		}
+		if(!data["agencyStatistics"][data.time][roomType][playerNumber]){
+			data["agencyStatistics"][data.time][roomType][playerNumber] = {}
+		}
+		if(!data["agencyStatistics"][data.time][roomType][playerNumber][gameNumber]){
+			data["agencyStatistics"][data.time][roomType][playerNumber][gameNumber] = 0
+		}
+		data["agencyStatistics"][data.time][roomType][playerNumber][gameNumber]++
+		data["agencyStatistics"][data.time].useDiamond += diamond
+		DBRemote.dbService.setPlayerObject(uid,"refreshList",data,function(){
+			if(cb){
+				cb()
+			}
+		})
+	})
+}
 
 DBRemote.prototype.setValue = function(uid,name,value,cb) {
 	//console.log("uid : "+uid+" name : "+name+ " value : "+value)
@@ -318,7 +344,9 @@ DBRemote.prototype.setHistory = function(uid,record,cb) {
 DBRemote.prototype.getValue = function(uid,name,cb) {
 	DBRemote.dbService.getPlayer(uid,name,cb)
 }
-
+DBRemote.prototype.getPlayerObject = function(uid,name,cb) {
+	DBRemote.dbService.getPlayerObject(uid,name,cb)
+}
 
 //检查游戏开关
 DBRemote.prototype.checkGameSwitch = function(type,cb) {
@@ -334,4 +362,18 @@ DBRemote.prototype.checkGameSwitch = function(type,cb) {
 			cb(true)
 		}
 	})
+}
+
+local.getDateString = function() {
+	var myDate = new Date()
+	var month = myDate.getMonth()
+	var date = myDate.getDate()
+	if(month < 10){
+		month = "0"+month
+	}
+	if(date < 10){
+		date = "0"+date
+	}
+	var dateString = parseInt(""+myDate.getFullYear() + month + date)
+	return dateString
 }

@@ -1091,7 +1091,7 @@ var MING_CARD_NUM = 4               //明牌数量
         special : room.special,
         waitMode : room.waitMode,
         halfwayEnter : room.waitMode,
-        bankerMode : room.bankerMode    
+        bankerMode : room.bankerMode
       }
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
