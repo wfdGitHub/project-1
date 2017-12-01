@@ -41,7 +41,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   room.GAME_PLAYER = playerNumber      //游戏人数
   var GAME_PLAYER = playerNumber
   //游戏属性
-  
+  var isChange = false                 //是否换庄，换庄为true
   var cards = {}                       //牌组
   var cardCount = 0                    //卡牌剩余数量
   for(var i = 1;i <= 13;i++){
@@ -385,6 +385,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     do{
         banker = (banker + 1)%GAME_PLAYER
     }while(player[banker].isActive == false || player[banker].isOnline == false)
+    isChange = true
     bonusPool = (room.GAME_PLAYER - 1) * 20
     player[banker].score -= bonusPool
     bankerTime = 0
@@ -692,6 +693,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           "oldBanker" : banker,
           "oldBankerScore" : player[banker].score
         }
+        if(isChange){
+          noyify.change = true
+        }
+        isChange = false
         if(room.runCount == 0){
           bonusPool = (room.GAME_PLAYER - 1) * 20
           player[banker].score -= bonusPool
