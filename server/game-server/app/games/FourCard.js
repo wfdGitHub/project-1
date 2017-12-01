@@ -15,7 +15,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var gameDB = db
   var room = {}
   room.roomId = roomId
-  room.roomType = "zhajinniu"
+  room.roomType = "sika"
   room.isRecord = true
   room.channel = channelService.getChannel(roomId,true)
   room.handle = {}   //玩家操作
@@ -62,7 +62,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
    //房间初始化
    local.init = function() {
       //console.log("enter init=====================================")
-      room.gameMode = 0                    //游戏模式
+      room.gameMode = conf.MODE_GAME_FOURCARD//游戏模式
       room.gameNumber = 0                  //游戏局数
       room.maxGameNumber = 0               //游戏最大局数
       room.consumeMode = 0                 //消耗模式
@@ -151,7 +151,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       room.chairMap = {}               //玩家UID与椅子号映射表
       roomHost = 0                     //房主椅子号
       banker = roomHost                //庄家椅子号
-      room.gameMode = param.gameMode                     //游戏模式
       room.gameNumber = param.gameNumber                 //游戏局数
       room.maxGameNumber = param.gameNumber              //游戏最大局数
       room.consumeMode = param.consumeMode               //消耗模式

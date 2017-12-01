@@ -103,12 +103,12 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       var cardHistory = {}
       for(var i = 0;i < GAME_PLAYER;i++){
         cardHistory[i] = []
-      }      
+      }
          //console.log("enter init=====================================222")
         //channel清空
         channelService.destroyChannel(roomId)
         room.channel = channelService.getChannel(roomId,true)
-        //console.log(room.channel)   
+        //console.log(room.channel)
       }
       local.newRoom = function(uid,sid,param,cb) {
       //console.log("newRoom")
@@ -118,12 +118,12 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         log("newRoom error   param.consumeMode : "+param.consumeMode)
         cb(false)
         return
-      } 
+      }
       if(!param.gameNumber || typeof(param.gameNumber) !== "number"){
         log("newRoom error   param.gameNumber : "+param.gameNumber)
         cb(false)
         return
-      }    
+      }
       if(!param.cardMode || typeof(param.cardMode) !== "number" || param.cardMode > 2 || param.cardMode < 0){
         log("newRoom error   param.cardMode : "+param.cardMode)
         cb(false)

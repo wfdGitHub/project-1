@@ -52,7 +52,9 @@ conf.MODE_GAME_BULL   = 3              //斗公牛模式
 conf.MODE_GAME_SHIP   = 4              //开船模式
 conf.MODE_GAME_ZHAJINNIU = 5		   //炸金牛
 conf.MODE_GAME_CRAZE = 6 			   //疯狂模式
-conf.MODE_GAME_SANKUNG = 7 	   //三公
+conf.MODE_GAME_SANKUNG = 7 			   //三公
+conf.MODE_GAME_ZHAJINHUA = 8 		   //炸金花
+conf.MODE_GAME_FOURCARD = 9 		   //四咖
 //定庄模式
 conf.MODE_BANKER_ROB   = 1              //随机抢庄
 conf.MODE_BANKER_HOST  = 2              //房主做庄
