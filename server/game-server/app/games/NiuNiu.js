@@ -298,7 +298,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       playerNumber : room.GAME_PLAYER,
       special : room.special,
       waitMode : room.waitMode,
-      halfwayEnter : room.waitMode
+      halfwayEnter : room.halfwayEnter
     }
     return notify
   }

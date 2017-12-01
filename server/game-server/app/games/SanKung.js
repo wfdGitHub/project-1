@@ -982,7 +982,7 @@ var MING_CARD_NUM = 2               //明牌数量
         basicType : room.basicType,
         playerNumber : room.GAME_PLAYER,
         waitMode : room.waitMode,
-        halfwayEnter : room.waitMode        
+        halfwayEnter : room.halfwayEnter        
       }
       return notify
     }

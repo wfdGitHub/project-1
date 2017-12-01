@@ -1090,7 +1090,7 @@ var MING_CARD_NUM = 4               //明牌数量
         playerNumber : room.GAME_PLAYER,
         special : room.special,
         waitMode : room.waitMode,
-        halfwayEnter : room.waitMode,
+        halfwayEnter : room.halfwayEnter,
         bankerMode : room.bankerMode
       }
       if(notify.state === conf.GS_NONE){
