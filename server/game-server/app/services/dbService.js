@@ -82,7 +82,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 			notify["gold"] = data[9] || 0
 			notify["contorl"] = data[10] || 0
 			notify["clubLimit"] = data[11] || 0
-			notify["refreshList"] = data[12]
+			notify["refreshList"] = JSON.parse(data[12])
 			notify["playerId"] = uid
 			//更新每日数据
 			var dateString = local.getDateString()
@@ -98,7 +98,7 @@ dbService.getPlayerInfoByUid = function(uid,cb) {
 					list[dateString - 2] = notify["refreshList"].agencyStatistics[dateString - 2]
 				}
 				notify["refreshList"].agencyStatistics = list
-				dbService.setPlayer(uid,"refreshList",notify["refreshList"],function() {
+				dbService.setPlayerObject(uid,"refreshList",notify["refreshList"],function() {
 					cb(notify)
 				})
 			}else{
