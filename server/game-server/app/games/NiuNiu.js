@@ -694,7 +694,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           "oldBankerScore" : player[banker].score
         }
         if(isChange){
-          noyify.change = true
+          notify.change = true
         }
         isChange = false
         if(room.runCount == 0){
