@@ -4,6 +4,7 @@ var NiuNiu = require("../../../games/NiuNiu.js")
 var MingPaiQZ = require("../../../games/MingPaiQZ.js")
 var SanKung = require("../../../games/SanKung.js")
 var ZhaJinHua = require("../../../games/ZhaJinHua.js")
+var FourCard = require("../../../games/FourCard.js")
 var openRoomLogger = require("pomelo-logger").getLogger("openRoom-log")
 var streamLogger = require("pomelo-logger").getLogger("matchStream-log")
 var httpConf = require("../../../conf/httpModule.js")
@@ -16,7 +17,8 @@ var ROOM_FACTORY = {
 	"niuniu" : NiuNiu,
 	"mingpaiqz" : MingPaiQZ,
 	"sanKung" : SanKung,
-	"zhajinhua" : ZhaJinHua
+	"zhajinhua" : ZhaJinHua,
+	"fourCard" : FourCard
 }
 
 var MODE_DIAMOND_HOST = 1              //房主扣钻

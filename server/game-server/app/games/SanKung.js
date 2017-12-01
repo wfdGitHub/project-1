@@ -764,23 +764,6 @@ var MING_CARD_NUM = 2               //明牌数量
       local.sendAll(notify)
       cb(true)
     }
-    //玩家操作
-    room.handle.useCmd = function(uid,sid,param,cb) {
-      if(gameState !== conf.GS_GAMEING){
-        cb(false)
-        return
-      }
-      var chair = room.chairMap[uid]
-      if(chair === undefined){
-        cb(false)
-        return
-      }
-      // switch(param.cmd){
-
-      // }
-
-      cb(true)
-    }
     room.handle.showCard = function(uid,sid,param,cb) {
       //游戏状态为GS_DEAL
       if(gameState !== conf.GS_DEAL){
@@ -818,7 +801,7 @@ var MING_CARD_NUM = 2               //明牌数量
         local.settlement()
       }
       cb(true)
-    }    
+    }
     local.gameOver = function(flag) {
       clearTimeout(timer)
       //总结算

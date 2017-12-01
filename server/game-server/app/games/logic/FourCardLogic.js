@@ -63,5 +63,5 @@ module.exports.getDraw = function(handCard) {
     }
     list.push(maxI)
     list.push(maxJ)
-    
+    return list
 }

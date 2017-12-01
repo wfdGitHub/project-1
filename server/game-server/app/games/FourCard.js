@@ -1,5 +1,5 @@
 //四咖
-var logic = require("./logic/NiuNiuLogic.js")
+var logic = require("./logic/FourCardLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frameFactory = require("./frame/frame.js")
@@ -16,7 +16,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   var gameDB = db
   var room = {}
   room.roomId = roomId
-  room.roomType = "sika"
+  room.roomType = "fourCard"
   room.isRecord = true
   room.channel = channelService.getChannel(roomId,true)
   room.handle = {}   //玩家操作
@@ -89,16 +89,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       for(var i = 0;i < GAME_PLAYER;i++){
         local.initChairInfo(i)
       }    
-      //牌型历史
-      var cardHistory = {}
-      for(var i = 0;i < GAME_PLAYER;i++){
-        cardHistory[i] = []
-      }      
-         //console.log("enter init=====================================222")
-        //channel清空
-        channelService.destroyChannel(roomId)
-        room.channel = channelService.getChannel(roomId,true)
-        //console.log(room.channel)   
+      channelService.destroyChannel(roomId)
+      room.channel = channelService.getChannel(roomId,true)
       }
       local.newRoom = function(uid,sid,param,cb) {
       //console.log("newRoom")
@@ -339,6 +331,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           player[i].isShowCard = false    
         }
       }
+      cardSlot = {}
       //换一副新牌
       cards = {}                       //牌组
       cardCount = 0                    //卡牌剩余数量
@@ -399,8 +392,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
             if(player[i].isReady){
               tmpCards[i]= player[i].handCard
             }
-            //默认自动组牌
-            cardSlot[i] = []
         }
         var notify = {
           "cmd" : "deal",
@@ -424,7 +415,18 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         room.runCount++
         clearTimeout(timer)
         gameState = conf.GS_SETTLEMENT
-        //未组牌自动组牌
+        //默认自动组牌
+        for(var i = 0;i < GAME_PLAYER;i++){
+            if(player[i].isReady && !cardSlot[i]){
+              cardSlot[i] = logic.getDraw(player[i].handCard)
+            }
+        }
+        //发送组牌消息
+        var tmpNotify = {
+          "cmd" : "drawCards",
+          "cardSlot" : cardSlot
+        }
+        local.sendAll(tmpNotify)
         var curScores = new Array(GAME_PLAYER)
         for(var i = 0;i < GAME_PLAYER;i++){
           curScores[i] = 0
@@ -514,8 +516,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       room.state = true
       var notify = {
         "cmd" : "gameOver",
-        "player" : player,
-        "cardHistory" : cardHistory
+        "player" : player
       }
       local.sendAll(notify)
       room.endTime = (new Date()).valueOf()
@@ -548,26 +549,102 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       local.sendAll(notify)
       cb(true)
     }
-    //玩家操作
-    room.handle.useCmd = function(uid,sid,param,cb) {
-      if(gameState !== conf.GS_GAMEING){
+    //玩家下注
+    room.handle.bet = function(uid,sid,param,cb){
+      //游戏状态为BETTING
+      if(gameState !== conf.GS_BETTING){
         cb(false)
         return
       }
+      //判断是否在椅子上
       var chair = room.chairMap[uid]
       if(chair === undefined){
         cb(false)
         return
       }
-      // switch(param.cmd){
-
-      // }
-
+      //不在游戏中不能下注
+      if(!player[chair].isReady){
+        cb(false)
+        return
+      }    
+      //庄家不能下注
+      if(chair == banker){
+        cb(false)
+        return
+      }
+      if(!param.bet || typeof(param.bet) != "number" || param.bet < 5 || param.bet > 50){
+        cb(false)
+        return
+      }
+      betList[chair] = param.bet
+      local.betMessege(chair,param.bet)
+      cb(true)
+      //判断所有人都下注进入发牌阶段
+      var flag = true
+      for(var index in betList){
+        if(betList.hasOwnProperty(index)){
+          if(player[index].isActive && index != banker && player[index].isReady){
+              if(betList[index] === 0){
+                flag = false
+              }
+          }
+        }
+      }
+      if(flag){
+        //取消倒计时  进入发牌
+        clearTimeout(timer)
+        local.deal()
+      }
+    }
+    room.handle.drawCard = function(uid,sid,param,cb) {
+      //游戏状态为GS_DEAL
+      if(gameState !== conf.GS_DEAL){
+        cb(false)
+        return
+      }
+      //判断是否在椅子上
+      var chair = room.chairMap[uid]
+      if(chair === undefined){
+        cb(false)
+        return
+      }
+      if(typeof(param.list[0]) != "number" || typeof(param.list[1]) != "number" || typeof(param.list[2]) != "number" || typeof(param.list[3]) != "number"){
+        cb(false)
+        return
+      }
+      var flags = [true,true,true,true]
+      for(var i = 0;i < 4;i++){
+       flags[param.list[i]] = false
+      }
+      var list = []
+      for(var i = 0;i < 4;i++){
+        if(flags[i] == true){
+          list.push(param.list[i])
+          cb(false)
+          return
+        }
+      }
+      cardSlot[chair] = list
+      var notify = {
+        "cmd": "drawCard",
+        "chair" : chair
+      }
+      local.sendAll(notify)
+      //所有参与游戏的玩家都组好牌则进入结算
+      var flag = true
+      for(var i = 0; i < GAME_PLAYER;i++){
+        if(player[i].isReady == true && !cardSlot[i]){
+          flag = false
+        }
+      }
+      if(flag){
+        clearTimeout(timer)
+        local.settlement()
+      }
       cb(true)
     }    
     //玩家重连
     room.reconnection = function(uid,sid,param,cb) {
-      // console.log("uid : "+uid + "  reconnection")
       var chair = room.chairMap[uid]
       if(chair === undefined){
         cb(false)
@@ -680,7 +757,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           //   "score" : player[chair].score
           // }      
           // local.sendAll(notify)        
-        }
+    }
 
     //广播消息
     local.sendAll = function(notify) {
@@ -798,26 +875,23 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   local.backups = function(cb){
     console.log("begin backups=====")
     var dbObj = {
-      // "basicType" : basicType,
-      // "basic" : room.basic,
-      // "gameState" : gameState,e
-      // "chairMap" : JSON.stringify(room.chairMap),
-      // "roomHost" : roomHost,
-      // "banker" : banker,
-      // "bankerMode" : room.bankerMode,
-      // "gameNumber" : room.gameNumber,
-      // "maxGameNumber" : room.maxGameNumber,
-      // "consumeMode" : room.consumeMode,
-      // "cardMode" : room.cardMode,
-      // "betList" : JSON.stringify(betList),
-      // "player" : JSON.stringify(player),
-      // "result" : JSON.stringify(result),
-      // "playerNumber" : room.GAME_PLAYER,
-      // "roomType" : room.roomType,
-      // "agencyId" : room.agencyId,
-      // "waitMode" : room.waitMode,
-      // "cardHistory" : JSON.stringify(cardHistory),
-      // "maxRob" : room.maxRob
+      "gameState" : gameState,
+      "chairMap" : JSON.stringify(room.chairMap),
+      "roomHost" : roomHost,
+      "banker" : banker,
+      "bankerMode" : room.bankerMode,
+      "gameNumber" : room.gameNumber,
+      "maxGameNumber" : room.maxGameNumber,
+      "consumeMode" : room.consumeMode,
+      "cardMode" : room.cardMode,
+      "betList" : JSON.stringify(betList),
+      "player" : JSON.stringify(player),
+      "playerNumber" : room.GAME_PLAYER,
+      "roomType" : room.roomType,
+      "agencyId" : room.agencyId,
+      "waitMode" : room.waitMode,
+      "maxRob" : room.maxRob,
+      "cardSlot" : JSON.stringify(cardSlot)
     }
     setRoomDBObj(room.roomId,dbObj,function() {
       console.log("end backups=====")
@@ -863,62 +937,59 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     console.log(data)
     local.init()
     room.state = false
-    // basicType = parseInt(data.basicType)
-    // room.basic = parseInt(data.basic)
-    // tmpGameState = parseInt(data.gameState)
-    // gameState = conf.GS_RECOVER
-    // room.chairMap = JSON.parse(data.chairMap)
-    // roomHost = parseInt(data.roomHost)
-    // banker = parseInt(data.banker)
-    // room.bankerMode = parseInt(data.bankerMode)
-    // room.gameNumber = parseInt(data.gameNumber)
-    // room.maxGameNumber = parseInt(data.maxGameNumber)
-    // room.consumeMode = parseInt(data.consumeMode)
-    // room.cardMode = parseInt(data.cardMode)
-    // betList = JSON.parse(data.betList)
-    // player = JSON.parse(data.player)
-    // result = JSON.parse(data.result)
-    // room.GAME_PLAYER = parseInt(data.playerNumber)
-    // GAME_PLAYER = room.GAME_PLAYER
-    // room.roomType = data.roomType
-    // room.agencyId = parseInt(data.agencyId)
-    // room.waitMode = parseInt(data.waitMode)
-    // room.maxRob = parseInt(data.maxRob)
-    //cardHistory = parseInt(data.cardHistory)
-    // frame.start(room.waitMode)
+    tmpGameState = parseInt(data.gameState)
+    gameState = conf.GS_RECOVER
+    room.chairMap = JSON.parse(data.chairMap)
+    roomHost = parseInt(data.roomHost)
+    banker = parseInt(data.banker)
+    room.bankerMode = parseInt(data.bankerMode)
+    room.gameNumber = parseInt(data.gameNumber)
+    room.maxGameNumber = parseInt(data.maxGameNumber)
+    room.consumeMode = parseInt(data.consumeMode)
+    room.cardMode = parseInt(data.cardMode)
+    betList = JSON.parse(data.betList)
+    player = JSON.parse(data.player)
+    room.GAME_PLAYER = parseInt(data.playerNumber)
+    GAME_PLAYER = room.GAME_PLAYER
+    room.roomType = data.roomType
+    room.agencyId = parseInt(data.agencyId)
+    room.waitMode = parseInt(data.waitMode)
+    room.maxRob = parseInt(data.maxRob)
+    cardSlot = parseInt(data.cardSlot)
+    frame.start(room.waitMode)
     for(var index in player){
       player[index].isOnline = false
       robState[index] = 0
     }
   }
   local.recover = function() {
-    // gameState = tmpGameState
-    // switch(gameState){
-    //   case conf.GS_FREE : 
-    //     for(var index in player){
-    //       player[index].isReady = false
-    //     }
-    //   break
-    //   case conf.GAMEING : 
-    //     local.gameBegin()
-    //   break
-    //   case conf.GS_ROB_BANKER:
-    //     local.chooseBanker()
-    //   break
-    //   case conf.GS_NONE:
-    //     local.endRob()
-    //   break
-    //   case conf.GS_BETTING:
-    //     local.betting()
-    //   break
-    //   case conf.GS_DEAL:
-    //     local.deal()
-    //   break
-    // }
-    // var notify = {
-    //   "cmd" : "recover"
-    // }
-    // local.sendAll(notify)
+    gameState = tmpGameState
+    switch(gameState){
+      case conf.GS_FREE : 
+        for(var index in player){
+          player[index].isReady = false
+        }
+      break
+      case conf.GAMEING : 
+        local.gameBegin()
+      break
+      case conf.GS_ROB_BANKER:
+        local.chooseBanker()
+      break
+      case conf.GS_BETTING:
+        for(var index in player){
+          betList[index] = 0
+        }
+        local.betting()
+      break
+      case conf.GS_DEAL:
+        local.deal()
+      break
+    }
+    var notify = {
+      "cmd" : "recover"
+    }
+    local.sendAll(notify)
   }
   room.handle.recover = function(uid,sid,param,cb) {
     if(gameState !== conf.GS_RECOVER){
