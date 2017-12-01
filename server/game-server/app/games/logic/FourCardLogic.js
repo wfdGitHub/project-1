@@ -3,6 +3,7 @@ var COMB_TYPE_DUIZI  =    1           // 对子
 
 
 module.exports.getType = function(handCard) {
+    console.log(handCard)
     var result = {
       "type" : 0,
       "card" : {}

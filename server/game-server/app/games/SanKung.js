@@ -906,8 +906,8 @@ var MING_CARD_NUM = 2               //明牌数量
         "bet" : bet,
         "betAmount" : betAmount
       }
-      local.sendAll(notify)     
-    }    
+      local.sendAll(notify)
+    }
     //积分改变
     local.changeScore = function(chair,score) {
           player[chair].score += score;

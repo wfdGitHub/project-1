@@ -259,7 +259,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               "cmd" : "beginRob"
             }
             local.sendAll(notify)
-            timer = setTimeout(local.endRob,TID_ROB_TIME)    
+            timer = setTimeout(local.endRob,conf.TID_ROB_TIME)    
             break
           case conf.MODE_BANKER_ORDER :
             //轮庄
@@ -282,7 +282,15 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         }
       })
     }
-
+    //下注通知
+    local.betMessege = function(chair,bet) {
+      var notify = {
+        "cmd" : "bet",
+        "chair" : chair,
+        "bet" : bet
+      }
+      local.sendAll(notify)
+    }
     //结束抢庄
     local.endRob = function() {
       //统计抢庄人数
@@ -347,6 +355,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         cards[i] = cards[tmpIndex]
         cards[tmpIndex] = tmpCard
       }
+      var index = 0
       //发牌
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isActive && player[i].isReady){
@@ -435,10 +444,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         var tmpHandCard = {}
         tmpHandCard[0] = player[banker].handCard[cardSlot[banker][0]]
         tmpHandCard[1] = player[banker].handCard[cardSlot[banker][1]]
-        var tmpBankerResult1 = logic.getType() //庄家1
+        var tmpBankerResult1 = logic.getType(tmpHandCard) //庄家1
         tmpHandCard[0] = player[banker].handCard[cardSlot[banker][2]]
         tmpHandCard[1] = player[banker].handCard[cardSlot[banker][3]]
-        var tmpBankerResult2 = logic.getType() //庄家2
+        var tmpBankerResult2 = logic.getType(tmpHandCard) //庄家2
 
         for(var i = 0;i < GAME_PLAYER;i++){
           if(player[i].isActive && player[i].isReady){
@@ -446,10 +455,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               //比较大小
               tmpHandCard[0] = player[i].handCard[cardSlot[i][0]]
               tmpHandCard[1] = player[i].handCard[cardSlot[i][1]]
-              var tmpResult1 = logic.getType() //闲家1
+              var tmpResult1 = logic.getType(tmpHandCard) //闲家1
               tmpHandCard[0] = player[i].handCard[cardSlot[i][2]]
               tmpHandCard[1] = player[i].handCard[cardSlot[i][3]]
-              var tmpResult2 = logic.getType() //闲家2
+              var tmpResult2 = logic.getType(tmpHandCard) //闲家2
               //庄家1与闲家1比
               var flag1 = logic.compare(tmpBankerResult1,tmpResult1)
               //庄家2与闲家2比
@@ -594,6 +603,53 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         //取消倒计时  进入发牌
         clearTimeout(timer)
         local.deal()
+      }
+    }
+    //玩家抢庄
+    room.handle.robBanker = function(uid,sid,param,cb) {
+      if(gameState !== conf.GS_ROB_BANKER){
+        cb(false)
+        return
+      }
+      //判断是否在椅子上
+      var chair = room.chairMap[uid]
+      if(chair == undefined){
+        cb(false)
+        return
+      }    
+      log("robBanker")
+      //判断是否已抢庄
+      if(robState[chair] != 0){
+        cb(false)
+        return
+      }
+      //记录抢庄
+      if(param && param.flag == true){
+        robState[chair] = 1
+      }else{
+        robState[chair] = 2
+      }
+      var notify = {
+        "cmd" : "robBanker",
+        "chair" : chair,
+        "flag" : robState[chair]
+      }
+      local.sendAll(notify)
+      cb(true)
+      //判断所有人都已操作进入下个阶段
+      var flag = true
+      for(var index in robState){
+        if(robState.hasOwnProperty(index)){
+          if(player[index].isActive && player[index].isReady){
+            if(robState[index] == 0){
+              flag = false
+            }
+          }
+        }
+      }
+      if(flag){
+        clearTimeout(timer)
+        local.endRob()
       }
     }
     room.handle.drawCard = function(uid,sid,param,cb) {
@@ -1011,3 +1067,6 @@ var deepCopy = function(source) {
 }
 
 
+var log = function(str) {
+    // console.log("LOG NiuNiu : "+str)
+}

@@ -259,11 +259,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	      cb(false)
 	      return
 	    }
-	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
-	    	console.log("agency error   param.gameType : "+params.gameType)
-	    	cb(false)
-	    	return
-	    }
 	    if(!params.consumeMode || params.consumeMode < 1 || params.consumeMode > 3){
 	    	console.log("agency error   param.consumeMode : "+params.consumeMode)
 	    	cb(false)
@@ -364,10 +359,6 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	}else if(code == "agency"){
 		//代开房
 		//TODO  无效数据判断
-	    if(!params.gameType || !conf.GAME_TYPE[params.gameType]){
-	    	cb(false)
-	    	return
-	    }
 		if(!params.gameNumber || typeof(params.gameNumber) !== "number"){
 	      console.log("agency error   param.gameNumber : "+params.gameNumber)
 	      cb(false)
@@ -382,7 +373,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 	    	cb(false)
 	    	return
 	    }
-	    if(!diamondConf.getNeedDiamond(params.gameType,params.playerNumber,params.consumeMode,params.gameNumber)){
+	    if(!diamondConf.getNeedDiamond(params.gameType,params.playerNumber,"agency",params.gameNumber)){
 	    	console.log("无钻石配置")
 	    	console.log(params)
 	    	cb(false)
