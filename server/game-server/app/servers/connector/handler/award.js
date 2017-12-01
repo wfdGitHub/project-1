@@ -46,7 +46,7 @@ handler.shareAward = function(msg,session,next) {
 
 local.getDateString = function() {
 	var myDate = new Date()
-	var month = myDate.getMonth()
+	var month = myDate.getMonth() + 1
 	var date = myDate.getDate()
 	if(month < 10){
 		month = "0"+month
