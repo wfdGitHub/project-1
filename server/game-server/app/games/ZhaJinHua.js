@@ -403,6 +403,7 @@ var MING_CARD_NUM = 3               //明牌数量
       }
       local.sendAll(notify)
       local.backups(function() {
+        clearTimeout(timer)
         timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
       })
     }
@@ -455,6 +456,7 @@ var MING_CARD_NUM = 3               //明牌数量
         local.sendAll(notify)
         //设定时器到下一位玩家
         actionFlag = false
+        clearTimeout(timer)
         timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
       })
     }
