@@ -42,7 +42,7 @@ var MING_CARD_NUM = 3               //明牌数量
     room.maxRound = 10                   //单局最大轮数
     room.stuffyRound = 0                 //闷牌轮数
     var tmpGameState = 0
-
+    var actionState = true                //可以行动标识
     var result = {}                      //牌型
     var actionFlag = true                //行动标志
     //游戏属性
@@ -444,7 +444,9 @@ var MING_CARD_NUM = 3               //明牌数量
           return
         }
       }
+      actionState = false
       local.backups(function() {
+        actionState = true
         //设定时器到下一位玩家
         var notify = {
           "cmd" : "nextPlayer",
@@ -511,6 +513,10 @@ var MING_CARD_NUM = 3               //明牌数量
             cb(false)
             return
           }     
+          if(!actionState){
+            cb(false)
+            return
+          }
           //最后一轮不能下注
           if(curRound == room.maxRound){
             cb(false)
@@ -542,7 +548,11 @@ var MING_CARD_NUM = 3               //明牌数量
           if(player[chair].state !== 0){
             cb(false)
             return
-          }     
+          }
+          if(!actionState){
+            cb(false)
+            return
+          }          
           //最后一轮不能下注
           if(curRound == room.maxRound){
             cb(false)
@@ -580,7 +590,11 @@ var MING_CARD_NUM = 3               //明牌数量
           if(player[chair].state !== 0){
             cb(false)
             return
-          }     
+          }
+          if(!actionState){
+            cb(false)
+            return
+          }          
           //最后一轮不能下注
           if(curRound == room.maxRound){
             cb(false)
@@ -657,7 +671,11 @@ var MING_CARD_NUM = 3               //明牌数量
           if(player[chair].state !== 0){
             cb(false)
             return
-          }       
+          }
+          if(!actionState){
+            cb(false)
+            return
+          }
           local.playerGiveUp(chair)
           actionFlag = true
           local.nextCurPlayer()
@@ -675,6 +693,10 @@ var MING_CARD_NUM = 3               //明牌数量
           }
           //第三轮开始才能比牌
           if(curRound < 3){
+            cb(false)
+            return
+          }
+          if(!actionState){
             cb(false)
             return
           }
