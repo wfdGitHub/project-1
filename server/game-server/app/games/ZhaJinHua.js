@@ -9,7 +9,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
 //创建房间
   module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
-    console.log("createRoom"+roomId)
+    // console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var frame = frameFactory.createFrame()
@@ -410,7 +410,7 @@ var MING_CARD_NUM = 3               //明牌数量
     //操作权移交到下一位玩家
     local.nextCurPlayer = function() {
       local.backups(function() {
-        console.log("nextCurPlayer ==== ")
+        // console.log("nextCurPlayer ==== ")
         clearTimeout(timer)
         if(actionFlag == false){
           //未操作视为放弃
@@ -471,7 +471,7 @@ var MING_CARD_NUM = 3               //明牌数量
         cb(false)
         return
       }
-      console.log("cmd : "+param.cmd)
+      // console.log("cmd : "+param.cmd)
       switch(param.cmd){
         case "look":
           //看牌
@@ -772,7 +772,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
     //结算
     local.settlement = function() {
-      console.log(betList)
+      // console.log(betList)
       clearTimeout(timer)
       room.runCount++
       //找出最大赢家
@@ -812,7 +812,7 @@ var MING_CARD_NUM = 3               //明牌数量
             }
         }
       }else{
-        console.log("ERROR")
+        // console.log("ERROR")
         errorLogger.info("炸金花结算错误2222222222")
       }
 
@@ -1148,7 +1148,7 @@ var MING_CARD_NUM = 3               //明牌数量
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
@@ -1164,7 +1164,7 @@ var MING_CARD_NUM = 3               //明牌数量
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
@@ -1236,7 +1236,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
 
 var log = function(str) {
-    console.log("LOG NiuNiu : "+str)
+    // console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {

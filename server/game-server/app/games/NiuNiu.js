@@ -644,7 +644,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         robList[num++] = i
       }
     }
-    console.log("endRob num : "+num)
+    // console.log("endRob num : "+num)
     //无人抢庄将所有参与游戏的玩家加入抢庄列表
     if(num == 0){
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -980,8 +980,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         case conf.MODE_GAME_NORMAL : 
         case conf.MODE_GAME_CRAZE :
           //常规模式结算
-          console.log(result)
-          console.log(betList)
           for(var i = 0;i < GAME_PLAYER;i++){
             if(player[i].isActive && player[i].isReady){
                 if(i === banker || player[i].isReady != true) continue
@@ -1429,7 +1427,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
@@ -1445,7 +1443,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
@@ -1494,24 +1492,19 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   }
   local.recover = function() {
     gameState = tmpGameState
-    console.log(gameState)
     switch(gameState){
       case conf.GS_FREE : 
-        console.log("111111111")
         for(var index in player){
           player[index].isReady = false
         }
       break
       case conf.GS_ROB_BANKER:
-       console.log("11111111122222")
         local.chooseBanker()
       break
       case conf.GS_BETTING:
-       console.log("11111111133333")
         local.betting()
       break
       case conf.GS_DEAL:
-       console.log("11111111144444")
         local.deal()
       break
     }
@@ -1533,7 +1526,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
 
 
 var log = function(str) {
-    console.log("LOG NiuNiu : "+str)
+    // console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {

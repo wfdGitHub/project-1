@@ -104,8 +104,6 @@ frameFactory.createFrame = function() {
         }
       }
     }else{
-      console.log("已准备 : ")
-      console.log(player[chair])
       cb(false)
     }
   }

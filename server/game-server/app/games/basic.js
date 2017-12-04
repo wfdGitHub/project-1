@@ -346,10 +346,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       for(var i = index;i < cardCount;i++){
         tmpCards[tmpCardCount++] = deepCopy(cards[i])
       }
-
-      console.log("============1")
-      console.log(tmpCards)
-      console.log("============1")
       //执行控制   
       //先计算每个人的运气值   -1 到 1之间     
       var luckyValue = {}
@@ -372,8 +368,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           luckyValue[i] = luckyValue[i] * 0.6
         }
       }
-      console.log("luckyValue : ")
-      console.log(luckyValue)
       //运气值低的先执行控制 
       for(var i = 0;i < GAME_PLAYER;i++){
         if(player[i].isActive && player[i].isReady){

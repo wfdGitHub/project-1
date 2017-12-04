@@ -105,7 +105,7 @@ GameRemote.prototype.recover = function(cb) {
                 GameRemote.GameService.agencyList[index] = JSON.parse(data[index])
             }
         }
-        console.log(GameRemote.GameService.agencyList)
+        // console.log(GameRemote.GameService.agencyList)
     })
 	cb()
 }

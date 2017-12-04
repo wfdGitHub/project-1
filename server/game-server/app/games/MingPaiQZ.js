@@ -8,7 +8,7 @@ var MING_CARD_NUM = 4               //明牌数量
 
 //创建房间
   module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
-    console.log("createRoom"+roomId)
+    // console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var frame = frameFactory.createFrame()
@@ -808,7 +808,7 @@ var MING_CARD_NUM = 4               //明牌数量
         room.runCount++
         readyCount = 0
         clearTimeout(timer)
-        console.log("settlemnt")
+        // console.log("settlemnt")
 
         var curScores = new Array(GAME_PLAYER)
         for(var i = 0;i < GAME_PLAYER;i++){
@@ -971,7 +971,7 @@ var MING_CARD_NUM = 4               //明牌数量
       if(notify.state === conf.GS_NONE){
         notify.state = conf.GS_ROB_BANKER
       }
-      console.log(notify)
+      // console.log(notify)
       cb(notify)
     }
   //初始化椅子信息
@@ -1237,12 +1237,12 @@ var MING_CARD_NUM = 4               //明牌数量
     var setRoomDB = function(hashKey,subKey,data,cb){
       gameDB.hset("gameNodeRoom:"+hashKey,subKey,data,function(err,data) {
         if(err){
-          console.log("setRoomDB error : "+err)
+          // console.log("setRoomDB error : "+err)
           if(cb){
             cb(false)
           }
         }else{
-          console.log(data)
+          // console.log(data)
           if(cb){
             cb(data)
           }
@@ -1253,12 +1253,12 @@ var MING_CARD_NUM = 4               //明牌数量
     var setRoomDBObj = function(hashKey,obj,cb){
       gameDB.hmset("gameNodeRoom:"+hashKey,obj,function(err,data) {
         if(err){
-          console.log("setRoomDB error : "+err)
+          // console.log("setRoomDB error : "+err)
           if(cb){
             cb(false)
           }
         }else{
-          console.log(data)
+          // console.log(data)
           if(cb){
             cb(data)
           }
@@ -1270,7 +1270,7 @@ var MING_CARD_NUM = 4               //明牌数量
 
 
 var log = function(str) {
-     console.log("LOG NiuNiu : "+str)
+     // console.log("LOG NiuNiu : "+str)
 }
 
 var copyObj = function(obj) {

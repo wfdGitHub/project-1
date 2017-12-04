@@ -9,7 +9,7 @@ var MING_CARD_NUM = 2               //明牌数量
 
 //创建房间
   module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
-    console.log("createRoom"+roomId)
+    // console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb
     var frame = frameFactory.createFrame()
@@ -304,7 +304,7 @@ var MING_CARD_NUM = 2               //明牌数量
           robList[num++] = i
         }
       }
-      console.log("endRob num : "+num)
+      // console.log("endRob num : "+num)
       //无人抢庄将所有参与游戏的玩家加入抢庄列表
       if(num == 0){
         for(var i = 0; i < GAME_PLAYER;i++){
@@ -1088,7 +1088,7 @@ var MING_CARD_NUM = 2               //明牌数量
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
@@ -1104,7 +1104,7 @@ var MING_CARD_NUM = 2               //明牌数量
           cb(false)
         }
       }else{
-        console.log(data)
+        // console.log(data)
         if(cb){
           cb(data)
         }
