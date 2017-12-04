@@ -1,5 +1,4 @@
 //炸金花
-var logic = require("./logic/ZhaJinHuaLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var errorLogger = require("pomelo-logger").getLogger("error-log");
 var tips = require("../conf/tips.js").tipsConf
@@ -9,6 +8,7 @@ var MING_CARD_NUM = 3               //明牌数量
 
 //创建房间
   module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
+    var logic = require("./logic/ZhaJinHuaLogic.js")
     // console.log("createRoom"+roomId)
     var roomBeginCB = gameBegincb
     var roomCallBack = gameOvercb

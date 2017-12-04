@@ -1,4 +1,3 @@
-var logic = require("./logic/NiuNiuLogic.js")
 var conf = require("../conf/niuniuConf.js").niuConf
 var tips = require("../conf/tips.js").tipsConf
 var frameFactory = require("./frame/frame.js")
@@ -11,6 +10,7 @@ var TID_SETTLEMENT = conf.TID_SETTLEMENT//结算时间
 var MING_CARD_NUM = 4               //明牌数量
 //创建房间
 module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameBegincb,gameOvercb) {
+  var logic = require("./logic/NiuNiuLogic.js")
   console.log("createRoom"+roomId)
   var roomBeginCB = gameBegincb
   var roomCallBack = gameOvercb
