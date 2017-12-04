@@ -485,7 +485,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               //庄家1与闲家1比
               var flag1 = logic.compare(tmpBankerResult1,tmpResult1)
               //同点同牌庄杀闲
-              if(zsxFlag){
+              if(room.zsxFlag){
                 if( (player[banker].handCard[cardSlot[banker][0]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][1]].num == tmpHandCard[1].num) ||
                     ((player[banker].handCard[cardSlot[banker][1]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][0]].num == tmpHandCard[1].num))){
                   flag1 = true
@@ -497,7 +497,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               //庄家2与闲家2比
               var flag2 = logic.compare(tmpBankerResult2,tmpResult2)
               //同点同牌庄杀闲
-              if(zsxFlag){
+              if(room.zsxFlag){
                 if( (player[banker].handCard[cardSlot[banker][2]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][3]].num == tmpHandCard[1].num) ||
                     ((player[banker].handCard[cardSlot[banker][3]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][2]].num == tmpHandCard[1].num))){
                   flag2 = true
