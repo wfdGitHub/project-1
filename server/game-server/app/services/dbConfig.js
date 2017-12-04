@@ -9,7 +9,7 @@ var ROOM_BEGIN_INDEX = 200800   	   //起始房间ID
 handler.start = function(dbService) {
 	var db = redis.createClient(RDS_PORT,RDS_HOST,RDS_OPTS)
 	db.on("ready",function(res) {
-		db.select("1",function(err) {
+		db.select("0",function(err) {
 			dbService.db = db
 			//数据库初始配置
 			dbService.db.get("nn:acc:lastid",function(err,data) {
