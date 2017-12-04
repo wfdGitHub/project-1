@@ -59,7 +59,7 @@ GameRemote.prototype.recover = function(cb) {
 					GameRemote.GameService.roomState[index] = true
 				}
 			}
-		}		
+		}
 	})
 	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
 		GameRemote.GameService.userMap = {}

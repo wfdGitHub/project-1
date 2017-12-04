@@ -63,6 +63,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       //房间属性
       room.state = true                    //房间状态，true为可创建
       room.playerCount  = 0                //房间内玩家人数
+      room.xsjFlag = false                 //瞎眼杀九点
+      room.zsxFlag = false                 //庄杀闲
       gameState = conf.GS_FREE              //游戏状态
       room.chairMap = {}                   //玩家UID与椅子号映射表
       banker = -1                      //庄家椅子号
@@ -121,6 +123,12 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         log("newRoom error   param.waitMode : "+param.waitMode)
         cb(false)
         return
+      }
+      if(param.xsj === true){
+        room.xsjFlag = true
+      }
+      if(param.zsxFlag === true){
+        room.zsxFlag = true
       }
       frame.start(param.waitMode)
       room.waitMode = param.waitMode
@@ -361,6 +369,22 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         if(player[i].isActive && player[i].isReady){
           for(var j = 0;j < 4;j++){
             player[i].handCard[j] = cards[index++];
+          }
+        }
+      }
+      //明牌模式发牌
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        var notify = {
+          "cmd" : "MingCard"
+        }
+        for(var i = 0;i < GAME_PLAYER;i++){
+          if(player[i].isActive && player[i].isReady){
+            var tmpCards = {}
+            for(var j = 0;j < MING_CARD_NUM;j++){
+                tmpCards[j] = player[i].handCard[j];
+            }
+            notify.Cards = tmpCards
+            local.sendUid(player[i].uid,notify)
           }
         }
       }
@@ -664,6 +688,10 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         cb(false)
         return
       }
+      if(player[chair].isShowCard == true){
+        cb(false)
+        return
+      }
       if(typeof(param.list[0]) != "number" || typeof(param.list[1]) != "number" || typeof(param.list[2]) != "number" || typeof(param.list[3]) != "number"){
         cb(false)
         return
@@ -699,6 +727,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         "chair" : chair
       }
       local.sendAll(notify)
+      player[chair].isShowCard = true
       //所有参与游戏的玩家都组好牌则进入结算
       var flag = true
       for(var i = 0; i < GAME_PLAYER;i++){
@@ -711,7 +740,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         local.settlement()
       }
       cb(true)
-    }    
+    }
     //玩家重连
     room.reconnection = function(uid,sid,param,cb) {
       var chair = room.chairMap[uid]
@@ -728,40 +757,6 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       local.sendAll(notify)
       if(!room.channel.getMember(uid)){
         room.channel.add(uid,sid)
-      }
-      var newPlayer = deepCopy(player)
-
-      if(room.cardMode == conf.MODE_CARD_SHOW){
-        for(var i = 0; i < GAME_PLAYER;i++){
-          if(i == chair){
-            if(curRound == 0){
-              delete newPlayer[i].handCard[3]
-              delete newPlayer[i].handCard[4]
-            }else if(curRound == 1){
-              delete newPlayer[i].handCard[4]
-            }
-          }else{
-            delete newPlayer[i].handCard[3]
-            delete newPlayer[i].handCard[4]
-          }
-        }
-      }else if(room.cardMode == conf.MODE_CARD_HIDE){
-        for(var i = 0; i < GAME_PLAYER;i++){
-          if(i == chair){
-            if(player[chair].isShowCard){
-              if(curRound == 0){
-                delete newPlayer[i].handCard[3]
-                delete newPlayer[i].handCard[4]
-              }else if(curRound == 1){
-                delete newPlayer[i].handCard[4]
-              }
-            }else{
-              delete newPlayer[i].handCard
-            }
-          }else{
-            delete newPlayer[i].handCard
-          }
-        }        
       }
       var notify = {
         roomInfo : local.getRoomInfo(chair),
@@ -845,20 +840,20 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     }
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
-      //明牌模式所有人四张牌可见  暗牌自己四张牌可见
-      // if(room.cardMode == conf.MODE_CARD_SHOW){
-      //   for(var i = 0; i < GAME_PLAYER;i++){
-      //       delete newPlayer[i].handCard[4]
-      //   }
-      // }else if(room.cardMode == conf.MODE_CARD_HIDE){
-      //   for(var i = 0; i < GAME_PLAYER;i++){
-      //       if(i == chair){
-      //         delete newPlayer[chair].handCard[4]
-      //       }else{
-      //         delete newPlayer[i].handCard
-      //       }
-      //   }
-      // }
+      //明牌模式自己三张牌可见  暗牌不可见
+      if(room.cardMode == conf.MODE_CARD_SHOW){
+        for(var i = 0; i < GAME_PLAYER;i++){
+            if(i == chair){
+              delete newPlayer[chair].handCard[3]
+            }else{
+              delete newPlayer[i].handCard
+            }
+        }
+      }else if(room.cardMode == conf.MODE_CARD_HIDE){
+        for(var i = 0; i < GAME_PLAYER;i++){
+            delete newPlayer[i].handCard
+        }
+      }
       var notify = {
         cmd : "roomPlayer",
         player:newPlayer,
@@ -873,6 +868,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         roomType : room.roomType,
         basic : basic,
         curBet : curBet,
+        zsx : room.zsxFlag,
+        xsj : room.xsjFlag,
         playerNumber : room.GAME_PLAYER
       }
       return notify
@@ -960,6 +957,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       "agencyId" : room.agencyId,
       "waitMode" : room.waitMode,
       "maxRob" : room.maxRob,
+      "xsj" : room.xsjFlag,
+      "zsx" : room.zsxFlag,
       "cardSlot" : JSON.stringify(cardSlot)
     }
     setRoomDBObj(room.roomId,dbObj,function() {
@@ -1016,6 +1015,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxGameNumber = parseInt(data.maxGameNumber)
     room.consumeMode = parseInt(data.consumeMode)
     room.cardMode = parseInt(data.cardMode)
+    room.xsjFlag = data.xsj === "true" : true : false
+    room.zsxFlag = data.zsx === "true" : true : false
     betList = JSON.parse(data.betList)
     player = JSON.parse(data.player)
     room.GAME_PLAYER = parseInt(data.playerNumber)

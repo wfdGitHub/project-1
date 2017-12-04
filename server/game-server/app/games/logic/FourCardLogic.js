@@ -1,6 +1,41 @@
-var COMB_TYPE_NODE   =    0           // 普通
-var COMB_TYPE_DUIZI  =    1           // 对子
+var COMB_TYPE_NODE   =    0           // 瞎眼
+var COMB_TYPE_OX1    =    1           // 1点
+var COMB_TYPE_OX2    =    2           // 2点
+var COMB_TYPE_OX3    =    3           // 3点
+var COMB_TYPE_OX4    =    4           // 4点
+var COMB_TYPE_OX5    =    5           // 5点
+var COMB_TYPE_OX6    =    6           // 6点
+var COMB_TYPE_OX7    =    7           // 7点
+var COMB_TYPE_OX8    =    8           // 8点
+var COMB_TYPE_OX9    =    9           // 9点
+var COMB_TYPE_DUIZI  =    10          // 对子
 
+var xsjFlag = false
+var zsxFlag = false
+
+var CARD_VALUE = {
+  "1" : 14,
+  "2" : 2,
+  "3" : 3,
+  "4" : 4,
+  "5" : 5,
+  "6" : 6,
+  "7" : 7,
+  "8" : 8,
+  "9" : 9,
+  "10" : 10,
+  "11" : 11,
+  "12" : 12,
+  "13" : 13
+}
+module.exports.init = function(xsj,zsx) {
+  if(xsj === true){
+    xsjFlag = true
+  }
+  if(zsx === true){
+    zsxFlag = true
+  }
+}
 
 module.exports.getType = function(handCard) {
     console.log(handCard)
@@ -11,8 +46,9 @@ module.exports.getType = function(handCard) {
     if(handCard[0].num == handCard[1].num){
       result.type = COMB_TYPE_DUIZI
     }
+    //点数
     //最大单牌
-    if(handCard[0].num > handCard[1].num || (handCard[0].num == handCard[1].num && handCard[0].type > handCard[1].type)){
+    if(CARD_VALUE[handCard[0].num] > CARD_VALUE[handCard[1].num] || (handCard[0].num == handCard[1].num && handCard[0].type > handCard[1].type)){
       result.card = handCard[0]
     }else{
       result.card = handCard[1]
@@ -22,10 +58,14 @@ module.exports.getType = function(handCard) {
 
 //对比手牌   返回true为第一个玩家赢，false为第二个玩家赢
 module.exports.compare = function(result1,result2) {
+    //瞎眼杀九点
+    if(result1.type == COMB_TYPE_NODE && result1.card.num == 0 && result2.type == COMB_TYPE_NODE && ){
+
+    }
     if(result1.type > result2.type){
         return true
     }
-    if(result1.type == result2.type && result1.card.num > result2.card.num){
+    if(result1.type == result2.type && CARD_VALUE[result1.card.num] > CARD_VALUE[result2.card.num]){
         return true
     }
     if(result1.type == result2.type && result1.card.num == result2.card.num && result1.card.type > result2.card.type){
