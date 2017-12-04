@@ -531,7 +531,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         //发送当局结算消息
         var notify = {
           "cmd" : "settlement",
-          "result" : tmpResult,
+          "stateList" : tmpResult,
           "curScores" : curScores,
           "realScores" : realScores,
           "player" : player
