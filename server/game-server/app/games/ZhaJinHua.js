@@ -411,42 +411,41 @@ var MING_CARD_NUM = 3               //明牌数量
     //操作权移交到下一位玩家
     local.nextCurPlayer = function() {
       clearTimeout(timer)
-      local.backups(function() {
-        // console.log("nextCurPlayer ==== ")
-        if(actionFlag == false){
-          //未操作视为放弃
-          local.playerGiveUp(curPlayer) 
+      if(actionFlag == false){
+        //未操作视为放弃
+        local.playerGiveUp(curPlayer) 
+      }
+      //只剩一个玩家的时候结束本局
+      var curPlayerCount = 0
+      for(var i = 0; i < GAME_PLAYER; i++){
+        if(player[i].isActive && player[i].isReady && player[i].state == 0){
+          curPlayerCount++
         }
-
-        //只剩一个玩家的时候结束本局
-        var curPlayerCount = 0
-        for(var i = 0; i < GAME_PLAYER; i++){
-          if(player[i].isActive && player[i].isReady && player[i].state == 0){
-            curPlayerCount++
-          }
+      }
+      if(curPlayerCount < 2){
+        local.settlement()
+        return
+      }
+      //下一个玩家开始操作
+      actionFlag = false
+      var bankerFlag = false    //是否轮回到庄家
+      do{
+        curPlayer = (curPlayer + 1)%GAME_PLAYER
+        if(curPlayer == banker){
+          bankerFlag = true
         }
-        if(curPlayerCount < 2){
+      }while(player[curPlayer].isActive == false || player[curPlayer].state !== 0 || player[curPlayer].isReady == false)
+      //当操作权转移到初始操作玩家  意味着进入下一轮
+      if(bankerFlag){
+        curRound++
+        //轮数超过最后一轮时进入结算
+        if(curRound > room.maxRound){
           local.settlement()
           return
         }
-        //下一个玩家开始操作
-        actionFlag = false
-        var bankerFlag = false    //是否轮回到庄家
-        do{
-          curPlayer = (curPlayer + 1)%GAME_PLAYER
-          if(curPlayer == banker){
-            bankerFlag = true
-          }
-        }while(player[curPlayer].isActive == false || player[curPlayer].state !== 0 || player[curPlayer].isReady == false)
-        //当操作权转移到初始操作玩家  意味着进入下一轮
-        if(bankerFlag){
-          curRound++
-          //轮数超过最后一轮时进入结算
-          if(curRound > room.maxRound){
-            local.settlement()
-            return
-          }
-        }
+      }
+      local.backups(function() {
+        //设定时器到下一位玩家
         var notify = {
           "cmd" : "nextPlayer",
           "chair" : curPlayer,
@@ -454,7 +453,6 @@ var MING_CARD_NUM = 3               //明牌数量
           "curRound" : curRound
         }
         local.sendAll(notify)
-        //设定时器到下一位玩家
         actionFlag = false
         clearTimeout(timer)
         timer = setTimeout(local.nextCurPlayer,conf.TID_ZHAJINHUA)
