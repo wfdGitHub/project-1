@@ -127,10 +127,11 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
       if(param.xsj === true){
         room.xsjFlag = true
       }
-      if(param.zsxFlag === true){
+      if(param.zsx === true){
         room.zsxFlag = true
       }
       frame.start(param.waitMode)
+      logic.init(room.xsjFlag)
       room.waitMode = param.waitMode
       //是否允许中途加入
       if(param.halfwayEnter === false){
@@ -439,7 +440,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           timer = setTimeout(function(){
             gameState = conf.GS_FREE
             local.settlement()
-          },conf.TID_SETTLEMENT)
+          },5 * 60 * 1000)
         })
     }
     //结算
@@ -464,6 +465,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         for(var i = 0;i < GAME_PLAYER;i++){
           curScores[i] = 0
         }
+        var tmpResult = {}
         //计算积分
         var tmpHandCard = {}
         tmpHandCard[0] = player[banker].handCard[cardSlot[banker][0]]
@@ -480,13 +482,30 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
               tmpHandCard[0] = player[i].handCard[cardSlot[i][0]]
               tmpHandCard[1] = player[i].handCard[cardSlot[i][1]]
               var tmpResult1 = logic.getType(tmpHandCard) //闲家1
+              //庄家1与闲家1比
+              var flag1 = logic.compare(tmpBankerResult1,tmpResult1)
+              //同点同牌庄杀闲
+              if(zsxFlag){
+                if( (player[banker].handCard[cardSlot[banker][0]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][1]].num == tmpHandCard[1].num) ||
+                    ((player[banker].handCard[cardSlot[banker][1]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][0]].num == tmpHandCard[1].num))){
+                  flag1 = true
+                }
+              }
               tmpHandCard[0] = player[i].handCard[cardSlot[i][2]]
               tmpHandCard[1] = player[i].handCard[cardSlot[i][3]]
               var tmpResult2 = logic.getType(tmpHandCard) //闲家2
-              //庄家1与闲家1比
-              var flag1 = logic.compare(tmpBankerResult1,tmpResult1)
               //庄家2与闲家2比
               var flag2 = logic.compare(tmpBankerResult2,tmpResult2)
+              //同点同牌庄杀闲
+              if(zsxFlag){
+                if( (player[banker].handCard[cardSlot[banker][2]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][3]].num == tmpHandCard[1].num) ||
+                    ((player[banker].handCard[cardSlot[banker][3]].num == tmpHandCard[0].num && player[banker].handCard[cardSlot[banker][2]].num == tmpHandCard[1].num))){
+                  flag2 = true
+                }
+              }
+              tmpResult[i] = []
+              tmpResult[i].push(!flag1)
+              tmpResult[i].push(!flag2)
               if(flag1 == true && flag2 == true){
                   //庄家赢
                   curScores[i] -= betList[i]
@@ -495,7 +514,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
                   //闲家赢
                   curScores[i] += betList[i]
                   curScores[banker] -= betList[i]
-              }         
+              }
           }
         }
         //积分改变
@@ -512,7 +531,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
         //发送当局结算消息
         var notify = {
           "cmd" : "settlement",
-          "result" : result,
+          "result" : tmpResult,
           "curScores" : curScores,
           "realScores" : realScores,
           "player" : player
@@ -807,7 +826,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           uid: uid,
           chair : chair
         }
-        local.sendAll(notify)    
+        local.sendAll(notify)
         frame.disconnect(chair,player,gameState,local,local.gameBegin)  
       }
     }
@@ -1015,8 +1034,8 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxGameNumber = parseInt(data.maxGameNumber)
     room.consumeMode = parseInt(data.consumeMode)
     room.cardMode = parseInt(data.cardMode)
-    room.xsjFlag = data.xsj === "true" : true : false
-    room.zsxFlag = data.zsx === "true" : true : false
+    room.xsjFlag = (data.xsj === "true" ? true : false)
+    room.zsxFlag = (data.zsx === "true" ? true : false)
     betList = JSON.parse(data.betList)
     player = JSON.parse(data.player)
     room.GAME_PLAYER = parseInt(data.playerNumber)
@@ -1027,6 +1046,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
     room.maxRob = parseInt(data.maxRob)
     cardSlot = parseInt(data.cardSlot)
     frame.start(room.waitMode)
+    logic.init(room.xsjFlag)
     for(var index in player){
       player[index].isOnline = false
       robState[index] = 0
@@ -1073,11 +1093,11 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
 }
 
 var deepCopy = function(source) { 
-  var result={}
+  var tmpResult={}
   for (var key in source) {
-    result[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
+    tmpResult[key] = typeof source[key]==="object"? deepCopy(source[key]): source[key]
   } 
-  return result;
+  return tmpResult
 }
 
 

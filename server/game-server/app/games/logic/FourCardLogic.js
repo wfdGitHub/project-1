@@ -11,7 +11,6 @@ var COMB_TYPE_OX9    =    9           // 9点
 var COMB_TYPE_DUIZI  =    20          // 对子
 
 var xsjFlag = false
-var zsxFlag = false
 
 var CARD_VALUE = {
   "1" : 14,
@@ -28,12 +27,9 @@ var CARD_VALUE = {
   "12" : 12,
   "13" : 13
 }
-module.exports.init = function(xsj,zsx) {
+module.exports.init = function(xsj) {
   if(xsj === true){
     xsjFlag = true
-  }
-  if(zsx === true){
-    zsxFlag = true
   }
 }
 
@@ -47,7 +43,7 @@ module.exports.getType = function(handCard) {
       result.type = COMB_TYPE_DUIZI
     }
     //点数
-    
+    result.type = handCard[0].num + handCard[1].num
     //最大单牌
     if(CARD_VALUE[handCard[0].num] > CARD_VALUE[handCard[1].num] || (handCard[0].num == handCard[1].num && handCard[0].type > handCard[1].type)){
       result.card = handCard[0]
@@ -60,8 +56,10 @@ module.exports.getType = function(handCard) {
 //对比手牌   返回true为第一个玩家赢，false为第二个玩家赢
 module.exports.compare = function(result1,result2) {
     //瞎眼杀九点
-    if(result1.type == COMB_TYPE_NODE && result1.card.num == 0 && result2.type == COMB_TYPE_NODE && ){
-
+    if(xsjFlag){
+      if(result1.type == COMB_TYPE_NODE && result2.type == COMB_TYPE_OX9){
+        return true
+      }
     }
     if(result1.type > result2.type){
         return true
