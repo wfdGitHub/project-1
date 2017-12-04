@@ -332,6 +332,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 									GameRemote.GameService.RoomMap[roomId] = []
 									GameRemote.roomHostList[roomId] = uid
 									setRoomDB("roomHostList",roomId,uid)
+									GameRemote.GameService.roomTime[roomId] = (new Date()).valueOf()
 									var info = {
 										"uid" : playerInfo.uid,
 										"nickname" : playerInfo.playerInfo,
@@ -446,6 +447,7 @@ GameRemote.prototype.receive = function(uid, sid,code,params,cb) {
 							setRoomDB("roomState",roomId,false)
 							GameRemote.roomHostList[roomId] = uid
 							setRoomDB("roomHostList",roomId,uid)
+							GameRemote.GameService.roomTime[roomId] = (new Date()).valueOf()
 	                        //保存代开房记录   state : 0 未开始   1 正在游戏中 2 已结束   3 已失效 
 	                        var agencyRoomInfo = {
 	                            "roomId" : roomId,
@@ -605,6 +607,7 @@ GameRemote.prototype.gameOver = function(roomId,players,flag,agencyId,maxGameNum
 	delRoomDB("RoomMap",roomId)
 	delete GameRemote.roomHostList[roomId]
 	delRoomDB("roomHostList",roomId)
+	delete GameRemote.GameService.roomTime[roomId]
 	//删除房间记录
 	GameRemote.dbService.db.del("gameNodeRoom:"+roomId,function(err,data) {
 		if(err){

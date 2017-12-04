@@ -409,9 +409,9 @@ var MING_CARD_NUM = 3               //明牌数量
 
     //操作权移交到下一位玩家
     local.nextCurPlayer = function() {
+      clearTimeout(timer)
       local.backups(function() {
         // console.log("nextCurPlayer ==== ")
-        clearTimeout(timer)
         if(actionFlag == false){
           //未操作视为放弃
           local.playerGiveUp(curPlayer) 
@@ -795,7 +795,7 @@ var MING_CARD_NUM = 3               //明牌数量
       var curScores = new Array(GAME_PLAYER)
       for(var i = 0;i < GAME_PLAYER;i++){
         curScores[i] = 0
-      }      
+      }
       if(winIndex != -1){
         //赢家通吃
         for(var i = 0;i < GAME_PLAYER;i++){
