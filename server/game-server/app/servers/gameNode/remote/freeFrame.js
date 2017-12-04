@@ -14,7 +14,7 @@ frame.onFrame = function(params,uid,code,cb) {
 			if(!frame.GameService.userMap[uid]){
 				cb(false)
 				return
-			}	
+			}
 			var roomId = frame.GameService.userMap[uid]
 			//不能重复发送
 			if(frame.GameService.roomLock[roomId] === false){

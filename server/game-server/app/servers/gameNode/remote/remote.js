@@ -210,7 +210,11 @@ GameRemote.prototype.join = function(params,uid,sid,roomId,cb) {
 }
 //房间指令
 GameRemote.prototype.receive = function(params,uid,sid,roomId,code,cb) {
-	GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
+	if(GameRemote.roomList[roomId].handle[code]){
+		GameRemote.roomList[roomId].handle[code](uid,sid,params,cb)
+	}else{
+		cb(false)
+	}
 }
 //玩家重连
 GameRemote.prototype.reconnection = function(params,uid,sid,roomId,cb) {

@@ -680,6 +680,19 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
           return
         }
       }
+      var tmpHandCard1 = {}
+      tmpHandCard1[0] = player[chair].handCard[list[0]]
+      tmpHandCard1[1] = player[chair].handCard[list[1]]
+      var tmpResult1 = logic.getType(tmpHandCard1)
+      var tmpHandCard2 = {}
+      tmpHandCard2[0] = player[chair].handCard[list[2]]
+      tmpHandCard2[1] = player[chair].handCard[list[3]]
+      var tmpResult2 = logic.getType(tmpHandCard2)
+      if(logic.compare(tmpResult1,tmpResult2)){
+        console.log("尾牌需比前牌大")
+        cb(false)
+        return
+      }
       cardSlot[chair] = list
       var notify = {
         "cmd": "drawCard",
