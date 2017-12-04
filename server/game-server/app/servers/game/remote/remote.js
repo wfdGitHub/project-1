@@ -28,6 +28,7 @@ var GameRemote = function(app) {
 GameRemote.prototype.recover = function(cb) {
 	var self = this
 	GameRemote.GameService.setDB(GameRemote.dbService.db)
+	GameRemote.GameService.userMap = {}
 	console.log(GameRemote.app.getCurServer())
 	console.log(GameRemote.app.getServerType())
 	GameRemote.dbService.db.hgetall("gameServer:roomList",function(err,data) {
@@ -41,6 +42,10 @@ GameRemote.prototype.recover = function(cb) {
     				return function(data) {
 		    			var roomId = parseInt(index)
 		    			self.app.rpc.gameNode.remote.recoverRoom(null,params,roomId,JSON.parse(data),function(flag) {
+		    				var tmpData = JSON.parse(data)
+		    				for(var index in tmpData){
+		    					GameRemote.GameService.userMap[tmpData[index].uid] = roomId
+		    				}
 		    				console.log(flag)
 		    			})
     				}
@@ -58,14 +63,6 @@ GameRemote.prototype.recover = function(cb) {
 				}else{
 					GameRemote.GameService.roomState[index] = true
 				}
-			}
-		}		
-	})
-	GameRemote.dbService.db.hgetall("gameServer:userMap",function(err,data) {
-		GameRemote.GameService.userMap = {}
-		for(var index in data){
-			if(index !== "flag"){
-				GameRemote.GameService.userMap[index] = parseInt(data[index])
 			}
 		}
 	})
