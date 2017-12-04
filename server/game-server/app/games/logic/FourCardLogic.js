@@ -8,7 +8,7 @@ var COMB_TYPE_OX6    =    6           // 6点
 var COMB_TYPE_OX7    =    7           // 7点
 var COMB_TYPE_OX8    =    8           // 8点
 var COMB_TYPE_OX9    =    9           // 9点
-var COMB_TYPE_DUIZI  =    10          // 对子
+var COMB_TYPE_DUIZI  =    20          // 对子
 
 var xsjFlag = false
 var zsxFlag = false
@@ -47,6 +47,7 @@ module.exports.getType = function(handCard) {
       result.type = COMB_TYPE_DUIZI
     }
     //点数
+    
     //最大单牌
     if(CARD_VALUE[handCard[0].num] > CARD_VALUE[handCard[1].num] || (handCard[0].num == handCard[1].num && handCard[0].type > handCard[1].type)){
       result.card = handCard[0]
