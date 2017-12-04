@@ -213,8 +213,7 @@ module.exports.sendGameOver = function(data) {
     req.on("error",function(err){
       console.log(err.message)
     })
-    req.end()    
-
+    req.end()
 }
 
 

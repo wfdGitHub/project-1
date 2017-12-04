@@ -156,8 +156,7 @@ handler.visitorEnter = function(msg, session, next) {
           })
           //console.log("nickname : "+session.get("nickname"))
           session.on('closed', onUserLeave.bind(null,self))
-
-          cb(null)        
+          cb(null)
         })
       },
       function(cb){

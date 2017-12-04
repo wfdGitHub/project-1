@@ -684,11 +684,13 @@ GameRemote.prototype.kick = function(uid,cb) {
 GameRemote.prototype.reconnection = function(uid, sid,cb) {
 	if(GameRemote.GameService.userMap[uid] !== undefined){
 		var roomId = GameRemote.GameService.userMap[uid]
-		var params = {}
-		params.gid = GameRemote.GameService.roomList[roomId]
-		this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (flag){
-			cb(flag)
-		})
+		if(roomId && GameRemote.GameService.roomList[roomId]){
+			var params = {}
+			params.gid = GameRemote.GameService.roomList[roomId]
+			this.app.rpc.gameNode.remote.reconnection(null,params,uid,sid,roomId,function (flag){
+				cb(flag)
+			})
+		}
 	}else{
 		cb()
 	}
@@ -709,7 +711,7 @@ GameRemote.prototype.userQuit = function(uid,cb) {
 		}
 	}
 	delete GameRemote.GameService.userMap[uid]
-	setRoomDB("userMap",uid)
+	delRoomDB("userMap",uid)
 	cb(true)
 }
 
