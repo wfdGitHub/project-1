@@ -954,7 +954,7 @@ var MING_CARD_NUM = 2               //明牌数量
     }
     local.getRoomInfo = function(chair) {
       var newPlayer = deepCopy(player)
-      if(gameState < conf.GS_DEAL){
+      if(gameState != conf.GS_DEAL){
         for(var i = 0; i < GAME_PLAYER;i++){
           delete newPlayer[i].handCard
         }

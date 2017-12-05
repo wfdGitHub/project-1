@@ -267,7 +267,7 @@ module.exports.createRoom = function(roomId,db,channelService,playerNumber,gameB
   local.getRoomInfo = function(chair) {
     var newPlayer = deepCopy(player)
     //deal阶段之前不返回牌
-    if(gameState < conf.GS_DEAL){
+    if(gameState != conf.GS_DEAL){
       for(var i = 0; i < GAME_PLAYER;i++){
           delete newPlayer[i].handCard
       }
